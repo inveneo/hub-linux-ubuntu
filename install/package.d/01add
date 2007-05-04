@@ -23,3 +23,4 @@ avahi-utils	install
 libpam-ldap	install
 ldapscripts	install
 subversion	install
+mdns-scan 	install
