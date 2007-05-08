@@ -10,7 +10,9 @@ freeradius-mysql	install
 phpmyadmin	install
 squid3	install
 squid-cgi	install
+rails	install
 ruby	install
+ruby1.8-dev	install
 rubygems	install
 libnss-mdns	install
 dhcp3-server	install
