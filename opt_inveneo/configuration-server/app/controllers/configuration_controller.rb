@@ -1,5 +1,3 @@
-require 'inveneo/filelock'
-
 class ConfigurationController < ApplicationController
   @@BAD_FILE_TYPE="400 Bad Request--config file type invalid"
   @@NOT_FOUND="404 Not Found"
