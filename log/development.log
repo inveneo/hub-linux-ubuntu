@@ -1,0 +1,1418 @@
+  [4;36;1mSQL (0.046767)[0m   [0;1mCREATE TABLE schema_info (version integer)[0m
+  [4;35;1mSQL (0.074562)[0m   [0mINSERT INTO schema_info (version) VALUES(0)[0m
+  [4;36;1mSQL (0.000000)[0m   [0;1mSQLite3::SQLException: table schema_info already exists: CREATE TABLE schema_info (version integer)[0m
+  [4;35;1mSQL (0.002398)[0m   [0mSELECT * FROM schema_info[0m
+  [4;36;1mSQL (0.000373)[0m   [0;1mSELECT name FROM sqlite_master WHERE type = 'table'[0m
+
+
+Processing InfoController#properties (for 127.0.0.1 at 2007-05-15 16:08:43) [GET]
+  Session ID: a56278b5cec0780196e01d80016d7025
+  Parameters: {"action"=>"properties", "controller"=>"rails/info"}
+  [4;36;1mSQL (0.000000)[0m   [0;1mSQLite3::SQLException: no such table: schema_info: SELECT version FROM schema_info[0m
+Completed in 0.06248 (16 reqs/sec) | Rendering: 0.00182 (2%) | DB: 0.00000 (0%) | 200 OK [http://localhost/rails/info/properties]
+
+
+Processing InfoController#properties (for 127.0.0.1 at 2007-05-15 16:08:44) [GET]
+  Session ID: 88a268a8c4baa3df6cd07fde8114ce4e
+  Parameters: {"action"=>"properties", "controller"=>"rails/info"}
+  [4;35;1mSQL (0.000000)[0m   [0mSQLite3::SQLException: no such table: schema_info: SELECT version FROM schema_info[0m
+Completed in 0.04082 (24 reqs/sec) | Rendering: 0.02250 (55%) | DB: 0.00000 (0%) | 200 OK [http://localhost/rails/info/properties]
+
+
+Processing ConfigurationController#put_config (for 127.0.0.1 at 2007-05-16 14:00:02) [POST]
+  Session ID: 97a20d47a465214b46d8e5d65cec75ab
+  Parameters: {"action"=>"put_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.6634.0>}
+
+
+ActionController::UnknownAction (No action responded to put_config):
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:632:in `call_filter'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:619:in `perform_action_without_benchmark'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/benchmarking.rb:66:in `perform_action_without_rescue'
+    /usr/lib/ruby/1.8/benchmark.rb:293:in `measure'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/benchmarking.rb:66:in `perform_action_without_rescue'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/rescue.rb:83:in `perform_action'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:430:in `send'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:430:in `process_without_filters'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:624:in `process_without_session_management_support'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/session_management.rb:114:in `process'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:330:in `process'
+    /usr/lib/ruby/gems/1.8/gems/rails-1.2.3/lib/dispatcher.rb:41:in `dispatch'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:78:in `process'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `synchronize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `process'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:618:in `process_client'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `each'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `process_client'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `initialize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `new'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `initialize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `new'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:271:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `each'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:127:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/command.rb:211:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:243
+    /usr/bin/mongrel_rails:16:in `load'
+    /usr/bin/mongrel_rails:16
+
+
+Rendering /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/templates/rescues/layout.rhtml (404 Page Not Found)
+
+
+Processing ConfigurationController#set_config (for 127.0.0.1 at 2007-05-16 14:00:18) [POST]
+  Session ID: 4f7346792ef7d9c19d1524f82a1da166
+  Parameters: {"action"=>"set_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.6634.1>}
+DEPRECATION WARNING: @params is deprecated! Call params.[] instead of @params.[]. Args: ["config_file"]  See http://www.rubyonrails.org/deprecation for details. (called from set_config at /home/inveneo/ruby/put-test/config/../app/controllers/configuration_controller.rb:8)
+File name: config.tar.gz
+Content type: application/octet-stream
+Rendering configuration/set_config
+Completed in 0.00240 (417 reqs/sec) | Rendering: 0.00114 (47%) | 200 OK [http://localhost/configuration/set_config]
+
+
+Processing ConfigurationController#set_config (for 127.0.0.1 at 2007-05-16 14:01:18) [POST]
+  Session ID: d6b40d15c868259bdee7d04017338b33
+  Parameters: {"action"=>"set_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.6634.2>}
+File name: config.tar.gz
+Content type: application/octet-stream
+Rendering configuration/set_config
+Completed in 0.00149 (672 reqs/sec) | Rendering: 0.00055 (37%) | 200 OK [http://localhost/configuration/set_config]
+no such file to load -- /home/inveneo/ruby/put-test/config/../config/routes.rb
+/usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:488:in `load'
+/usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:488:in `load'
+/usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:342:in `new_constants_in'
+/usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:488:in `load'
+/usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/routing.rb:1165:in `load_routes!'
+/usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/routing.rb:1157:in `reload'
+/usr/lib/ruby/gems/1.8/gems/rails-1.2.3/lib/dispatcher.rb:105:in `prepare_application'
+/usr/lib/ruby/gems/1.8/gems/rails-1.2.3/lib/dispatcher.rb:39:in `dispatch'
+/usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:78:in `process'
+/usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `synchronize'
+/usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `process'
+/usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:618:in `process_client'
+/usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `each'
+/usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `process_client'
+/usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+/usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `initialize'
+/usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `new'
+/usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+/usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `initialize'
+/usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `new'
+/usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `run'
+/usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:271:in `run'
+/usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `each'
+/usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `run'
+/usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:127:in `run'
+/usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/command.rb:211:in `run'
+/usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:243
+/usr/bin/mongrel_rails:16:in `load'
+/usr/bin/mongrel_rails:16
+
+
+Processing ConfigurationController#set_config (for 127.0.0.1 at 2007-05-16 14:16:31) [POST]
+  Session ID: bb07b338d9bdea50cc8d41d20645cd38
+  Parameters: {"action"=>"set_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.7505.0>}
+File name: config.tar.gz
+Content type: application/octet-stream
+Rendering configuration/set_config
+Completed in 0.00224 (446 reqs/sec) | Rendering: 0.00123 (54%) | 200 OK [http://localhost/configuration/set_config]
+
+
+Processing ConfigurationController#set_config (for 127.0.0.1 at 2007-05-16 14:18:03) [POST]
+  Session ID: 3c534e6689ab7706738fe0bd3d3096b8
+  Parameters: {"action"=>"set_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.7505.1>}
+/home/inveneo/ruby/config-server/config/..
+File name: config.tar.gz
+Content type: application/octet-stream
+Rendering configuration/set_config
+Completed in 0.00201 (498 reqs/sec) | Rendering: 0.00075 (37%) | 200 OK [http://localhost/configuration/set_config]
+
+
+Processing ConfigurationController#set_config (for 127.0.0.1 at 2007-05-16 14:30:54) [POST]
+  Session ID: 14752cea9315fcae130e51ab2508cc4a
+  Parameters: {"action"=>"set_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.7505.2>}
+File name: config.tar.gz
+Content type: application/octet-stream
+Completed in 0.00198 (504 reqs/sec) | Rendering: 0.00026 (12%) | 200 OK [http://localhost/configuration/set_config]
+
+
+Processing ConfigurationController#set_config (for 127.0.0.1 at 2007-05-16 14:37:42) [POST]
+  Session ID: a2246994b05cfc08ed15afddd679131d
+  Parameters: {"action"=>"set_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.7505.3>}
+File name: config.tar.gz
+Content type: application/octet-stream
+Completed in 0.00116 (861 reqs/sec) | Rendering: 0.00006 (4%) | 400 Bad Request--config file type invalid [http://localhost/configuration/set_config]
+
+
+Processing ConfigurationController#set_config (for 127.0.0.1 at 2007-05-16 14:38:46) [POST]
+  Session ID: 73a935b71a8da5dd8543ed772bd9fb03
+  Parameters: {"action"=>"set_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.7505.0>}
+File name: config.tar.gz
+Content type: application/octet-stream
+400 Bad Request--config file type invalid: config.tar.gz, application/octet-stream
+Completed in 0.00120 (835 reqs/sec) | Rendering: 0.00006 (4%) | 400 Bad Request--config file type invalid [http://localhost/configuration/set_config]
+
+
+Processing ConfigurationController#set_config (for 127.0.0.1 at 2007-05-16 14:39:39) [POST]
+  Session ID: 960488bc8dce5f5a0c78de9e260b8dc2
+  Parameters: {"action"=>"set_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.7505.1>}
+File name: config.tar.gz
+Content type: application/octet-stream
+400 Bad Request--config file type invalid: config.tar.gz, application/octet-stream
+Completed in 0.00126 (796 reqs/sec) | Rendering: 0.00000 (0%) | 400 Bad Request--config file type invalid [http://localhost/configuration/set_config]
+
+
+Processing ConfigurationController#set_config (for 127.0.0.1 at 2007-05-16 14:40:57) [POST]
+  Session ID: 77d1c89ba7c8d1fb1b8fdaeb986b1326
+  Parameters: {"action"=>"set_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.7505.4>}
+File name: client-config.tar.gz
+Content type: application/octet-stream
+400 Bad Request--config file type invalid: client-config.tar.gz, application/octet-stream
+Completed in 0.00132 (760 reqs/sec) | Rendering: 0.00006 (4%) | 400 Bad Request--config file type invalid [http://localhost/configuration/set_config]
+
+
+Processing ConfigurationController#set_config (for 127.0.0.1 at 2007-05-16 14:46:13) [POST]
+  Session ID: d0f4b387740606d89094b0d1050ba624
+  Parameters: {"action"=>"set_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.7505.5>}
+File name: client-config.tar.gz
+Content type: application/octet-stream
+400 Bad Request--config file type invalid: client-config.tar.gz, application/octet-stream
+Completed in 0.00123 (814 reqs/sec) | Rendering: 0.00006 (4%) | 400 Bad Request--config file type invalid [http://localhost/configuration/set_config]
+
+
+Processing ConfigurationController#set_config (for 127.0.0.1 at 2007-05-16 14:47:01) [POST]
+  Session ID: 6c154d943d807456b5cc77f0aae34a20
+  Parameters: {"action"=>"set_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.7505.0>}
+File basename: client-config.tar.gz
+Content type: application/octet-stream
+400 Bad Request--config file type invalid: client-config.tar.gz, application/octet-stream
+Completed in 0.00317 (315 reqs/sec) | Rendering: 0.00006 (1%) | 400 Bad Request--config file type invalid [http://localhost/configuration/set_config]
+
+
+Processing ConfigurationController#set_config (for 127.0.0.1 at 2007-05-16 14:52:19) [POST]
+  Session ID: a3d0c1277d14254c2d967e3b3ffce530
+  Parameters: {"action"=>"set_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.7505.1>}
+File basename: client-config.tar.gz
+Content type: application/octet-stream
+400 Bad Request--config file type invalid: client-config.tar.gz, application/octet-stream
+Completed in 0.00142 (702 reqs/sec) | Rendering: 0.00007 (4%) | 400 Bad Request--config file type invalid [http://localhost/configuration/set_config]
+
+
+Processing ConfigurationController#set_config (for 127.0.0.1 at 2007-05-16 14:52:46) [POST]
+  Session ID: 3f46b841e30fc8555d95bccd1b943699
+  Parameters: {"action"=>"set_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.7505.2>}
+File basename: client-config.tar.gz
+Content type: application/octet-stream
+Completed in 0.00148 (677 reqs/sec) | Rendering: 0.00014 (9%) | 200 OK [http://localhost/configuration/set_config]
+
+
+Processing ConfigurationController#set_config (for 127.0.0.1 at 2007-05-16 14:55:39) [POST]
+  Session ID: 6628e2fa2793f9173298adeedbaf7b3b
+  Parameters: {"action"=>"set_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.7505.3>}
+File basename: client-config.tar.gz
+Content type: application/octet-stream
+Completed in 0.00111 (897 reqs/sec) | Rendering: 0.00006 (5%) | 200 OK [http://localhost/configuration/set_config]
+
+
+Processing ConfigurationController#set_config (for 127.0.0.1 at 2007-05-16 14:58:29) [POST]
+  Session ID: cb3b30d9aba4fb0406e6df1681452875
+  Parameters: {"action"=>"set_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.7505.0>}
+File basename: client-config.tar.gz
+Content type: application/octet-stream
+400 Bad Request--config file type invalid: client-config.tar.gz, application/octet-stream
+Completed in 0.00136 (733 reqs/sec) | Rendering: 0.00006 (4%) | 400 Bad Request--config file type invalid [http://localhost/configuration/set_config]
+
+
+Processing ConfigurationController#set_config (for 127.0.0.1 at 2007-05-16 15:03:13) [POST]
+  Session ID: 33c8363a775de13182c71a6ac99f6940
+  Parameters: {"action"=>"set_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.7505.1>}
+File basename: client-config.tar.gz
+Content type: application/octet-stream
+400 Bad Request--config file type invalid: client-config.tar.gz, application/octet-stream
+Completed in 0.00140 (715 reqs/sec) | Rendering: 0.00006 (4%) | 400 Bad Request--config file type invalid [http://localhost/configuration/set_config]
+
+
+Processing ConfigurationController#set_config (for 127.0.0.1 at 2007-05-16 15:04:09) [POST]
+  Session ID: e0c363e38d0a8a93d193adae158da99b
+  Parameters: {"action"=>"set_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.7505.4>}
+File basename: client-config.tar.gz
+Content type: application/octet-stream
+400 Bad Request--config file type invalid: client-config.tar.gz, application/octet-stream
+Completed in 0.00109 (914 reqs/sec) | Rendering: 0.00006 (5%) | 400 Bad Request--config file type invalid [http://localhost/configuration/set_config]
+
+
+Processing ConfigurationController#set_config (for 127.0.0.1 at 2007-05-16 15:04:29) [POST]
+  Session ID: 56f18ee492b13eafce28ca10ebd3df94
+  Parameters: {"action"=>"set_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.7505.5>}
+File basename: client-config.tar.gz
+Content type: application/octet-stream
+400 Bad Request--config file type invalid: client-config.tar.gz, application/octet-stream
+Completed in 0.00140 (716 reqs/sec) | Rendering: 0.00006 (4%) | 400 Bad Request--config file type invalid [http://localhost/configuration/set_config]
+
+
+Processing ConfigurationController#set_config (for 127.0.0.1 at 2007-05-16 15:04:47) [POST]
+  Session ID: 97ff9631223a237dbb10d038393620fc
+  Parameters: {"action"=>"set_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.7505.0>}
+File basename: client-config.tar.gz
+Content type: application/octet-stream
+Completed in 0.00108 (925 reqs/sec) | Rendering: 0.00006 (5%) | 200 OK [http://localhost/configuration/set_config]
+
+
+Processing ConfigurationController#set_config (for 127.0.0.1 at 2007-05-16 15:05:33) [POST]
+  Session ID: 5dce51c1cb44b6e3fd71cc2006a0aedd
+  Parameters: {"action"=>"set_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.7505.1>}
+File basename: ___client-config.tar.gz___
+Content type: ___application/octet-stream____
+Completed in 0.00361 (276 reqs/sec) | Rendering: 0.00006 (1%) | 200 OK [http://localhost/configuration/set_config]
+
+
+Processing ConfigurationController#set_config (for 127.0.0.1 at 2007-05-16 15:06:05) [POST]
+  Session ID: d8b154614693dd6a9d946a67ced7d6b8
+  Parameters: {"action"=>"set_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.7505.2>}
+File basename: ___client-config.tar.gz___
+Content type: ___application/octet-stream____
+Completed in 0.00101 (985 reqs/sec) | Rendering: 0.00006 (5%) | 200 OK [http://localhost/configuration/set_config]
+
+
+Processing ConfigurationController#set_config (for 127.0.0.1 at 2007-05-16 15:06:53) [POST]
+  Session ID: c0e661fe200b2279b8669120387221a9
+  Parameters: {"action"=>"set_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.7505.3>}
+File basename: client-config.tar.gz
+Content type: application/octet-stream
+Completed in 0.00109 (921 reqs/sec) | Rendering: 0.00006 (5%) | 200 OK [http://localhost/configuration/set_config]
+
+
+Processing ApplicationController#set_config (for 127.0.0.1 at 2007-05-16 15:23:29) [POST]
+  Session ID: 3b5bc9ad5a3025547c4a706be270b75d
+  Parameters: {"action"=>"set_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.7505.0>}
+
+
+SyntaxError (/home/inveneo/ruby/config-server/config/../app/controllers/configuration_controller.rb:20: syntax error, unexpected tSTRING_BEG, expecting kTHEN or ':' or '\n' or ';'
+/home/inveneo/ruby/config-server/config/../app/controllers/configuration_controller.rb:29: syntax error, unexpected kEND, expecting $end):
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:203:in `load_without_new_constant_marking'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:203:in `load_file'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:342:in `new_constants_in'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:202:in `load_file'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:94:in `require_or_load'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:248:in `load_missing_constant'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:452:in `const_missing'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:464:in `const_missing'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/inflector.rb:250:in `constantize'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/core_ext/string/inflections.rb:148:in `constantize'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/routing.rb:1284:in `recognize'
+    /usr/lib/ruby/gems/1.8/gems/rails-1.2.3/lib/dispatcher.rb:40:in `dispatch'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:78:in `process'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `synchronize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `process'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:618:in `process_client'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `each'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `process_client'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `initialize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `new'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `initialize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `new'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:271:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `each'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:127:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/command.rb:211:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:243
+    /usr/bin/mongrel_rails:16:in `load'
+    /usr/bin/mongrel_rails:16
+
+
+Rendering /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/templates/rescues/layout.rhtml (500 Internal Error)
+
+
+Processing ApplicationController#set_config (for 127.0.0.1 at 2007-05-16 15:24:46) [POST]
+  Session ID: 888d61a5562f6ca30bc9351b27b08917
+  Parameters: {"action"=>"set_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.7505.1>}
+
+
+SyntaxError (/home/inveneo/ruby/config-server/config/../app/controllers/configuration_controller.rb:20: syntax error, unexpected tSTRING_BEG, expecting kTHEN or ':' or '\n' or ';'
+/home/inveneo/ruby/config-server/config/../app/controllers/configuration_controller.rb:29: syntax error, unexpected kEND, expecting $end):
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:203:in `load_without_new_constant_marking'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:203:in `load_file'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:342:in `new_constants_in'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:202:in `load_file'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:94:in `require_or_load'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:248:in `load_missing_constant'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:452:in `const_missing'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:464:in `const_missing'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/inflector.rb:250:in `constantize'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/core_ext/string/inflections.rb:148:in `constantize'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/routing.rb:1284:in `recognize'
+    /usr/lib/ruby/gems/1.8/gems/rails-1.2.3/lib/dispatcher.rb:40:in `dispatch'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:78:in `process'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `synchronize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `process'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:618:in `process_client'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `each'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `process_client'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `initialize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `new'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `initialize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `new'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:271:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `each'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:127:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/command.rb:211:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:243
+    /usr/bin/mongrel_rails:16:in `load'
+    /usr/bin/mongrel_rails:16
+
+
+Rendering /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/templates/rescues/layout.rhtml (500 Internal Error)
+
+
+Processing ConfigurationController#set_config (for 127.0.0.1 at 2007-05-16 15:25:10) [POST]
+  Session ID: 261a6ad39b355a42d1e39894ac5e3de1
+  Parameters: {"action"=>"set_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.7505.4>}
+File basename: client-config.tar.gz
+Content type: application/octet-stream
+400 Bad Request--config file type invalid: client-config.tar.gz, application/octet-stream
+Completed in 0.00155 (646 reqs/sec) | Rendering: 0.00006 (3%) | 400 Bad Request--config file type invalid [http://localhost/configuration/set_config]
+
+
+Processing ConfigurationController#set_config (for 127.0.0.1 at 2007-05-16 15:25:27) [POST]
+  Session ID: 3f4bff9ac5c4ac6d2884bb3cbb5229a2
+  Parameters: {"action"=>"set_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.7505.0>}
+File basename: client-configaabbccddeeff.tar.gz
+Content type: application/octet-stream
+400 Bad Request--config file type invalid: client-configaabbccddeeff.tar.gz, application/octet-stream
+Completed in 0.00208 (480 reqs/sec) | Rendering: 0.00007 (3%) | 400 Bad Request--config file type invalid [http://localhost/configuration/set_config]
+
+
+Processing ConfigurationController#set_config (for 127.0.0.1 at 2007-05-16 16:06:59) [POST]
+  Session ID: 5d9e1e2bea6447efc67efc85853f2df9
+  Parameters: {"action"=>"set_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.7505.2>}
+Rendering configuration/set_config
+Completed in 0.01008 (99 reqs/sec) | Rendering: 0.00722 (71%) | 200 OK [http://localhost/configuration/set_config]
+
+
+Processing ConfigurationController#set_config (for 127.0.0.1 at 2007-05-16 16:07:22) [POST]
+  Session ID: d49c51f3f0602da630d23d3414a8e20c
+  Parameters: {"action"=>"set_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.7505.3>}
+Rendering configuration/set_config
+Completed in 0.00137 (730 reqs/sec) | Rendering: 0.00109 (80%) | 200 OK [http://localhost/configuration/set_config]
+
+
+Processing ConfigurationController#set_config (for 127.0.0.1 at 2007-05-16 16:07:59) [POST]
+  Session ID: dc6dfd6740b92d391770c61ca6eea148
+  Parameters: {"action"=>"set_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.7505.5>}
+Rendering configuration/set_config
+Completed in 0.00173 (578 reqs/sec) | Rendering: 0.00063 (36%) | 200 OK [http://localhost/configuration/set_config]
+
+
+Processing ConfigurationController#save_station_config (for 127.0.0.1 at 2007-05-16 16:08:14) [POST]
+  Session ID: 1a8629bdec5a559cb05be2f05669dafa
+  Parameters: {"action"=>"save_station_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.7505.0>}
+File basename: client-configaabbccddeeff.tar.gz
+Content type: application/octet-stream
+400 Bad Request--config file type invalid: client-configaabbccddeeff.tar.gz, application/octet-stream
+Completed in 0.00116 (862 reqs/sec) | Rendering: 0.00006 (4%) | 400 Bad Request--config file type invalid [http://localhost/configuration/save_station_config]
+
+
+Processing ConfigurationController#save_station_config (for 127.0.0.1 at 2007-05-16 16:08:57) [POST]
+  Session ID: 4fc42f91d55fd271ce06a1cd552bae45
+  Parameters: {"action"=>"save_station_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.7505.1>}
+File basename: station-aabbccddeeff.tar.gz
+Content type: application/octet-stream
+
+
+NoMethodError (undefined method `get_write_lock' for #<ConfigurationController:0xb6b075f0>):
+    /app/controllers/configuration_controller.rb:41:in `save_station_config'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:1095:in `send'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:1095:in `perform_action_without_filters'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:632:in `call_filter'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:619:in `perform_action_without_benchmark'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/benchmarking.rb:66:in `perform_action_without_rescue'
+    /usr/lib/ruby/1.8/benchmark.rb:293:in `measure'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/benchmarking.rb:66:in `perform_action_without_rescue'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/rescue.rb:83:in `perform_action'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:430:in `send'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:430:in `process_without_filters'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:624:in `process_without_session_management_support'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/session_management.rb:114:in `process'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:330:in `process'
+    /usr/lib/ruby/gems/1.8/gems/rails-1.2.3/lib/dispatcher.rb:41:in `dispatch'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:78:in `process'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `synchronize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `process'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:618:in `process_client'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `each'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `process_client'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `initialize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `new'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `initialize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `new'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:271:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `each'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:127:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/command.rb:211:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:243
+    /usr/bin/mongrel_rails:16:in `load'
+    /usr/bin/mongrel_rails:16
+
+
+Rendering /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/templates/rescues/layout.rhtml (500 Internal Error)
+
+
+Processing ConfigurationController#save_station_config (for 127.0.0.1 at 2007-05-16 16:10:01) [POST]
+  Session ID: 26544a4a94b2b9a025d382304fc8e0e5
+  Parameters: {"action"=>"save_station_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.7505.2>}
+File basename: station-aabbccddeeff.tar.gz
+Content type: application/octet-stream
+
+
+NoMethodError (undefined method `get_write_lock' for #<ConfigurationController:0xb6bd7520>):
+    /app/controllers/configuration_controller.rb:41:in `save_station_config'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:1095:in `send'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:1095:in `perform_action_without_filters'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:632:in `call_filter'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:619:in `perform_action_without_benchmark'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/benchmarking.rb:66:in `perform_action_without_rescue'
+    /usr/lib/ruby/1.8/benchmark.rb:293:in `measure'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/benchmarking.rb:66:in `perform_action_without_rescue'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/rescue.rb:83:in `perform_action'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:430:in `send'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:430:in `process_without_filters'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:624:in `process_without_session_management_support'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/session_management.rb:114:in `process'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:330:in `process'
+    /usr/lib/ruby/gems/1.8/gems/rails-1.2.3/lib/dispatcher.rb:41:in `dispatch'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:78:in `process'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `synchronize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `process'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:618:in `process_client'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `each'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `process_client'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `initialize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `new'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `initialize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `new'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:271:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `each'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:127:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/command.rb:211:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:243
+    /usr/bin/mongrel_rails:16:in `load'
+    /usr/bin/mongrel_rails:16
+
+
+Rendering /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/templates/rescues/layout.rhtml (500 Internal Error)
+
+
+Processing ConfigurationController#save_station_config (for 127.0.0.1 at 2007-05-16 16:10:49) [POST]
+  Session ID: fd82a0cadcb53ec018efbe9298e13849
+  Parameters: {"action"=>"save_station_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.7505.0>}
+File basename: station-aabbccddeeff.tar.gz
+Content type: application/octet-stream
+
+
+NameError (uninitialized constant ConfigurationController::FileLock):
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:477:in `const_missing'
+    /app/controllers/configuration_controller.rb:41:in `save_station_config'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:1095:in `send'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:1095:in `perform_action_without_filters'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:632:in `call_filter'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:619:in `perform_action_without_benchmark'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/benchmarking.rb:66:in `perform_action_without_rescue'
+    /usr/lib/ruby/1.8/benchmark.rb:293:in `measure'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/benchmarking.rb:66:in `perform_action_without_rescue'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/rescue.rb:83:in `perform_action'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:430:in `send'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:430:in `process_without_filters'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:624:in `process_without_session_management_support'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/session_management.rb:114:in `process'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:330:in `process'
+    /usr/lib/ruby/gems/1.8/gems/rails-1.2.3/lib/dispatcher.rb:41:in `dispatch'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:78:in `process'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `synchronize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `process'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:618:in `process_client'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `each'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `process_client'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `initialize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `new'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `initialize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `new'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:271:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `each'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:127:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/command.rb:211:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:243
+    /usr/bin/mongrel_rails:16:in `load'
+    /usr/bin/mongrel_rails:16
+
+
+Rendering /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/templates/rescues/layout.rhtml (500 Internal Error)
+
+
+Processing ConfigurationController#save_station_config (for 127.0.0.1 at 2007-05-16 16:11:53) [POST]
+  Session ID: a4ce730f377968c1b6d58b2a763f075f
+  Parameters: {"action"=>"save_station_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.7505.3>}
+File basename: station-aabbccddeeff.tar.gz
+Content type: application/octet-stream
+
+
+NoMethodError (undefined method `get_write_lock' for #<ConfigurationController:0xb6a736c0>):
+    /app/controllers/configuration_controller.rb:41:in `save_station_config'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:1095:in `send'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:1095:in `perform_action_without_filters'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:632:in `call_filter'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:619:in `perform_action_without_benchmark'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/benchmarking.rb:66:in `perform_action_without_rescue'
+    /usr/lib/ruby/1.8/benchmark.rb:293:in `measure'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/benchmarking.rb:66:in `perform_action_without_rescue'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/rescue.rb:83:in `perform_action'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:430:in `send'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:430:in `process_without_filters'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:624:in `process_without_session_management_support'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/session_management.rb:114:in `process'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:330:in `process'
+    /usr/lib/ruby/gems/1.8/gems/rails-1.2.3/lib/dispatcher.rb:41:in `dispatch'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:78:in `process'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `synchronize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `process'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:618:in `process_client'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `each'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `process_client'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `initialize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `new'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `initialize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `new'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:271:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `each'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:127:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/command.rb:211:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:243
+    /usr/bin/mongrel_rails:16:in `load'
+    /usr/bin/mongrel_rails:16
+
+
+Rendering /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/templates/rescues/layout.rhtml (500 Internal Error)
+
+
+Processing ConfigurationController#save_station_config (for 127.0.0.1 at 2007-05-16 16:21:05) [POST]
+  Session ID: bcbbb8033a1f94a3be3fca4d5d63285a
+  Parameters: {"action"=>"save_station_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.7505.1>}
+File basename: station-aabbccddeeff.tar.gz
+Content type: application/octet-stream
+Completed in 0.00272 (367 reqs/sec) | Rendering: 0.00007 (2%) | 200 OK [http://localhost/configuration/save_station_config]
+
+
+Processing ConfigurationController#save_station_config (for 127.0.0.1 at 2007-05-16 16:34:25) [POST]
+  Session ID: 551642403e2afb0094287541d21990d5
+  Parameters: {"action"=>"save_station_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.7505.2>}
+File basename: station-aabbccddeeff.tar.gz
+Content type: application/octet-stream
+Completed in 0.00271 (368 reqs/sec) | Rendering: 0.00023 (8%) | 200 OK [http://localhost/configuration/save_station_config]
+
+
+Processing ConfigurationController#save_station_config (for 127.0.0.1 at 2007-05-16 16:34:56) [POST]
+  Session ID: dd6f5d9ea313f3c0975035443bc93876
+  Parameters: {"action"=>"save_station_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.7505.4>}
+File basename: station-aabbccddeeff.tar.gz
+Content type: application/octet-stream
+Completed in 0.00120 (834 reqs/sec) | Rendering: 0.00006 (4%) | 200 OK [http://localhost/configuration/save_station_config]
+
+
+Processing ConfigurationController#save_station_config (for 127.0.0.1 at 2007-05-16 16:36:25) [POST]
+  Session ID: 1d01ee3c74883a11bd8e0738e6e25d30
+  Parameters: {"action"=>"save_station_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.7505.5>}
+File basename: station-aabbccddeeff.tar.gz
+Content type: application/octet-stream
+Completed in 0.00118 (848 reqs/sec) | Rendering: 0.00006 (4%) | 200 OK [http://localhost/configuration/save_station_config]
+
+
+Processing ConfigurationController#save_station_config (for 127.0.0.1 at 2007-05-16 16:39:19) [POST]
+  Session ID: 237dc893c9dd2ddc941a5d36f6cc51f4
+  Parameters: {"action"=>"save_station_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.7505.0>}
+File basename: station-aabbccddeeff.tar.gz
+Content type: application/octet-stream
+Pre block
+Completed in 0.00132 (759 reqs/sec) | Rendering: 0.00006 (4%) | 200 OK [http://localhost/configuration/save_station_config]
+
+
+Processing ConfigurationController#save_station_config (for 127.0.0.1 at 2007-05-16 16:40:36) [POST]
+  Session ID: 920fcfc457c56bc06b308fa2a7187fe4
+  Parameters: {"action"=>"save_station_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.7505.1>}
+File basename: station-aabbccddeeff.tar.gz
+Content type: application/octet-stream
+Completed in 0.00120 (836 reqs/sec) | Rendering: 0.00006 (4%) | 200 OK [http://localhost/configuration/save_station_config]
+
+
+Processing ConfigurationController#save_station_config (for 127.0.0.1 at 2007-05-16 16:41:48) [POST]
+  Session ID: 0d1ba333941e4cd01d6e0d578ca132ec
+  Parameters: {"action"=>"save_station_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.13160.0>}
+File basename: station-aabbccddeeff.tar.gz
+Content type: application/octet-stream
+GOT HERE
+
+
+NoMethodError (protected method `release' called for #<Inveneo::FileLock:0xb6ba2794 @lock_file=nil>):
+    /components/inveneo/filelock.rb:9:in `get_write_lock'
+    /app/controllers/configuration_controller.rb:43:in `save_station_config'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:1095:in `send'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:1095:in `perform_action_without_filters'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:632:in `call_filter'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:619:in `perform_action_without_benchmark'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/benchmarking.rb:66:in `perform_action_without_rescue'
+    /usr/lib/ruby/1.8/benchmark.rb:293:in `measure'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/benchmarking.rb:66:in `perform_action_without_rescue'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/rescue.rb:83:in `perform_action'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:430:in `send'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:430:in `process_without_filters'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:624:in `process_without_session_management_support'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/session_management.rb:114:in `process'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:330:in `process'
+    /usr/lib/ruby/gems/1.8/gems/rails-1.2.3/lib/dispatcher.rb:41:in `dispatch'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:78:in `process'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `synchronize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `process'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:618:in `process_client'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `each'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `process_client'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `initialize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `new'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `initialize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `new'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:271:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `each'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:127:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/command.rb:211:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:243
+    /usr/bin/mongrel_rails:16:in `load'
+    /usr/bin/mongrel_rails:16
+
+
+Rendering /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/templates/rescues/layout.rhtml (500 Internal Error)
+
+
+Processing ConfigurationController#save_station_config (for 127.0.0.1 at 2007-05-16 16:44:13) [POST]
+  Session ID: c1b1026bd5b901a6610977efc6a7add3
+  Parameters: {"action"=>"save_station_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.13252.0>}
+File basename: station-aabbccddeeff.tar.gz
+Content type: application/octet-stream
+
+
+NameError (undefined local variable or method `logger' for Inveneo::FileLock:Class):
+    /components/inveneo/filelock.rb:8:in `get_write_lock'
+    /app/controllers/configuration_controller.rb:43:in `save_station_config'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:1095:in `send'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:1095:in `perform_action_without_filters'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:632:in `call_filter'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:619:in `perform_action_without_benchmark'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/benchmarking.rb:66:in `perform_action_without_rescue'
+    /usr/lib/ruby/1.8/benchmark.rb:293:in `measure'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/benchmarking.rb:66:in `perform_action_without_rescue'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/rescue.rb:83:in `perform_action'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:430:in `send'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:430:in `process_without_filters'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:624:in `process_without_session_management_support'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/session_management.rb:114:in `process'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:330:in `process'
+    /usr/lib/ruby/gems/1.8/gems/rails-1.2.3/lib/dispatcher.rb:41:in `dispatch'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:78:in `process'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `synchronize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `process'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:618:in `process_client'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `each'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `process_client'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `initialize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `new'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `initialize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `new'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:271:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `each'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:127:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/command.rb:211:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:243
+    /usr/bin/mongrel_rails:16:in `load'
+    /usr/bin/mongrel_rails:16
+
+
+Rendering /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/templates/rescues/layout.rhtml (500 Internal Error)
+
+
+Processing ConfigurationController#save_station_config (for 127.0.0.1 at 2007-05-16 16:46:48) [POST]
+  Session ID: ee17a2e34c2664b1d5cb7300c8815893
+  Parameters: {"action"=>"save_station_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.13338.0>}
+File basename: station-aabbccddeeff.tar.gz
+Content type: application/octet-stream
+GOT HERE
+
+
+NoMethodError (protected method `release' called for #<Inveneo::FileLock:0xb6bd971c @lock_file=nil>):
+    /components/inveneo/filelock.rb:10:in `get_write_lock'
+    /app/controllers/configuration_controller.rb:43:in `save_station_config'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:1095:in `send'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:1095:in `perform_action_without_filters'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:632:in `call_filter'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:619:in `perform_action_without_benchmark'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/benchmarking.rb:66:in `perform_action_without_rescue'
+    /usr/lib/ruby/1.8/benchmark.rb:293:in `measure'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/benchmarking.rb:66:in `perform_action_without_rescue'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/rescue.rb:83:in `perform_action'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:430:in `send'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:430:in `process_without_filters'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:624:in `process_without_session_management_support'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/session_management.rb:114:in `process'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:330:in `process'
+    /usr/lib/ruby/gems/1.8/gems/rails-1.2.3/lib/dispatcher.rb:41:in `dispatch'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:78:in `process'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `synchronize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `process'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:618:in `process_client'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `each'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `process_client'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `initialize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `new'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `initialize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `new'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:271:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `each'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:127:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/command.rb:211:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:243
+    /usr/bin/mongrel_rails:16:in `load'
+    /usr/bin/mongrel_rails:16
+
+
+Rendering /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/templates/rescues/layout.rhtml (500 Internal Error)
+
+
+Processing ConfigurationController#save_station_config (for 127.0.0.1 at 2007-05-16 16:48:16) [POST]
+  Session ID: f3dd09480b8c2e8fe8f675909b636d63
+  Parameters: {"action"=>"save_station_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.13396.0>}
+File basename: station-aabbccddeeff.tar.gz
+Content type: application/octet-stream
+GOT HERE
+
+
+NoMethodError (protected method `release' called for #<Inveneo::FileLock:0xb6bbb7a8 @lock_file=nil>):
+    /components/inveneo/filelock.rb:9:in `get_write_lock'
+    /app/controllers/configuration_controller.rb:43:in `save_station_config'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:1095:in `send'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:1095:in `perform_action_without_filters'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:632:in `call_filter'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:619:in `perform_action_without_benchmark'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/benchmarking.rb:66:in `perform_action_without_rescue'
+    /usr/lib/ruby/1.8/benchmark.rb:293:in `measure'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/benchmarking.rb:66:in `perform_action_without_rescue'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/rescue.rb:83:in `perform_action'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:430:in `send'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:430:in `process_without_filters'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:624:in `process_without_session_management_support'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/session_management.rb:114:in `process'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:330:in `process'
+    /usr/lib/ruby/gems/1.8/gems/rails-1.2.3/lib/dispatcher.rb:41:in `dispatch'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:78:in `process'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `synchronize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `process'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:618:in `process_client'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `each'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `process_client'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `initialize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `new'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `initialize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `new'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:271:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `each'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:127:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/command.rb:211:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:243
+    /usr/bin/mongrel_rails:16:in `load'
+    /usr/bin/mongrel_rails:16
+
+
+Rendering /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/templates/rescues/layout.rhtml (500 Internal Error)
+
+
+Processing ConfigurationController#save_station_config (for 127.0.0.1 at 2007-05-16 16:49:22) [POST]
+  Session ID: 70d26a46cb43fce2a339279c4049e3ae
+  Parameters: {"action"=>"save_station_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.13460.0>}
+File basename: station-aabbccddeeff.tar.gz
+Content type: application/octet-stream
+GOT HERE
+Completed in 0.00230 (434 reqs/sec) | Rendering: 0.00006 (2%) | 200 OK [http://localhost/configuration/save_station_config]
+
+
+Processing ApplicationController#save_station_config (for 127.0.0.1 at 2007-05-16 17:49:16) [POST]
+  Session ID: fd8a89cc255c27a25b262ba3a2e40fbb
+  Parameters: {"action"=>"save_station_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.15532.0>}
+
+
+SyntaxError (/home/inveneo/ruby/config-server/config/../components/inveneo/filelock.rb:42: no .<digit> floating literal anymore; put 0 before dot
+      sleep .1 until lock_dir.children.length==0 
+             ^
+/home/inveneo/ruby/config-server/config/../components/inveneo/filelock.rb:42: syntax error, unexpected tINTEGER
+      sleep .1 until lock_dir.children.length==0 
+              ^
+/home/inveneo/ruby/config-server/config/../components/inveneo/filelock.rb:53: no .<digit> floating literal anymore; put 0 before dot
+      sleep .1 until lock_dir.glob("write_lock.*").length==0
+             ^
+/home/inveneo/ruby/config-server/config/../components/inveneo/filelock.rb:53: syntax error, unexpected tINTEGER
+      sleep .1 until lock_dir.glob("write_lock.*").length==0
+              ^):
+    /usr/local/lib/site_ruby/1.8/rubygems/custom_require.rb:27:in `gem_original_require'
+    /usr/local/lib/site_ruby/1.8/rubygems/custom_require.rb:27:in `require'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:495:in `require'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:342:in `new_constants_in'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:495:in `require'
+    /app/controllers/configuration_controller.rb:1
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:203:in `load_without_new_constant_marking'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:203:in `load_file'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:342:in `new_constants_in'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:202:in `load_file'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:94:in `require_or_load'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:248:in `load_missing_constant'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:452:in `const_missing'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:464:in `const_missing'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/inflector.rb:250:in `constantize'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/core_ext/string/inflections.rb:148:in `constantize'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/routing.rb:1284:in `recognize'
+    /usr/lib/ruby/gems/1.8/gems/rails-1.2.3/lib/dispatcher.rb:40:in `dispatch'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:78:in `process'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `synchronize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `process'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:618:in `process_client'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `each'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `process_client'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `initialize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `new'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `initialize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `new'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:271:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `each'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:127:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/command.rb:211:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:243
+    /usr/bin/mongrel_rails:16:in `load'
+    /usr/bin/mongrel_rails:16
+
+
+Rendering /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/templates/rescues/layout.rhtml (500 Internal Error)
+
+
+Processing ConfigurationController#save_station_config (for 127.0.0.1 at 2007-05-16 17:50:13) [POST]
+  Session ID: 227a9dd62121e22cd2f135205ba58465
+  Parameters: {"action"=>"save_station_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.15532.1>}
+File basename: station-aabbccddeeff.tar.gz
+Content type: application/octet-stream
+
+
+NoMethodError (undefined method `writeable?' for #<Pathname:0xb6b306a8>):
+    /components/inveneo/filelock.rb:39:in `acquire_write_lock'
+    /components/inveneo/filelock.rb:27:in `initialize'
+    /components/inveneo/filelock.rb:9:in `new'
+    /components/inveneo/filelock.rb:9:in `get_write_lock'
+    /app/controllers/configuration_controller.rb:43:in `save_station_config'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:1095:in `send'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:1095:in `perform_action_without_filters'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:632:in `call_filter'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:619:in `perform_action_without_benchmark'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/benchmarking.rb:66:in `perform_action_without_rescue'
+    /usr/lib/ruby/1.8/benchmark.rb:293:in `measure'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/benchmarking.rb:66:in `perform_action_without_rescue'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/rescue.rb:83:in `perform_action'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:430:in `send'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:430:in `process_without_filters'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:624:in `process_without_session_management_support'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/session_management.rb:114:in `process'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:330:in `process'
+    /usr/lib/ruby/gems/1.8/gems/rails-1.2.3/lib/dispatcher.rb:41:in `dispatch'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:78:in `process'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `synchronize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `process'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:618:in `process_client'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `each'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `process_client'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `initialize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `new'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `initialize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `new'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:271:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `each'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:127:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/command.rb:211:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:243
+    /usr/bin/mongrel_rails:16:in `load'
+    /usr/bin/mongrel_rails:16
+
+
+Rendering /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/templates/rescues/layout.rhtml (500 Internal Error)
+
+
+Processing ConfigurationController#save_station_config (for 127.0.0.1 at 2007-05-16 17:50:21) [POST]
+  Session ID: e8b3bce521db02f6c80f1302e0981101
+  Parameters: {"action"=>"save_station_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.15583.0>}
+File basename: station-aabbccddeeff.tar.gz
+Content type: application/octet-stream
+
+
+NoMethodError (undefined method `writeable?' for #<Pathname:0xb6b41d40>):
+    /components/inveneo/filelock.rb:39:in `acquire_write_lock'
+    /components/inveneo/filelock.rb:27:in `initialize'
+    /components/inveneo/filelock.rb:9:in `new'
+    /components/inveneo/filelock.rb:9:in `get_write_lock'
+    /app/controllers/configuration_controller.rb:43:in `save_station_config'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:1095:in `send'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:1095:in `perform_action_without_filters'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:632:in `call_filter'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:619:in `perform_action_without_benchmark'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/benchmarking.rb:66:in `perform_action_without_rescue'
+    /usr/lib/ruby/1.8/benchmark.rb:293:in `measure'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/benchmarking.rb:66:in `perform_action_without_rescue'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/rescue.rb:83:in `perform_action'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:430:in `send'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:430:in `process_without_filters'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:624:in `process_without_session_management_support'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/session_management.rb:114:in `process'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:330:in `process'
+    /usr/lib/ruby/gems/1.8/gems/rails-1.2.3/lib/dispatcher.rb:41:in `dispatch'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:78:in `process'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `synchronize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `process'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:618:in `process_client'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `each'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `process_client'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `initialize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `new'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `initialize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `new'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:271:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `each'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:127:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/command.rb:211:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:243
+    /usr/bin/mongrel_rails:16:in `load'
+    /usr/bin/mongrel_rails:16
+
+
+Rendering /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/templates/rescues/layout.rhtml (500 Internal Error)
+
+
+Processing ConfigurationController#save_station_config (for 127.0.0.1 at 2007-05-16 17:50:55) [POST]
+  Session ID: aea352562e3282e837abdc51f8fbac56
+  Parameters: {"action"=>"save_station_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.15619.0>}
+File basename: station-aabbccddeeff.tar.gz
+Content type: application/octet-stream
+Completed in 0.00354 (282 reqs/sec) | Rendering: 0.00007 (1%) | 200 OK [http://localhost/configuration/save_station_config]
+
+
+Processing ConfigurationController#save_station_config (for 127.0.0.1 at 2007-05-16 17:52:34) [POST]
+  Session ID: 4325ca1a38d06844936acd6a691844d5
+  Parameters: {"action"=>"save_station_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.15726.0>}
+File basename: station-aabbccddeeff.tar.gz
+Content type: application/octet-stream
+Completed in 13.06056 (0 reqs/sec) | Rendering: 0.00015 (0%) | 200 OK [http://localhost/configuration/save_station_config]
+
+
+Processing ConfigurationController#save_station_config (for 127.0.0.1 at 2007-05-16 19:06:35) [POST]
+  Session ID: e53fc22339cfb1d3a0633b57707b4f74
+  Parameters: {"action"=>"save_station_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.18264.0>}
+File basename: station-aabbccddeeff.tar.gz
+Content type: application/octet-stream
+
+
+NoMethodError (undefined method `glob' for #<Pathname:0xb6bb61e0>):
+    /components/inveneo/filelock.rb:42:in `acquire_write_lock'
+    /components/inveneo/filelock.rb:27:in `initialize'
+    /components/inveneo/filelock.rb:9:in `new'
+    /components/inveneo/filelock.rb:9:in `get_write_lock'
+    /app/controllers/configuration_controller.rb:151:in `save_station_config'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:1095:in `send'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:1095:in `perform_action_without_filters'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:632:in `call_filter'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:619:in `perform_action_without_benchmark'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/benchmarking.rb:66:in `perform_action_without_rescue'
+    /usr/lib/ruby/1.8/benchmark.rb:293:in `measure'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/benchmarking.rb:66:in `perform_action_without_rescue'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/rescue.rb:83:in `perform_action'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:430:in `send'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:430:in `process_without_filters'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:624:in `process_without_session_management_support'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/session_management.rb:114:in `process'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:330:in `process'
+    /usr/lib/ruby/gems/1.8/gems/rails-1.2.3/lib/dispatcher.rb:41:in `dispatch'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:78:in `process'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `synchronize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `process'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:618:in `process_client'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `each'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `process_client'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `initialize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `new'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `initialize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `new'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:271:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `each'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:127:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/command.rb:211:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:243
+    /usr/bin/mongrel_rails:16:in `load'
+    /usr/bin/mongrel_rails:16
+
+
+Rendering /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/templates/rescues/layout.rhtml (500 Internal Error)
+
+
+Processing ApplicationController#save_station_config (for 127.0.0.1 at 2007-05-16 19:10:29) [POST]
+  Session ID: bcee1c80e2c78fbfda8f661c0fe9f3bf
+  Parameters: {"action"=>"save_station_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.18412.0>}
+
+
+MissingSourceFile (no such file to load -- dir):
+    /usr/local/lib/site_ruby/1.8/rubygems/custom_require.rb:27:in `gem_original_require'
+    /usr/local/lib/site_ruby/1.8/rubygems/custom_require.rb:27:in `require'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:495:in `require'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:342:in `new_constants_in'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:495:in `require'
+    /components/inveneo/filelock.rb:2
+    /usr/local/lib/site_ruby/1.8/rubygems/custom_require.rb:27:in `gem_original_require'
+    /usr/local/lib/site_ruby/1.8/rubygems/custom_require.rb:27:in `require'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:495:in `require'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:342:in `new_constants_in'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:495:in `require'
+    /app/controllers/configuration_controller.rb:1
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:203:in `load_without_new_constant_marking'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:203:in `load_file'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:342:in `new_constants_in'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:202:in `load_file'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:94:in `require_or_load'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:248:in `load_missing_constant'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:452:in `const_missing'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/dependencies.rb:464:in `const_missing'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/inflector.rb:250:in `constantize'
+    /usr/lib/ruby/gems/1.8/gems/activesupport-1.4.2/lib/active_support/core_ext/string/inflections.rb:148:in `constantize'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/routing.rb:1284:in `recognize'
+    /usr/lib/ruby/gems/1.8/gems/rails-1.2.3/lib/dispatcher.rb:40:in `dispatch'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:78:in `process'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `synchronize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `process'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:618:in `process_client'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `each'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `process_client'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `initialize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `new'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `initialize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `new'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:271:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `each'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:127:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/command.rb:211:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:243
+    /usr/bin/mongrel_rails:16:in `load'
+    /usr/bin/mongrel_rails:16
+
+
+Rendering /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/templates/rescues/layout.rhtml (500 Internal Error)
+
+
+Processing ConfigurationController#save_station_config (for 127.0.0.1 at 2007-05-16 19:11:09) [POST]
+  Session ID: bb93f58b0ccbae26b870524770df49a3
+  Parameters: {"action"=>"save_station_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.18412.1>}
+File basename: station-aabbccddeeff.tar.gz
+Content type: application/octet-stream
+Completed in 0.00332 (300 reqs/sec) | Rendering: 0.00007 (2%) | 200 OK [http://localhost/configuration/save_station_config]
+
+
+Processing ConfigurationController#save_station_config (for 127.0.0.1 at 2007-05-16 19:11:14) [POST]
+  Session ID: 3ff2fc9fffb098d509079de59fa9b706
+  Parameters: {"action"=>"save_station_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.18453.0>}
+File basename: station-aabbccddeeff.tar.gz
+Content type: application/octet-stream
+Completed in 0.00243 (410 reqs/sec) | Rendering: 0.00006 (2%) | 200 OK [http://localhost/configuration/save_station_config]
+
+
+Processing ConfigurationController#get_station_config (for 127.0.0.1 at 2007-05-16 19:11:37) [GET]
+  Session ID: f069705b5e00aec5f6c7babea722cb5a
+  Parameters: {"action"=>"get_station_config", "controller"=>"configuration"}
+Need a valid station MAC address.
+Completed in 0.00095 (1051 reqs/sec) | Rendering: 0.00006 (5%) | 400 Bad Request--config file type invalid [http://localhost/configuration/get_station_config]
+
+
+Processing ConfigurationController#get_station_config (for 127.0.0.1 at 2007-05-16 19:11:45) [GET]
+  Session ID: db285231b929609f97fc01ee7bc6e4ba
+  Parameters: {"action"=>"get_station_config", "id"=>"aabbccddeeff", "controller"=>"configuration"}
+Completed in 0.00247 (404 reqs/sec) | Rendering: 0.00005 (2%) | 200 OK [http://localhost/configuration/get_station_config/aabbccddeeff]
+Streaming file /tmp/tmp_config.18453.0
+
+
+Processing ConfigurationController#save_user_config (for 127.0.0.1 at 2007-05-16 19:12:38) [POST]
+  Session ID: 3883515f45475ccb249ffe3e6e6a4119
+  Parameters: {"action"=>"save_user_config", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.18453.1>}
+Need a valid user name.
+Completed in 0.00112 (890 reqs/sec) | Rendering: 0.00012 (10%) | 400 Bad Request--config file type invalid [http://localhost/configuration/save_user_config]
+
+
+Processing ConfigurationController#save_user_config (for 127.0.0.1 at 2007-05-16 19:13:01) [POST]
+  Session ID: 640c149bd9fe4458f70b90a48be842e2
+  Parameters: {"action"=>"save_user_config", "id"=>"bob", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.18453.2>}
+Username: bob
+File basename: bob.tar.gz
+Content type: application/octet-stream
+
+
+RuntimeError (invalid path: /home/inveneo/ruby/config-server/config/../saved-configuration/user/bob/.locks):
+    /components/inveneo/filelock.rb:39:in `acquire_write_lock'
+    /components/inveneo/filelock.rb:27:in `initialize'
+    /components/inveneo/filelock.rb:9:in `new'
+    /components/inveneo/filelock.rb:9:in `get_write_lock'
+    /app/controllers/configuration_controller.rb:124:in `save_user_config'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:1095:in `send'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:1095:in `perform_action_without_filters'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:632:in `call_filter'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:619:in `perform_action_without_benchmark'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/benchmarking.rb:66:in `perform_action_without_rescue'
+    /usr/lib/ruby/1.8/benchmark.rb:293:in `measure'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/benchmarking.rb:66:in `perform_action_without_rescue'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/rescue.rb:83:in `perform_action'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:430:in `send'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:430:in `process_without_filters'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:624:in `process_without_session_management_support'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/session_management.rb:114:in `process'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:330:in `process'
+    /usr/lib/ruby/gems/1.8/gems/rails-1.2.3/lib/dispatcher.rb:41:in `dispatch'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:78:in `process'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `synchronize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `process'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:618:in `process_client'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `each'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `process_client'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `initialize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `new'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `initialize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `new'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:271:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `each'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:127:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/command.rb:211:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:243
+    /usr/bin/mongrel_rails:16:in `load'
+    /usr/bin/mongrel_rails:16
+
+
+Rendering /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/templates/rescues/layout.rhtml (500 Internal Error)
+
+
+Processing ConfigurationController#save_user_config (for 127.0.0.1 at 2007-05-16 19:14:33) [POST]
+  Session ID: faad3c2ced55dbfcfb4244a8121cafe9
+  Parameters: {"action"=>"save_user_config", "id"=>"bob", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.18453.0>}
+Username: bob
+File basename: bob.tar.gz
+Content type: application/octet-stream
+
+
+RuntimeError (invalid path: /home/inveneo/ruby/config-server/config/../saved-configuration/user/bob.locks):
+    /components/inveneo/filelock.rb:39:in `acquire_write_lock'
+    /components/inveneo/filelock.rb:27:in `initialize'
+    /components/inveneo/filelock.rb:9:in `new'
+    /components/inveneo/filelock.rb:9:in `get_write_lock'
+    /app/controllers/configuration_controller.rb:124:in `save_user_config'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:1095:in `send'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:1095:in `perform_action_without_filters'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:632:in `call_filter'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:619:in `perform_action_without_benchmark'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/benchmarking.rb:66:in `perform_action_without_rescue'
+    /usr/lib/ruby/1.8/benchmark.rb:293:in `measure'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/benchmarking.rb:66:in `perform_action_without_rescue'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/rescue.rb:83:in `perform_action'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:430:in `send'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:430:in `process_without_filters'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:624:in `process_without_session_management_support'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/session_management.rb:114:in `process'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:330:in `process'
+    /usr/lib/ruby/gems/1.8/gems/rails-1.2.3/lib/dispatcher.rb:41:in `dispatch'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:78:in `process'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `synchronize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `process'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:618:in `process_client'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `each'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `process_client'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `initialize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `new'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `initialize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `new'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:271:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `each'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:127:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/command.rb:211:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:243
+    /usr/bin/mongrel_rails:16:in `load'
+    /usr/bin/mongrel_rails:16
+
+
+Rendering /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/templates/rescues/layout.rhtml (500 Internal Error)
+
+
+Processing ConfigurationController#save_user_config (for 127.0.0.1 at 2007-05-16 19:16:33) [POST]
+  Session ID: 32a86a4f1b235861cab4a75da4220a16
+  Parameters: {"action"=>"save_user_config", "id"=>"bob", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.18680.0>}
+Username: bob
+File basename: bob.tar.gz
+Content type: application/octet-stream
+
+
+NoMethodError (undefined method `local_path' for #<Pathname:0xb6ba3fe0>):
+    /app/controllers/configuration_controller.rb:125:in `save_user_config'
+    /components/inveneo/filelock.rb:10:in `get_write_lock'
+    /app/controllers/configuration_controller.rb:124:in `save_user_config'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:1095:in `send'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:1095:in `perform_action_without_filters'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:632:in `call_filter'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:619:in `perform_action_without_benchmark'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/benchmarking.rb:66:in `perform_action_without_rescue'
+    /usr/lib/ruby/1.8/benchmark.rb:293:in `measure'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/benchmarking.rb:66:in `perform_action_without_rescue'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/rescue.rb:83:in `perform_action'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:430:in `send'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:430:in `process_without_filters'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/filters.rb:624:in `process_without_session_management_support'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/session_management.rb:114:in `process'
+    /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/base.rb:330:in `process'
+    /usr/lib/ruby/gems/1.8/gems/rails-1.2.3/lib/dispatcher.rb:41:in `dispatch'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:78:in `process'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `synchronize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/rails.rb:76:in `process'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:618:in `process_client'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `each'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:617:in `process_client'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `initialize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `new'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:736:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `initialize'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `new'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel.rb:720:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:271:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `each'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/configurator.rb:270:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:127:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/lib/mongrel/command.rb:211:in `run'
+    /usr/lib/ruby/gems/1.8/gems/mongrel-1.0.1/bin/mongrel_rails:243
+    /usr/bin/mongrel_rails:16:in `load'
+    /usr/bin/mongrel_rails:16
+
+
+Rendering /usr/lib/ruby/gems/1.8/gems/actionpack-1.13.3/lib/action_controller/templates/rescues/layout.rhtml (500 Internal Error)
+
+
+Processing ConfigurationController#save_user_config (for 127.0.0.1 at 2007-05-16 19:19:34) [POST]
+  Session ID: 4ba7270273e7dce54f56b453046e3d1d
+  Parameters: {"action"=>"save_user_config", "id"=>"bob", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.18680.1>}
+Username: bob
+File basename: bob.tar.gz
+Content type: application/octet-stream
+Completed in 31.73412 (0 reqs/sec) | Rendering: 0.00011 (0%) | 200 OK [http://localhost/configuration/save_user_config/bob]
+
+
+Processing ConfigurationController#save_user_config (for 127.0.0.1 at 2007-05-16 19:20:20) [POST]
+  Session ID: 9265eb595b1e8a4d9a6a01fc314c8b76
+  Parameters: {"action"=>"save_user_config", "id"=>"bob", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.18680.2>}
+Username: bob
+File basename: bob.tar.gz
+Content type: application/octet-stream
+Completed in 0.00404 (247 reqs/sec) | Rendering: 0.00007 (1%) | 200 OK [http://localhost/configuration/save_user_config/bob]
+
+
+Processing ConfigurationController#get_user_config (for 127.0.0.1 at 2007-05-16 19:20:41) [GET]
+  Session ID: 93b2d8220ea5290525f732d921b1b418
+  Parameters: {"action"=>"get_user_config", "id"=>"bob", "controller"=>"configuration"}
+Completed in 0.00441 (226 reqs/sec) | Rendering: 0.00029 (6%) | 200 OK [http://localhost/configuration/get_user_config/bob]
+Streaming file /tmp/tmp_config.18680.0
+
+
+Processing ConfigurationController#save_user_config (for 127.0.0.1 at 2007-05-16 19:21:58) [POST]
+  Session ID: da0ea1603dd8e4cde032bb983b72f120
+  Parameters: {"action"=>"save_user_config", "id"=>"bob", "controller"=>"configuration", "config_file"=>#<File:/tmp/CGI.18680.0>}
+Username: bob
+File basename: bob.tar.gz
+Content type: application/octet-stream
+Completed in 0.21937 (4 reqs/sec) | Rendering: 0.00009 (0%) | 200 OK [http://localhost/configuration/save_user_config/bob]
+
+
+Processing ConfigurationController#get_user_config (for 127.0.0.1 at 2007-05-16 19:22:23) [GET]
+  Session ID: 0b86b88530bbdada9f236ce822cefd24
+  Parameters: {"action"=>"get_user_config", "id"=>"bob", "controller"=>"configuration"}
+Completed in 0.12538 (7 reqs/sec) | Rendering: 0.00008 (0%) | 200 OK [http://localhost/configuration/get_user_config/bob]
+Streaming file /tmp/tmp_config.18680.1
+
+
+Processing ConfigurationController#get_user_config (for 127.0.0.1 at 2007-05-16 19:23:49) [GET]
+  Session ID: 39f4f3d230f9daab2eddcbe4a625fcc0
+  Parameters: {"action"=>"get_user_config", "id"=>"bob", "controller"=>"configuration"}
+Completed in 0.14868 (6 reqs/sec) | Rendering: 0.00008 (0%) | 200 OK [http://localhost/configuration/get_user_config/bob]
+Streaming file /tmp/tmp_config.18680.2
