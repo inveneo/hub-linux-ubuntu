@@ -13,14 +13,17 @@ ActionController::Routing::Routes.draw do |map|
   # -- just remember to delete public/index.html.
   # map.connect '', :controller => "welcome"
 
-  map.connect '/version', :controller => 'configuration', :action => 'version'
+  map.connect '', :controller => 'configuration', :action=>'version'
+  map.connect '/version.:format', :controller => 'configuration', :action=>'version'
 
-  map.connect '/version.:format', :controller => 'configuration', :action => 'version'
+  # just one controller
+  map.connect '/:action/:id',  :controller=>'configuration', :id=>nil
+  map.connect '/:action/:id.:format' , :controller => 'configuration' 
 
 
   # Allow downloading Web Service WSDL as a file with an extension
   # instead of a file named 'wsdl'
-  map.connect ':controller/service.wsdl', :action => 'wsdl'
+  # map.connect ':controller/service.wsdl', :action => 'wsdl'
 
   # Install the default route as the lowest priority.
   map.connect ':controller/:action/:id.:format'
