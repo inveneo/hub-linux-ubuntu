@@ -8,21 +8,38 @@ php5-mysql	install
 freeradius	install
 freeradius-mysql	install
 phpmyadmin	install
+
+# for Rails
+sqlite3 install 
+
+# for Gem compilation of ruby interface libs
+libsqlite3-dev install 
+
 squid3	install
 squid-cgi	install
-rails	install
-ruby	install
+#rails	instal--install from GEM for latest version
+ruby1.8	install
 ruby1.8-dev	install
-rubygems	install
+
+# for gem compilation of ruby libs
+swig	install 
+# rubygems	install--need to install from source for latest version
 libnss-mdns	install
 dhcp3-server	install
 samba	install
 sambaldap-tools	install
-sqlite3	install
-libdbd-mysql-ruby	install
-libdbd-sqlite3-ruby	install
+#libdbd-mysql-ruby	install-- handle though gem
+#libdbd-sqlite3-ruby	install--handle through gem
 avahi-utils	install
 libpam-ldap	install
 ldapscripts	install
 subversion	install
-mdns-scan 	install
+# mdns-scan 	install--use avahi-utils for avahi-browser instead!
+
+
+# Ruby Gem packages--noted here for completeness, but currently installed manually
+# rails-dependcies: rake, activesupport, activerecord, actionpack, actionmailer, actionwebservice, sqlite3-ruby
+# rails
+# mongrel dependencies: fastthread, cgi_multipart_eof_fix
+# mongrel
+ 
