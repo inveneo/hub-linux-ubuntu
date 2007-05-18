@@ -7,6 +7,20 @@ class ConfigurationController < ApplicationController
   @@SHARED_STATION_CONFIG_LOCKS_PATH=Pathname.new("#{RAILS_ROOT}/saved-configuration/station/station.locks")
   @@USER_CONFIG_PATH=Pathname.new("#{RAILS_ROOT}/saved-configuration/user")
 
+  @@SERVER_VERSION="1.0.0"
+
+  def ConfigurationController.get_server_version
+    @@SERVER_VERSION
+  end
+
+  def version
+    respond_to do |format| 
+      format.html  { render :action => 'version' }
+      format.xml { render :xml => "<configuration-server><version>#{@@SERVER_VERSION}</version></configuration-server>" } 
+      format.text { render :text => @@SERVER_VERSION } 
+    end 
+  end
+
   def get_user_config
     # to be safe, we get a read lock, copy the file to /tmp, release the lock, use send_file to send it
     # it's a little ugly, but the actual data isn't sent until this method returns so there is no 
