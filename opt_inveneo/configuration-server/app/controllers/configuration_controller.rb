@@ -102,6 +102,12 @@ class ConfigurationController < ApplicationController
     user=params[:id].strip
     config_file=params['config_file']
 
+    if config_file.nil?
+      logger.error("No config file found")
+      render :nothing=>true, :status=>@@BAD_FILE_TYPE
+      return
+    end
+
     # convert to basename in case browser sends full client-side path
     basename=Pathname.new(config_file.original_filename).basename.to_s.strip
     content_type=config_file.content_type().strip # for some reason this has a ^M on the end!
@@ -120,7 +126,7 @@ class ConfigurationController < ApplicationController
     lock_path=@@USER_CONFIG_PATH+(user+".locks")
     local_config_file=@@USER_CONFIG_PATH+(user+".tar.gz")
     Inveneo::FileLock.get_write_lock(lock_path) {
-      FileUtils.copy(config_file.local_path, local_config_file)
+      save_posted_file(config_file, local_config_file)
     }
    
     render :nothing=>true
@@ -128,6 +134,12 @@ class ConfigurationController < ApplicationController
 
   def save_station_config
     config_file=params['config_file']
+
+    if config_file.nil?
+      logger.error("No config file found")
+      render :nothing=>true, :status=>@@BAD_FILE_TYPE
+      return
+    end
 
     # convert to basename in case browser sends full client-side path
     basename=Pathname.new(config_file.original_filename).basename.to_s.strip
@@ -147,9 +159,25 @@ class ConfigurationController < ApplicationController
     # so first thing is to make sure there are no locks present which 
     # would indicate that someone else is reading or writing the image file
     Inveneo::FileLock.get_write_lock(@@SHARED_STATION_CONFIG_LOCKS_PATH) {
-      FileUtils.copy(config_file.local_path, @@SHARED_STATION_CONFIG_FILE)
+      save_posted_file(config_file, @@SHARED_STATION_CONFIG_FILE)
     }
    
     render :nothing=>true
+  end
+
+  private
+  
+  # wow this sucks, file may be one of TWO kinds of objects
+  # so we have to save them differently
+  def save_posted_file(src, dest)
+    if src.local_path().blank?
+      # copy bits from stream
+      File.open(dest,"wb") {|file|
+        file.write(src.read)
+      }
+    else
+      # shortcut and just copy it from local file
+      FileUtils.copy(src.local_path, dest)
+    end
   end
 end
