@@ -15,6 +15,7 @@
 
   <service protocol="ipv4">
     <type>_inv-stat-conf._tcp</type>
+    <domain-name>local</domain-name>
     <port>8090</port>
   </service>
 
