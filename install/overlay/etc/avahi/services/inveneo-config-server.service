@@ -14,8 +14,8 @@
   <name>Inveneo Workstation Configuration Service</name>
 
   <service protocol="ipv4">
-    <type>_org-inveneo-configuration._tcp</type>
-    <port>8088</port>
+    <type>_inv-stat-conf._tcp</type>
+    <port>8090</port>
   </service>
 
 </service-group>
