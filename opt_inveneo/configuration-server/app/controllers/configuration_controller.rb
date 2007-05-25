@@ -111,14 +111,14 @@ class ConfigurationController < ApplicationController
     %x{echo #{host_name_for(params[:id])} > #{temp_file}.dir/etc/hostname}
     
     # 2. unzip and add to archive
-    %x{zcat #{temp_file} > #{tmp_file}.tar}
+    %x{zcat #{temp_file} > #{temp_file}.tar}
     %x{tar -rf #{temp_file}.tar #{temp_file}.dir/etc}
     
     # 3. gzip and move back to place
-    %x{gzip -c #{tmp_file}.tar > #{tmp_file}}
+    %x{gzip -c #{temp_file}.tar > #{temp_file}}
     
     # 4. Clean up
-    %x{rm -rf #{temp_file}.dir #{tmp_file}.tar}
+    %x{rm -rf #{temp_file}.dir #{temp_file}.tar}
 
     send_file(temp_file, :stream=>true)
 
