@@ -116,7 +116,9 @@ class ConfigurationController < ApplicationController
     %x{echo "#{host_name_for(params[:id])}" > #{temp_dir}/etc/hostname}
     
     # 3. tar it back into place
+    puts temp_dir
     Dir.chdir(temp_dir) {
+        %x{touch GOT_HERE}
         %x{tar -cvzf #{temp_file} *}
     }
     
