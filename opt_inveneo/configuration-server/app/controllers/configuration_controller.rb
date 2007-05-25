@@ -110,12 +110,15 @@ class ConfigurationController < ApplicationController
     %x{mkdir -p #{temp_file}.dir}
   
     # 2. unzip and add to archive
-    %x{tar -C #{temp_file}.dir -xvzf #{temp_file}}
-    %x{mkdir -p #{temp_file}.dir/etc}
-    %x{echo "#{host_name_for(params[:id])}" > #{temp_file}.dir/etc/hostname}
+    temp_dir="#{temp_file}.dir"
+    %x{tar -C #{temp_dir} -xvzf #{temp_file}}
+    %x{mkdir -p #{temp_dir}/etc}
+    %x{echo "#{host_name_for(params[:id])}" > #{temp_dir}/etc/hostname}
     
     # 3. tar it back into place
-    %x{pushd #{temp_file}.dir ; tar -cvzf #{temp_file} * ; popd}
+    Dir.chdir(temp_dir) {
+        %x{tar -cvzf #{temp_file} *}
+    }
     
     # 4. Clean up
     #%x{rm -rf #{temp_file}.dir #{temp_file}.tar}
