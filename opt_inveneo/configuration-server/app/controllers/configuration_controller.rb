@@ -108,7 +108,7 @@ class ConfigurationController < ApplicationController
     
     # 1. generate hostname file
     %x{mkdir -p #{temp_file}.dir/etc}
-    %x{echo #{host_name_for(params[:id])} > #{temp_file}.dir/etc/hostname}
+    %x{echo "#{host_name_for(params[:id])}" > #{temp_file}.dir/etc/hostname}
     
     # 2. unzip and add to archive
     %x{zcat #{temp_file} > #{temp_file}.tar}
