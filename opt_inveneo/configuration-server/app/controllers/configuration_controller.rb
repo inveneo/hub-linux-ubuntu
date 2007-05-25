@@ -118,7 +118,7 @@ class ConfigurationController < ApplicationController
     %x{gzip -c #{temp_file}.tar > #{temp_file}}
     
     # 4. Clean up
-    %x{rm -rf #{temp_file}.dir #{temp_file}.tar}
+    #%x{rm -rf #{temp_file}.dir #{temp_file}.tar}
 
     send_file(temp_file, :stream=>true)
 
