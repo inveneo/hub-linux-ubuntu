@@ -121,7 +121,7 @@ class ConfigurationController < ApplicationController
     }
     
     # 4. Clean up
-    #%x{rm -rf #{temp_file}.dir #{temp_file}.tar}
+    %x{rm -rf #{temp_dir} #{temp_file}.tar}
 
     send_file(temp_file, :stream=>true)
 
