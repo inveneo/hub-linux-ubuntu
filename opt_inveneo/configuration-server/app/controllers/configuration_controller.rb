@@ -115,7 +115,7 @@ class ConfigurationController < ApplicationController
     %x{echo "#{host_name_for(params[:id])}" > #{temp_file}.dir/etc/hostname}
     
     # 3. tar it back into place
-    %x{tar -C #{temp_file}.dir -cvzf #{temp_file} *}
+    %x{pushd #{temp_file}.dir ; tar -cvzf #{temp_file} * ; popd}
     
     # 4. Clean up
     #%x{rm -rf #{temp_file}.dir #{temp_file}.tar}
