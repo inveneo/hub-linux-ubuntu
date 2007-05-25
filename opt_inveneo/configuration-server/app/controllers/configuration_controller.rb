@@ -13,6 +13,11 @@ class ConfigurationController < ApplicationController
     @@SERVER_VERSION
   end
 
+  def host_name_for(mac)
+      # TODO: read hostname prefix value
+      "station-#{mac}"
+  end
+  
   def version
     respond_to do |format| 
       format.html  { render :action => 'version' }
@@ -96,6 +101,24 @@ class ConfigurationController < ApplicationController
     Inveneo::FileLock.get_read_lock(lock_path) {
       FileUtils.copy(local_config_file, temp_file)
     }
+    
+    #
+    # add etc/hostname to the arhive--it means unzipping, adding, rezipping
+    #
+    
+    # 1. generate hostname file
+    %x{mkdir -p #{temp_file}.dir/etc}
+    %x{echo #{host_name_for(params[:id])} > #{temp_file}.dir/etc/hostname}
+    
+    # 2. unzip and add to archive
+    %x{zcat #{temp_file} > #{tmp_file}.tar}
+    %x{tar -rf #{temp_file}.tar #{temp_file}.dir/etc}
+    
+    # 3. gzip and move back to place
+    %x{gzip -c #{tmp_file}.tar > #{tmp_file}}
+    
+    # 4. Clean up
+    %x{rm -rf #{temp_file}.dir #{tmp_file}.tar}
 
     send_file(temp_file, :stream=>true)
 
