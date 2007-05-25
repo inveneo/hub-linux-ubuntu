@@ -107,15 +107,15 @@ class ConfigurationController < ApplicationController
     #
     
     # 1. generate hostname file
-    %x{mkdir -p #{temp_file}.dir/etc}
+    %x{mkdir -p #{temp_file}.dir}
+  
+    # 2. unzip and add to archive
+    %x{tar -C #{temp_file}.dir -xvzf #{temp_file}}
+    %x{mkdir =p #{temp_file}.dir/etc}
     %x{echo "#{host_name_for(params[:id])}" > #{temp_file}.dir/etc/hostname}
     
-    # 2. unzip and add to archive
-    %x{zcat #{temp_file} > #{temp_file}.tar}
-    %x{tar -C #{temp_file}.dir -rf #{temp_file}.tar etc}
-    
-    # 3. gzip and move back to place
-    %x{gzip -c #{temp_file}.tar > #{temp_file}}
+    # 3. tar it back into place
+    %x{tar -C #{temp_file}.dir -cvzf #{temp_file} *}
     
     # 4. Clean up
     #%x{rm -rf #{temp_file}.dir #{temp_file}.tar}
