@@ -112,7 +112,7 @@ class ConfigurationController < ApplicationController
     
     # 2. unzip and add to archive
     %x{zcat #{temp_file} > #{temp_file}.tar}
-    %x{tar -rf #{temp_file}.tar #{temp_file}.dir/etc}
+    %x{tar -C #{temp_file}.dir -rf #{temp_file}.tar etc}
     
     # 3. gzip and move back to place
     %x{gzip -c #{temp_file}.tar > #{temp_file}}
