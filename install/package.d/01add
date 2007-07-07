@@ -12,18 +12,17 @@ sysv-rc-conf install
 
 # for Rails
 sqlite3 install 
-
-# for Gem compilation of ruby interface libs
 libsqlite3-dev install
 build-essential install
+ruby1.8	install
+ruby1.8-dev	install
+ri	install
+swig	install 
+
+#
 
 squid3	install
 squid-cgi	install
-ruby1.8	install
-ruby1.8-dev	install
-
-# for gem compilation of ruby libs
-swig	install 
 libnss-mdns	install
 dhcp3-server	install
 samba	install
