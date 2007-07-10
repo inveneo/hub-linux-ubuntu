@@ -27,7 +27,7 @@ do_start () {
     
     if [ -d "${SHARES_D}" ]
 	then
-	for f in "${SHARES_D}"/*
+	for f in "${SHARES_D}"/*.conf
 	  do
 	  echo "include = $f" >> "${SHARES_CONF}"
 	done
