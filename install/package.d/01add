@@ -20,12 +20,13 @@ ruby1.8-dev	install
 ri	install
 swig	install 
 
-#
+# For Jeff's sanity
+emacs-nox
 
+# services
 squid3	install
 squid-cgi	install
 libnss-mdns	install
-dhcp3-server	install
 samba	install
 sambaldap-tools	install
 avahi-utils	install
@@ -36,9 +37,10 @@ subversion	install
 
 
 # Ruby Gem packages--noted here for completeness, but currently installed manually
-# GEMS, install directly from source!
-# rails-dependcies: rake, activesupport, activerecord, actionpack, actionmailer, actionwebservice, sqlite3-ruby
+# GEMS, install directly from source! 
+# rails manual dependcies: rake, sqlite3-ruby
+# rails auto-installed dependencies:  activesupport, activerecord, actionpack, actionmailer, actionwebservice
 # rails
-# mongrel dependencies: fastthread, cgi_multipart_eof_fix
+# mongrel auto-installed dependencies: fastthread, cgi_multipart_eof_fix
 # mongrel
  
