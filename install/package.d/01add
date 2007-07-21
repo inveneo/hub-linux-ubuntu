@@ -10,6 +10,7 @@ freeradius-mysql	install
 phpmyadmin	install
 sysv-rc-conf install
 dnsmasq	install
+screen install
 
 # for Rails
 sqlite3 install 
