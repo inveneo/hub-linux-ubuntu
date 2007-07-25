@@ -1,41 +1,48 @@
+# core system
 ssh	install
-apache2 	install
-slapd	install
 php5	install
-mysql-server-5.0   	install
 php5-ldap	install
 php5-mysql	install
-freeradius	install
-freeradius-mysql	install
 phpmyadmin	install
 sysv-rc-conf install
-dnsmasq	install
 screen install
+libnss-mdns
 
 # for Rails
 sqlite3 install 
-libsqlite3-dev install
-build-essential install
 ruby1.8	install
-ruby1.8-dev	install
-ri	install
-swig	install 
 
 # For Jeff's sanity
 emacs-nox
 
 # services
+dnsmasq	install
+apache2 	install
 squid3	install
 squid-cgi	install
 libnss-mdns	install
 samba	install
-sambaldap-tools	install
 avahi-utils	install
+mysql-server-5.0   	install
+#freeradius	install
+#freeradius-mysql	install
+
+# ldap
 libpam-ldap	install
 ldapscripts	install
+sambaldap-tools	install
+slapd	install
+libnss-ldap	install
+phpldapadmin install
+
+
+# dev, not needed in production
 subversion	install
-
-
+ri	install
+swig	install
+libsqlite3-dev install
+build-essential install
+ruby1.8-dev	install
 
 # Ruby Gem packages--noted here for completeness, but currently installed manually
 # GEMS, install directly from source! 
