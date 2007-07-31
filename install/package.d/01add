@@ -6,14 +6,15 @@ php5-mysql	install
 phpmyadmin	install
 sysv-rc-conf install
 screen install
-libnss-mdns
+libnss-mdns install
+ntp install
 
 # for Rails
 sqlite3 install 
 ruby1.8	install
 
 # For Jeff's sanity
-emacs-nox
+emacs-nox   install
 
 # services
 dnsmasq	install
