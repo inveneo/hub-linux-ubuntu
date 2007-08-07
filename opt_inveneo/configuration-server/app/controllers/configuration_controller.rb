@@ -243,7 +243,7 @@ class ConfigurationController < ApplicationController
     logger.info("Content type: #{content_type}")
 
     # check file type
-    if content_type != "application/plain" || basename !="initial-config.conf"
+    if content_type != "text/plain" || basename !="initial-config.conf"
       logger.error("#{@@BAD_FILE_TYPE}: #{basename}, #{content_type}")
       render :nothing=>true, :status=>@@BAD_FILE_TYPE
       return
