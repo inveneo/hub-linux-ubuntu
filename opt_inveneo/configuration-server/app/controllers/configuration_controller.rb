@@ -4,7 +4,7 @@ class ConfigurationController < ApplicationController
 
   # Constants
   @@SHARED_STATION_CONFIG_FILE=Pathname.new("#{RAILS_ROOT}/saved-configuration/station/station-shared.tar.gz")
-  @@SHARED_STATION_CONFIG_LOCKS_PATH=Pathname.new("#{RAILS_ROOT}/saved-configuration/station/station.locks")
+  @@SHARED_STATION_INITIAL_CONFIG_FILE=Pathname.new("#{RAILS_ROOT}/saved-configuration/station/initial-config-shared.conf")
   @@USER_CONFIG_PATH=Pathname.new("#{RAILS_ROOT}/saved-configuration/user")
 
   @@SERVER_VERSION="1.0.0"
@@ -43,7 +43,6 @@ class ConfigurationController < ApplicationController
 
     user=params[:id]
 
-    lock_path=@@USER_CONFIG_PATH+(user+".locks")
     local_config_file=@@USER_CONFIG_PATH+(user+".tar.gz")
 
     if !local_config_file.exist?
@@ -57,8 +56,10 @@ class ConfigurationController < ApplicationController
     temp_file=tmp.path
     tmp.close!
 
-    Inveneo::FileLock.get_read_lock(lock_path) {
+    File.open(local_config_file+".lock", "a+") { |lock|
+      lock.flock(File::LOCK_EX)
       FileUtils.copy(local_config_file, temp_file)
+      lock.flock(File::LOCK_UN)
     }
 
     send_file(temp_file, :stream=>true)
@@ -84,7 +85,6 @@ class ConfigurationController < ApplicationController
 
     # station=params[:id]
 
-    lock_path=@@SHARED_STATION_CONFIG_LOCKS_PATH
     local_config_file=@@SHARED_STATION_CONFIG_FILE
 
     if !local_config_file.exist?
@@ -97,35 +97,51 @@ class ConfigurationController < ApplicationController
     tmp=Tempfile.new("tmp_config")
     temp_file=tmp.path
     tmp.close!
-
-    Inveneo::FileLock.get_read_lock(lock_path) {
-      FileUtils.copy(local_config_file, temp_file)
-    }
+   
+   File.open(local_config_file+".lock", "a+") { |lock|
+     lock.flock(File::LOCK_EX)
+     FileUtils.copy(local_config_file, temp_file)
+     lock.flock(File::LOCK_UN)
+   }
     
-    #
-    # add etc/hostname to the arhive--it means unzipping, adding, rezipping
-    #
-    
-    # 1. generate hostname file
-    %x{mkdir -p #{temp_file}.dir}
-  
-    # 2. unzip and add to archive
-    temp_dir="#{temp_file}.dir"
-    %x{tar -C #{temp_dir} -xvzf #{temp_file}}
-    %x{mkdir -p #{temp_dir}/etc}
-    %x{echo "#{host_name_for(params[:id])}" > #{temp_dir}/etc/hostname}
-    
-    # 3. tar it back into place
-    Dir.chdir(temp_dir) {
-        %x{tar -cvzf #{temp_file} *}
-    }
-    
-    # 4. Clean up
-    %x{rm -rf #{temp_dir} #{temp_file}.tar}
-
     send_file(temp_file, :stream=>true)
 
     # NOTE: Can't erase temp_file, it's not sent yet! Needs to be a cleanup routine    
+  end
+  
+  def get_station_initial_config
+      # see if we have an :id
+      # TODO: Set-up restricted request routing so Rails enforces id
+      if params[:id].blank? || params[:id] !~ %r{^[a-f0-9]{12}$}
+        logger.error("Need a valid station MAC address.")
+        render :nothing=>true, :status=>@@BAD_FILE_TYPE
+        return
+      end
+
+      # station=params[:id]
+
+      local_config_file=@@SHARED_STATION_INITIAL_CONFIG_FILE
+
+      if !local_config_file.exist?
+        logger.warn("No config file found: #{local_config_file}")
+        render :nothing=>true, :status=>@@NOT_FOUND
+        return
+      end
+
+      # get a tempfile name, TODO: make this a mixin utility function on Tempfile
+      tmp=Tempfile.new("tmp_config")
+      temp_file=tmp.path
+      tmp.close!
+
+     File.open(local_config_file+".lock", "a+") { |lock|
+       lock.flock(File::LOCK_EX)
+       FileUtils.copy(local_config_file, temp_file)
+       lock.flock(File::LOCK_UN)
+     }
+
+      send_file(temp_file, :stream=>true)
+
+      # NOTE: Can't erase temp_file, it's not sent yet! Needs to be a cleanup routine    
   end
   
   def save_user_config
@@ -163,10 +179,12 @@ class ConfigurationController < ApplicationController
       return
     end
     
-    lock_path=@@USER_CONFIG_PATH+(user+".locks")
     local_config_file=@@USER_CONFIG_PATH+(user+".tar.gz")
-    Inveneo::FileLock.get_write_lock(lock_path) {
+    
+    File.open(local_config_file+".lock", "a+") { |lock|
+      lock.flock(File::LOCK_EX)
       save_posted_file(config_file, local_config_file)
+      lock.flock(File::LOCK_UN)
     }
    
     render :nothing=>true
@@ -198,8 +216,47 @@ class ConfigurationController < ApplicationController
     # For now we only save ONE machine config and it overrides all others
     # so first thing is to make sure there are no locks present which 
     # would indicate that someone else is reading or writing the image file
-    Inveneo::FileLock.get_write_lock(@@SHARED_STATION_CONFIG_LOCKS_PATH) {
+    
+    File.open(@@SHARED_STATION_CONFIG_FILE+".lock", "a+") { |lock|
+      lock.flock(File::LOCK_EX)
       save_posted_file(config_file, @@SHARED_STATION_CONFIG_FILE)
+      lock.flock(File::LOCK_UN)
+    }
+   
+    render :nothing=>true
+  end
+  
+  def save_station_initial_config
+    config_file=params['config_file']
+
+    if config_file.nil?
+      logger.error("No config file found")
+      render :nothing=>true, :status=>@@BAD_FILE_TYPE
+      return
+    end
+
+    # convert to basename in case browser sends full client-side path
+    basename=Pathname.new(config_file.original_filename).basename.to_s.strip
+    content_type=config_file.content_type().strip # for some reason this has a ^M on the end!
+
+    logger.info("File basename: #{basename}")
+    logger.info("Content type: #{content_type}")
+
+    # check file type
+    if content_type != "application/plain" || basename !="initial-config.conf"}
+      logger.error("#{@@BAD_FILE_TYPE}: #{basename}, #{content_type}")
+      render :nothing=>true, :status=>@@BAD_FILE_TYPE
+      return
+    end
+    
+    # For now we only save ONE machine config and it overrides all others
+    # so first thing is to make sure there are no locks present which 
+    # would indicate that someone else is reading or writing the image file
+    
+    File.open(@@SHARED_STATION_INITIAL_CONFIG_FILE+".lock", "a+") { |lock|
+      lock.flock(File::LOCK_EX)
+      save_posted_file(config_file, @@SHARED_STATION_INITIAL_CONFIG_FILE)
+      lock.flock(File::LOCK_UN)
     }
    
     render :nothing=>true
