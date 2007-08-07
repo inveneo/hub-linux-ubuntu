@@ -56,7 +56,7 @@ class ConfigurationController < ApplicationController
     temp_file=tmp.path
     tmp.close!
 
-    File.open(local_config_file+".lock", "a+") { |lock|
+    File.open(local_config_file.to_s()+".lock", "a+") { |lock|
       lock.flock(File::LOCK_EX)
       FileUtils.copy(local_config_file, temp_file)
       lock.flock(File::LOCK_UN)
@@ -98,7 +98,7 @@ class ConfigurationController < ApplicationController
     temp_file=tmp.path
     tmp.close!
    
-   File.open(local_config_file+".lock", "a+") { |lock|
+   File.open(local_config_file.to_s()+".lock", "a+") { |lock|
      lock.flock(File::LOCK_EX)
      FileUtils.copy(local_config_file, temp_file)
      lock.flock(File::LOCK_UN)
@@ -133,7 +133,7 @@ class ConfigurationController < ApplicationController
       temp_file=tmp.path
       tmp.close!
 
-     File.open(local_config_file+".lock", "a+") { |lock|
+     File.open(local_config_file.to_s()+".lock", "a+") { |lock|
        lock.flock(File::LOCK_EX)
        FileUtils.copy(local_config_file, temp_file)
        lock.flock(File::LOCK_UN)
@@ -181,7 +181,7 @@ class ConfigurationController < ApplicationController
     
     local_config_file=@@USER_CONFIG_PATH+(user+".tar.gz")
     
-    File.open(local_config_file+".lock", "a+") { |lock|
+    File.open(local_config_file.to_s()+".lock", "a+") { |lock|
       lock.flock(File::LOCK_EX)
       save_posted_file(config_file, local_config_file)
       lock.flock(File::LOCK_UN)
@@ -217,7 +217,7 @@ class ConfigurationController < ApplicationController
     # so first thing is to make sure there are no locks present which 
     # would indicate that someone else is reading or writing the image file
     
-    File.open(@@SHARED_STATION_CONFIG_FILE+".lock", "a+") { |lock|
+    File.open(@@SHARED_STATION_CONFIG_FILE.to_s()+".lock", "a+") { |lock|
       lock.flock(File::LOCK_EX)
       save_posted_file(config_file, @@SHARED_STATION_CONFIG_FILE)
       lock.flock(File::LOCK_UN)
@@ -253,7 +253,7 @@ class ConfigurationController < ApplicationController
     # so first thing is to make sure there are no locks present which 
     # would indicate that someone else is reading or writing the image file
     
-    File.open(@@SHARED_STATION_INITIAL_CONFIG_FILE+".lock", "a+") { |lock|
+    File.open(@@SHARED_STATION_INITIAL_CONFIG_FILE.to_s()+".lock", "a+") { |lock|
       lock.flock(File::LOCK_EX)
       save_posted_file(config_file, @@SHARED_STATION_INITIAL_CONFIG_FILE)
       lock.flock(File::LOCK_UN)
