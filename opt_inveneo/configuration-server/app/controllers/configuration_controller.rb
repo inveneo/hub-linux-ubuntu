@@ -334,7 +334,7 @@ class ConfigurationController < ApplicationController
 
 
     # Try to retrieve a record for the given mac
-    config = InitialConfig.find(:first, :conditions => "mac = ?", mac) 
+    config = InitialConfig.find(:first, :conditions => [ "mac = ?", mac ]) 
     
     if config.nil?
       config=InitialConfig.new(values)
@@ -350,7 +350,7 @@ class ConfigurationController < ApplicationController
     # Now save it to defaults
     values[:mac]=InitialConfig::DEFAULT_MAC
 
-    config = InitialConfig.find(:first, :conditions => "mac = ?", InitialConfig::DEFAULT_MAC) 
+    config = InitialConfig.find(:first, :conditions => [ "mac = ?", InitialConfig::DEFAULT_MAC ]) 
     
     if config.nil?
       config=InitialConfig.new(values)
