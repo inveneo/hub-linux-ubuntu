@@ -1,5 +1,5 @@
 class ConfigurationController < ApplicationController
-  @@BAD_FILE_TYPE="400 Bad Request--config file type invalid"
+  @@BAD_FILE_TYPE="400 Bad Request--config file type or name invalid"
   @@NOT_FOUND="404 Not Found"
 
   # Constants
@@ -207,7 +207,7 @@ class ConfigurationController < ApplicationController
     logger.info("Content type: #{content_type}")
 
     # check file type
-    if content_type != "application/octet-stream" || basename !~ %r{^station-[a-f0-9]{12}\.tar\.gz$}
+    if content_type != "application/octet-stream" || basename != "station.tar.gz"
       logger.error("#{@@BAD_FILE_TYPE}: #{basename}, #{content_type}")
       render :nothing=>true, :status=>@@BAD_FILE_TYPE
       return
@@ -310,7 +310,8 @@ class ConfigurationController < ApplicationController
       return
     end
 	
-    # create an InitialConfig 
+    # read file into a Hash
+    # TODO: Move into InitialCOnfig
     line_match=/^\s*([a-zA-Z0-9_]+)="\s*(.+?)\s*".*$/
     values= { :mac => params[:id] }
     config_file.each_line { |line|
@@ -318,26 +319,46 @@ class ConfigurationController < ApplicationController
       
       # continue if not valid line
       next if match.nil?
-
+      
       logger.info("Found config value: #{match[1]} => #{match[2]}")
-
+      
       # now set values
       key= CONFIG_VALUES[match[1]]
       if key.blank? 
         logger.warn("Unrecognized config key: #{match[1]}")
         next
       end
-        
+      
       values[key]=match[2]
     }
-    config=InitialConfig.new(values)
-    
-    # save it
-    config.save()
 
-    # now change mac to 'default' to save as default
-    config.mac="default"
-    config.save()
+
+    # Try to retrieve a record for the given mac
+    config = InitialConfig.find(:first, :conditions => "mac = ?", mac) 
+    
+    if config.nil?
+      config=InitialConfig.new(values)
+    else
+      config.attributes=values;
+    end
+  
+    logger.debug("Config to save:\n #{config.to_yaml()}")
+
+    # save it
+    config.save!()
+
+    # Now save it to defaults
+    values[:mac]=InitialConfig::DEFAULT_MAC
+
+    config = InitialConfig.find(:first, :conditions => "mac = ?", InitialConfig::DEFAULT_MAC) 
+    
+    if config.nil?
+      config=InitialConfig.new(values)
+    else
+      config.attributes=values;
+    end
+    
+    config.save!()
 
     render :nothing=>true
   end
