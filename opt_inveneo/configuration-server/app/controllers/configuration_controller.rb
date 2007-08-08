@@ -248,7 +248,8 @@ class ConfigurationController < ApplicationController
       render :nothing=>true, :status=>@@BAD_FILE_TYPE
       return
     end
-    
+
+
     # For now we only save ONE machine config and it overrides all others
     # so first thing is to make sure there are no locks present which 
     # would indicate that someone else is reading or writing the image file
@@ -259,6 +260,85 @@ class ConfigurationController < ApplicationController
       lock.flock(File::LOCK_UN)
     }
    
+    render :nothing=>true
+  end
+
+
+  # Map for config values
+  CONFIG_VALUES={ "INV_TIME_ZONE" => :timezone,
+		  "INV_HOSTNAME" => :hostname,
+		  "INV_NTP_ON" => :ntp_on,
+		  "INV_NTP_SERVERS" => :ntp_servers,
+		  "INV_PROXY_ON" => :proxy_on,
+		  "INV_HTTP_PROXY" => :http_proxy,
+		  "INV_HTTPS_PROXY" => :https_proxy,
+		  "INV_FTP_PROXY" => :ftp_proxy,
+		  "INV_PHONE_HOME_ON" => :phone_home_on,
+		  "INV_PHONE_HOME_REG_URL" => :phone_home_reg,
+		  "INV_PHONE_HOME_CHECKIN_URL" => :phone_home_checkin,
+		  "INV_LOCALE" => :locale
+		}
+
+  def save_station_initial_config_db
+    config_file=params['config_file']
+
+    mac = params[:id]
+
+    if config_file.nil?
+      logger.error("No config file found")
+      render :nothing=>true, :status=>@@BAD_FILE_TYPE
+      return
+    end
+
+    if mac.blank?
+      logger.error("Need a valid station mac address.")
+      render :nothing=>true, :status=>@@BAD_FILE_TYPE
+      return
+    end
+
+    # convert to basename in case browser sends full client-side path
+    basename=Pathname.new(config_file.original_filename).basename.to_s.strip
+    content_type=config_file.content_type().strip # for some reason this has a ^M on the end!
+
+    logger.info("File basename: #{basename}")
+    logger.info("Content type: #{content_type}")
+
+    # check file type
+    if content_type != "text/plain" || basename !="initial-config.conf"
+      logger.error("#{@@BAD_FILE_TYPE}: #{basename}, #{content_type}")
+      render :nothing=>true, :status=>@@BAD_FILE_TYPE
+      return
+    end
+	
+    # create an InitialConfig 
+    line_match=/^\s*([a-zA-Z0-9_]+)="\s*(.+?)\s*".*$/
+    values= { :mac => params[:id] }
+    config_file.each_line { |line|
+      match=line_match.match(line)
+      
+      # continue if not valid line
+      next if match.nil?
+
+      logger.info("Found config value: #{match[1]} => #{match[2]}")
+
+      # now set values
+      key= CONFIG_VALUES[match[1]]
+      if key.blank? 
+        logger.warn("Unrecognized config key: #{match[1]}")
+        next
+      end
+        
+      values[key]=match[2]
+    }
+    config=InitialConfig.new(values)
+    
+    # save it
+    config.save()
+
+    # now change mac to 'default' to save as default
+    config.mac="default"
+    config.save()
+
     render :nothing=>true
   end
 
