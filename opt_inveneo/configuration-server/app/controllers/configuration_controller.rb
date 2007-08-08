@@ -146,7 +146,7 @@ class ConfigurationController < ApplicationController
   
   def save_user_config
     # TODO: refactor this and sace station below as they are almost identical
-
+    
     # see if we have an :id
     # TODO: Set-up restricted request routing so Rails enforces id
     if params[:id].blank?
@@ -154,24 +154,24 @@ class ConfigurationController < ApplicationController
       render :nothing=>true, :status=>@@BAD_FILE_TYPE
       return
     end
-
+    
     user=params[:id].strip
     config_file=params['config_file']
-
+    
     if config_file.nil?
       logger.error("No config file found")
       render :nothing=>true, :status=>@@BAD_FILE_TYPE
       return
     end
-
+    
     # convert to basename in case browser sends full client-side path
     basename=Pathname.new(config_file.original_filename).basename.to_s.strip
     content_type=config_file.content_type().strip # for some reason this has a ^M on the end!
-
+    
     logger.info("Username: #{user}")
     logger.info("File basename: #{basename}")
     logger.info("Content type: #{content_type}")
-
+    
     # check file type
     if content_type != "application/octet-stream"
       logger.error("#{@@BAD_FILE_TYPE}: #{basename}, #{content_type}")
@@ -186,26 +186,26 @@ class ConfigurationController < ApplicationController
       save_posted_file(config_file, local_config_file)
       lock.flock(File::LOCK_UN)
     }
-   
+    
     render :nothing=>true
   end
 
   def save_station_config
     config_file=params['config_file']
-
+    
     if config_file.nil?
       logger.error("No config file found")
       render :nothing=>true, :status=>@@BAD_FILE_TYPE
       return
     end
-
+    
     # convert to basename in case browser sends full client-side path
     basename=Pathname.new(config_file.original_filename).basename.to_s.strip
     content_type=config_file.content_type().strip # for some reason this has a ^M on the end!
 
     logger.info("File basename: #{basename}")
     logger.info("Content type: #{content_type}")
-
+    
     # check file type
     if content_type != "application/octet-stream" || basename != "station.tar.gz"
       logger.error("#{@@BAD_FILE_TYPE}: #{basename}, #{content_type}")
@@ -225,44 +225,6 @@ class ConfigurationController < ApplicationController
    
     render :nothing=>true
   end
-  
-  def save_station_initial_config
-    config_file=params['config_file']
-
-    if config_file.nil?
-      logger.error("No config file found")
-      render :nothing=>true, :status=>@@BAD_FILE_TYPE
-      return
-    end
-
-    # convert to basename in case browser sends full client-side path
-    basename=Pathname.new(config_file.original_filename).basename.to_s.strip
-    content_type=config_file.content_type().strip # for some reason this has a ^M on the end!
-
-    logger.info("File basename: #{basename}")
-    logger.info("Content type: #{content_type}")
-
-    # check file type
-    if content_type != "text/plain" || basename !="initial-config.conf"
-      logger.error("#{@@BAD_FILE_TYPE}: #{basename}, #{content_type}")
-      render :nothing=>true, :status=>@@BAD_FILE_TYPE
-      return
-    end
-
-
-    # For now we only save ONE machine config and it overrides all others
-    # so first thing is to make sure there are no locks present which 
-    # would indicate that someone else is reading or writing the image file
-    
-    File.open(@@SHARED_STATION_INITIAL_CONFIG_FILE.to_s()+".lock", "a+") { |lock|
-      lock.flock(File::LOCK_EX)
-      save_posted_file(config_file, @@SHARED_STATION_INITIAL_CONFIG_FILE)
-      lock.flock(File::LOCK_UN)
-    }
-   
-    render :nothing=>true
-  end
-
 
   # Map for config values
   CONFIG_VALUES={ "INV_TIME_ZONE" => :timezone,
@@ -279,7 +241,7 @@ class ConfigurationController < ApplicationController
 		  "INV_LOCALE" => :locale
 		}
 
-  def save_station_initial_config_db
+  def save_station_initial_config
     config_file=params['config_file']
 
     mac = params[:id]
@@ -311,7 +273,7 @@ class ConfigurationController < ApplicationController
     end
 	
     # read file into a Hash
-    # TODO: Move into InitialCOnfig
+    # TODO: Move to a method or a converter class
     line_match=/^\s*([a-zA-Z0-9_]+)="\s*(.+?)\s*".*$/
     values= { :mac => params[:id] }
     config_file.each_line { |line|
@@ -333,14 +295,9 @@ class ConfigurationController < ApplicationController
     }
 
 
-    # Try to retrieve a record for the given mac
-    config = InitialConfig.find(:first, :conditions => [ "mac = ?", mac ]) 
-    
-    if config.nil?
-      config=InitialConfig.new(values)
-    else
-      config.attributes=values;
-    end
+    # Retrieve a record for the given mac
+    config = InitialConfig.getConfigForMAC(values[:mac])
+    config.attributes=values;
   
     logger.debug("Config to save:\n #{config.to_yaml()}")
 
@@ -348,15 +305,9 @@ class ConfigurationController < ApplicationController
     config.save!()
 
     # Now save it to defaults
+    config = InitialConfig.getDefaultConfig()
     values[:mac]=InitialConfig::DEFAULT_MAC
-
-    config = InitialConfig.find(:first, :conditions => [ "mac = ?", InitialConfig::DEFAULT_MAC ]) 
-    
-    if config.nil?
-      config=InitialConfig.new(values)
-    else
-      config.attributes=values;
-    end
+    config.attributes=values;
     
     config.save!()
 
