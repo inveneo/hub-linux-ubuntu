@@ -10,14 +10,13 @@ auto lan0
 iface lan0 inet static
 	address 192.168.100.1
 	netmask	255.255.255.0
-	gateway 192.168.100.1
 
 auto wan0
 iface wan0 inet dhcp
 	pre-up iptables -t nat -A POSTROUTING -o $IFACE -j MASQUERADE
-	pre-up echo -n 1 >/proc/sys/net/ipv4/ip_forward
-	pre-up echo -n 1 >/proc/sys/net/ipv6/conf/all/forwarding
+	pre-up sysctlnet.ipv4.conf.default.forwarding=1
+	pre-up sysctl net.ipv6.conf.default.forwarding=1
 	post-down iptables -t nat -D POSTROUTING -o $IFACE -j MASQUERADE
-	post-down echo -n 0 >/proc/sys/net/ipv4/ip_forward
-	post-down echo -n 0 >/proc/sys/net/ipv6/conf/all/forwarding
+	post-down sysctlnet.ipv4.conf.default.forwarding=0
+	post-down sysctl net.ipv6.conf.default.forwarding=0
 
