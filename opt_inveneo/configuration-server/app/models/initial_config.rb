@@ -32,7 +32,7 @@ class InitialConfig < ActiveRecord::Base
 
 
   # Validation
-  validates_presence_of :timezone, :hostname_prefix
+  validates_presence_of :timezone
   validates_format_of :mac, :with=> @@mac_regex, :message => "MAC address must be 12 hex values, all lowercase, no separator"
   validates_format_of :locale, :with => @@locale_regex, :message => "Must be a valid locale string. E.g. en_UK.utf8"
   validates_inclusion_of :ntp_on, :proxy_on, :phone_home_on, :in => [true, false] 
