@@ -52,4 +52,5 @@ ruby1.8-dev	install
 # rails
 # mongrel auto-installed dependencies: fastthread, cgi_multipart_eof_fix
 # mongrel
+# mongrel_cluster
  
