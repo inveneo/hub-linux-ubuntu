@@ -246,7 +246,8 @@ class ConfigurationController < ApplicationController
     "INV_PHONE_HOME_ON" => :phone_home_on,
     "INV_PHONE_HOME_REG_URL" => :phone_home_reg,
     "INV_PHONE_HOME_CHECKIN_URL" => :phone_home_checkin,
-    "INV_LOCALE" => :locale
+    "INV_LOCALE" => :locale,
+    "INV_SINGLE_USER_LOGIN" => :single_user_login
   }
 
   CONFIG_ATTR_TO_BASH=CONFIG_BASH_TO_ATTR.invert()

@@ -13,7 +13,7 @@ class CreateInitialConfigs < ActiveRecord::Migration
       t.column :phone_home_reg, :string
       t.column :phone_home_checkin, :string
       t.column :locale,	:string,	{:null=>false }
-      
+      t.column :single_user_login, :boolean {:null=>false, :default=>true}
       t.primary_key :mac
     end
   end
