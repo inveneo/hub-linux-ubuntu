@@ -1,5 +1,9 @@
 class AdminController < ApplicationController
   def index
+    render :action => 'dashboard'
+  end
+
+  def all
     list
     render :action => 'list'
   end
@@ -31,7 +35,11 @@ class AdminController < ApplicationController
   end
 
   def edit
-    @initial_config = InitialConfig.find(params[:id])
+    if params[:id] =~ /^[a-f0-9]{12,12}$/
+      @initial_config = InitialConfig.find(:first, :conditions => ["mac = ?", params[:id]])
+    else
+      @initial_config = InitialConfig.find(params[:id])
+    end
   end
 
   def update
@@ -46,6 +54,30 @@ class AdminController < ApplicationController
 
   def destroy
     InitialConfig.find(params[:id]).destroy
+    redirect_to :action => 'list'
+  end
+
+  STATION_CONFIG_DIR="#{RAILS_ROOT}/saved-configuration/station"
+  USER_CONFIG_DIR="#{RAILS_ROOT}/saved-configuration/user"
+  CONFIG_MATCH=/^(.+)\.tar\.gz$/
+  BLANK_CONFIG_FILE="#{RAILS_ROOT}/saved-configuration/blank.tar.gz"
+
+  def reset_config
+    # reset initial config
+    config = InitialConfig.getDefaultConfig()
+    config.set_to_default_values()
+    config.save!()
+
+    # set machine and user config tar balls to blanks
+    for dirname in [ STATION_CONFIG_DIR, USER_CONFIG_DIR ]
+      Dir.chdir(dirname) {
+        Pathname.new(dirname).each_entry { |e|
+          next unless e.file? && (CONFIG_MATCH =~ e.basename) != nil
+          logger.debug("In reset config resetting entry: #{e}")
+          FileUtils.copy(BLANK_CONFIG_FILE, e)
+        }
+      }
+      end
     redirect_to :action => 'list'
   end
 end

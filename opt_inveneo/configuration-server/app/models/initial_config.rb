@@ -52,7 +52,7 @@ class InitialConfig < ActiveRecord::Base
     if args && args.length()>0 && args[0].kind_of?(Hash)
       argHash=DEFAULT_ATTRS.merge(args[0])
     else
-      argHash=DEFAULT_ATTRS
+      argHash=DEFAULT_ATTRS.dup()
     end
     
     # call super to be fully created
@@ -65,6 +65,10 @@ class InitialConfig < ActiveRecord::Base
   validates_format_of :mac, :with=> @@mac_regex, :message => "MAC address must be 12 hex values, all lowercase, no separator"
   validates_format_of :locale, :with => @@locale_regex, :message => "Must be a valid locale string. E.g. en_UK.utf8"
   validates_inclusion_of :ntp_on, :proxy_on, :phone_home_on, :single_user_login, :in => [true, false] 
+
+  def set_to_default_values
+    self.attributes=DEFAULT_ATTRS.dup()
+  end
 
   protected
   def validate
