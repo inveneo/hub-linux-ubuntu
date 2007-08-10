@@ -1,12 +1,23 @@
 class InitialConfig < ActiveRecord::Base
   DEFAULT_MAC="deaddeadbeef"
   
-  DEFAULT_VALUES={
-      
-      
+  DEFAULT_ATTRS={
+    :mac => DEFAULT_MAC,
+    :timezone => "America/Los_Angeles",
+    :ntp_on => true,
+    :ntp_servers => "hub.local:pool.ntp.org",
+    :proxy_on => false,
+    :http_proxy => "http://hub.local:8080",
+    :https_proxy => "",
+    :ftp_proxy => "http://hub.local:8080",
+    :phone_home_on => true,
+    :phone_home_reg => "http://community.inveneo.org/phonehome/reg",
+    :phone_home_checkin => "http://community.inveneo.org/phonehome/checkin",
+    :locale => "en_UK.utf8",
+    :single_user_login => true
   }
 
-  @@url_regex = /(?#WebOrIP)((?#protocol)((http|https):\/\/)?(?#subDomain)(([a-zA-Z0-9]+\.(?#domain)[a-zA-Z0-9\-]+(?#TLD)(\.[a-zA-Z]+){1,2})|(?#IPAddress)((25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9])\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9]|0)\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9]|0)\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[0-9])))+(?#Port)(:[1-9][0-9]*)?)+(?#Path)((\/((?#dirOrFileName)[a-zA-Z0-9_\-\%\~\+]+)?)*)?(?#extension)(\.([a-zA-Z0-9_]+))?(?#parameters)(\?([a-zA-Z0-9_\-]+\=[a-z-A-Z0-9_\-\%\~\+]+)?(?#additionalParameters)(\&([a-zA-Z0-9_\-]+\=[a-z-A-Z0-9_\-\%\~\+]+)?)*)?/
+  @@url_regex = /(?#WebOrIP)((?#protocol)((http|https):\/\/)?(((?#domain)[a-zA-Z0-9\-]+(?#TLD)(\.[a-zA-Z]+){1,2})|(?#IPAddress)((25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9])\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9]|0)\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9]|0)\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[0-9])))+(?#Port)(:[1-9][0-9]*)?)+(?#Path)((\/((?#dirOrFileName)[a-zA-Z0-9_\-\%\~\+]+)?)*)?(?#extension)(\.([a-zA-Z0-9_]+))?(?#parameters)(\?([a-zA-Z0-9_\-]+\=[a-z-A-Z0-9_\-\%\~\+]+)?(?#additionalParameters)(\&([a-zA-Z0-9_\-]+\=[a-z-A-Z0-9_\-\%\~\+]+)?)*)?/
   
   @@locale_regex=/^[a-z][a-z](_[A-Z][A-Z](.[uU][tT][fF]8)?)?$/
   @@mac_regex=/^[a-z0-9]{12,12}/
@@ -26,7 +37,7 @@ class InitialConfig < ActiveRecord::Base
 
   # return: the existing default (if exists) or a newly created one if not
   def InitialConfig.getDefaultConfig(createIfNotFound=true)
-    config=InitialConfig.find(:first, :conditions => [ "mac = ?", InitialConfig::DEFAULT_MAC ]) 
+    config=Initia5ClConfig.find(:first, :conditions => [ "mac = ?", InitialConfig::DEFAULT_MAC ]) 
     if config.nil? && createIfNotFound
       InitialConfig.new( { :mac => InitialConfig::DEFAULT_MAC } )
     else
@@ -35,9 +46,17 @@ class InitialConfig < ActiveRecord::Base
   end
 
   # Initializer
-  def initialize(args)
-      # set defaults and then call super
-     super(args) 
+  def initialize(*args)
+    # merge args with defaults
+    argHash=nil
+    if args && args.length()>0 && args[0].kind_of?(Hash)
+      argHash=DEFAULT_ATTRS.merge(args[0])
+    else
+      argHash=DEFAULT_ATTRS
+    end
+    
+    # call super to be fully created
+    super(argHash) 
   end
 
 

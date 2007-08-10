@@ -8,13 +8,13 @@
 <%= text_field 'initial_config', 'timezone'  %></p>
 
 <p><label for="initial_config_ntp_on">Ntp on</label><br/>
-<select id="initial_config_ntp_on" name="initial_config[ntp_on]"><option value="false" selected>False</option><option value="true">True</option></select></p>
+<select id="initial_config_ntp_on" name="initial_config[ntp_on]"><option value="false">False</option><option value="true">True</option></select></p>
 
 <p><label for="initial_config_ntp_servers">Ntp servers</label><br/>
 <%= text_field 'initial_config', 'ntp_servers'  %></p>
 
 <p><label for="initial_config_proxy_on">Proxy on</label><br/>
-<select id="initial_config_proxy_on" name="initial_config[proxy_on]"><option value="false" selected>False</option><option value="true">True</option></select></p>
+<select id="initial_config_proxy_on" name="initial_config[proxy_on]"><option value="false">False</option><option value="true">True</option></select></p>
 
 <p><label for="initial_config_http_proxy">Http proxy</label><br/>
 <%= text_field 'initial_config', 'http_proxy'  %></p>
@@ -26,7 +26,7 @@
 <%= text_field 'initial_config', 'ftp_proxy'  %></p>
 
 <p><label for="initial_config_phone_home_on">Phone home on</label><br/>
-<select id="initial_config_phone_home_on" name="initial_config[phone_home_on]"><option value="false" selected>False</option><option value="true">True</option></select></p>
+<select id="initial_config_phone_home_on" name="initial_config[phone_home_on]"><option value="false">False</option><option value="true">True</option></select></p>
 
 <p><label for="initial_config_phone_home_reg">Phone home reg</label><br/>
 <%= text_field 'initial_config', 'phone_home_reg'  %></p>
@@ -36,5 +36,8 @@
 
 <p><label for="initial_config_locale">Locale</label><br/>
 <%= text_field 'initial_config', 'locale'  %></p>
+
+<p><label for="initial_config_single_user_login">Single user login</label><br/>
+<select id="initial_config_single_user_login" name="initial_config[single_user_login]"><option value="false" selected>False</option><option value="true">True</option></select></p>
 <!--[eoform:initial_config]-->
 
