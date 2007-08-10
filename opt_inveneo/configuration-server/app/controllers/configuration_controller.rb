@@ -139,7 +139,7 @@ class ConfigurationController < ApplicationController
       tf.puts %[# Initial Configuration\n\n]
       tf.puts %[INV_CONFIG_HOST="#{Socket.gethostname}"\n]
       tf.puts %[INV_CONFIG_HOST_TYPE="hub"\n]
-      tf.puts %[INV_HOSTNAME="#{hostname_for_mac(config[:mac])}"\n]
+      tf.puts %[INV_HOSTNAME="#{hostname_for_mac(station)}"\n]
       for attr in config.attribute_names().collect { |el| el.to_sym }
         logger.debug("Found attr: #{attr}\n")
         next if attr == :hostname # skip because set manually above

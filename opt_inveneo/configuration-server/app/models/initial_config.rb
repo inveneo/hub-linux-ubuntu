@@ -37,7 +37,7 @@ class InitialConfig < ActiveRecord::Base
 
   # return: the existing default (if exists) or a newly created one if not
   def InitialConfig.getDefaultConfig(createIfNotFound=true)
-    config=Initia5ClConfig.find(:first, :conditions => [ "mac = ?", InitialConfig::DEFAULT_MAC ]) 
+    config=InitialConfig.find(:first, :conditions => [ "mac = ?", InitialConfig::DEFAULT_MAC ]) 
     if config.nil? && createIfNotFound
       InitialConfig.new( { :mac => InitialConfig::DEFAULT_MAC } )
     else
