@@ -31,7 +31,7 @@ mysql-server-5.0   	install
 # ldap
 libpam-ldap	install
 ldapscripts	install
-sambaldap-tools	install
+smbldap-tools	install
 slapd	install
 libnss-ldap	install
 phpldapadmin install
