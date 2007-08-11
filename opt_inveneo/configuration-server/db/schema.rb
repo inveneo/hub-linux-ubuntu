@@ -20,4 +20,13 @@ ActiveRecord::Schema.define(:version => 1) do
     t.column "single_user_login",  :boolean, :default => false,  :null => false
   end
 
+  create_table "sessions", :force => true do |t|
+    t.column "session_id", :string,   :default => "NULL"
+    t.column "data",       :text,     :default => "NULL"
+    t.column "updated_at", :datetime
+  end
+
+  add_index "sessions", ["updated_at"], :name => "index_sessions_on_updated_at"
+  add_index "sessions", ["session_id"], :name => "index_sessions_on_session_id"
+
 end
