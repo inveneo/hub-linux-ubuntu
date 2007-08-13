@@ -16,7 +16,7 @@ class InitialConfig < ActiveRecord::Base
     :phone_home_on => true,
     :phone_home_reg => "http://community.inveneo.org/phonehome/reg",
     :phone_home_checkin => "http://community.inveneo.org/phonehome/checkin",
-    :locale => "en_UK.utf8",
+    :locale => "en_UK.UTF-8",
     :single_user_login => true
   }
 
@@ -42,7 +42,7 @@ class InitialConfig < ActiveRecord::Base
   def InitialConfig.getDefaultConfig(createIfNotFound=true)
     config=InitialConfig.find(:first, :conditions => [ "mac = ?", InitialConfig::DEFAULT_MAC ]) 
     if config.nil? && createIfNotFound
-      InitialConfig.new( { :mac => InitialConfig::DEFAULT_MAC } )
+      InitialConfig.new( { :mac => InitialConfig::DEFAULT_MAC } ).save!     
     else
       config
     end
@@ -66,7 +66,7 @@ class InitialConfig < ActiveRecord::Base
   # Validation
   validates_presence_of :timezone
   validates_format_of :mac, :with=> @@mac_regex, :message => "MAC address must be 12 hex values, all lowercase, no separator"
-  validates_format_of :locale, :with => @@locale_regex, :message => "Must be a valid locale string. E.g. en_UK.utf8"
+  validates_format_of :locale, :with => @@locale_regex, :message => "Must be a valid locale string. E.g. en_UK.utf-8"
   validates_inclusion_of :ntp_on, :proxy_on, :phone_home_on, :single_user_login, :in => [true, false] 
 
   def set_to_default_values
@@ -94,7 +94,7 @@ class InitialConfig < ActiveRecord::Base
     
     # validate ports
     for host_port in [[:http_proxy, :http_proxy_port], [:https_proxy, :https_proxy_port], [:ftp_proxy, :ftp_proxy_port]]
-        if !host_port[0].blank? && !port_valid(host_port[1])
+        if !self[host_port[0]].blank? && !port_valid(self[host_port[1]])
            errors.add(host_port[1], "Must be valid port \#: 0 to 65535") 
         end
     end

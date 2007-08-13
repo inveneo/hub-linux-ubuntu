@@ -122,7 +122,7 @@ class ConfigurationController < ApplicationController
     
     station=params[:id]
     
-    config=InitialConfig.getDefaultConfig(false) # don't create config if no default
+    config=InitialConfig.getDefaultConfig() # creates if doesn't exist
     
     if config.nil?
       logger.info("Staton Inital Config requested for #{station} and none available")

@@ -35,9 +35,8 @@ class AdminController < ApplicationController
   end
 
   def edit_default_config
-      config=InitialConfig.find(:first, :conditions => ["mac = ?", InitialConfig::DEFAULT_MAC])
-      config=InitialConfig.new if config.nil?
-      render :action => 'edit', :id=>InitialConfig::DEFAULT_MAC
+      InitialConfig.getDefaultConfig() # forces creation if doesn't exist
+      redirect_to :action => 'edit', :id => InitialConfig::DEFAULT_MAC
   end
 
   def edit

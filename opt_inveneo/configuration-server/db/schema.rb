@@ -11,8 +11,11 @@ ActiveRecord::Schema.define(:version => 1) do
     t.column "ntp_servers",        :string,                      :null => false
     t.column "proxy_on",           :boolean, :default => false,  :null => false
     t.column "http_proxy",         :string,  :default => "NULL"
+    t.column "http_proxy_port",    :integer, :default => 8080,   :null => false
     t.column "https_proxy",        :string,  :default => "NULL"
+    t.column "https_proxy_port",   :integer, :default => 8080,   :null => false
     t.column "ftp_proxy",          :string,  :default => "NULL"
+    t.column "ftp_proxy_port",     :integer, :default => 8080,   :null => false
     t.column "phone_home_on",      :boolean, :default => false,  :null => false
     t.column "phone_home_reg",     :string,  :default => "NULL"
     t.column "phone_home_checkin", :string,  :default => "NULL"
