@@ -37,7 +37,7 @@ class AdminController < ApplicationController
   def edit_default_config
       config=InitialConfig.find(:first, :conditions => ["mac = ?", InitialConifg::DEFAULT_MAC])
       config=InitialConfig.new if config.nil?
-      render :action => 'edit', :id=>config
+      render :action => 'edit', :id=>InitialConfig::DEFAULT_MAC
   end
 
   def edit
