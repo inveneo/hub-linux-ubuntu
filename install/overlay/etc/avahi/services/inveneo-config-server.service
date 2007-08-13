@@ -16,7 +16,7 @@
   <service protocol="ipv4">
     <type>_inv-stat-conf._tcp</type>
     <domain-name>local</domain-name>
-    <port>80</port>
+    <port>8008</port>
   </service>
 
 </service-group>
