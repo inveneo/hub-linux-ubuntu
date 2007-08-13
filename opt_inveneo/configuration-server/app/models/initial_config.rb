@@ -7,9 +7,12 @@ class InitialConfig < ActiveRecord::Base
     :ntp_on => true,
     :ntp_servers => "hub.local:pool.ntp.org",
     :proxy_on => false,
-    :http_proxy => "http://hub.local:8080",
+    :http_proxy => "hub.local",
+    :http_proxy_port => 8080,
     :https_proxy => "",
-    :ftp_proxy => "http://hub.local:8080",
+    :https_proxy_port => 8080,
+    :ftp_proxy => "hub.local",
+    :ftp_proxy_port => 8080,
     :phone_home_on => true,
     :phone_home_reg => "http://community.inveneo.org/phonehome/reg",
     :phone_home_checkin => "http://community.inveneo.org/phonehome/checkin",
@@ -72,16 +75,35 @@ class InitialConfig < ActiveRecord::Base
 
   protected
   def validate
-    for uri in [ :phone_home_checkin, :phone_home_reg, :http_proxy, :https_proxy, :ftp_proxy ]
+    # Validate URLs, if not null
+    for uri in [ :phone_home_checkin, :phone_home_reg]
       errors.add(uri, "must be empty or a valid url") unless self[uri].blank? || self[uri] =~ @@url_regex
     end
     
-    errors.add(:http_proxy, "Http_proxy must be valid when Proxy is turned on") if proxy_on && http_proxy.blank?
-    errors.add(:ntp_servers, "Must have a valid NTP server host or IP if NTP is on") if ntp_on && ntp_servers.blank?
+    # validate hostnames, if not null (for now just checks blanknes)
+    errors.add(:http_proxy, "Http_proxy must be valid when Proxy is turned on") if 
+        proxy_on && http_proxy.blank?
+        
+    errors.add(:ntp_servers, "Must have a valid NTP server host or IP if NTP is on") if 
+        ntp_on && ntp_servers.blank?
+        
     for uri in [ :phone_home_reg, :phone_home_checkin ]
-      errors.add(uri, %{If phone home is on "Phone Home Reg" and "Phone Home Checkin" must be valid}) if phone_home_on && self[uri].blank?
+      errors.add(uri, %{If phone home is on "Phone Home Reg" and "Phone Home Checkin" must be valid}) if 
+        phone_home_on && self[uri].blank?
     end
+    
+    # validate ports
+    for host_port in [[:http_proxy, :http_proxy_port], [:https_proxy, :https_proxy_port], [:ftp_proxy, :ftp_proxy_port]]
+        if !host_port[0].blank? && !port_valid(host_port[1])
+           errors.add(host_port[1], "Must be valid port \#: 0 to 65535") 
+        end
+    end
+    
   end	
+  
+  def port_valid(port)
+      return port > 0 && port <= 65535
+  end
 	
 end
 

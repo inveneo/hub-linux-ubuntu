@@ -18,8 +18,11 @@ class CreateInitialConfigs < ActiveRecord::Migration
       t.column :ntp_servers,	:string, 	{:null=>false}
       t.column :proxy_on,	:boolean, 	{:null=>false, :default => false }
       t.column :http_proxy,	:string
+      t.column :http_proxy_port,	:int, {:null=>false, :default => 8080 }
       t.column :https_proxy,	:string
+      t.column :https_proxy_port,	:int, {:null=>false, :default => 8080 }
       t.column :ftp_proxy,	:string
+      t.column :ftp_proxy_port,	:int, {:null=>false, :default => 8080 }
       t.column :phone_home_on,	:boolean, 	{:null=>false, :default => true}
       t.column :phone_home_reg, :string
       t.column :phone_home_checkin, :string
