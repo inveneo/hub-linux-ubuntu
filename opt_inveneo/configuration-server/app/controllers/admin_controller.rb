@@ -34,6 +34,12 @@ class AdminController < ApplicationController
     end
   end
 
+  def edit_default_config
+      config=InitialConfig.find(:first, :conditions => ["mac = ?", InitialConifg::DEFAULT_MAC])
+      config=InitialConfig.new if config.nil?
+      render :action => 'edit', :id=>config
+  end
+
   def edit
     if params[:id] =~ /^[a-f0-9]{12,12}$/
       @initial_config = InitialConfig.find(:first, :conditions => ["mac = ?", params[:id]])
