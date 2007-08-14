@@ -10,6 +10,11 @@ class ConfigurationController < ApplicationController
   @@USER_CONFIG_PATH=Pathname.new("#{RAILS_ROOT}/saved-configuration/user")
 
   @@SERVER_VERSION="1.0.0"
+  
+  @@cleanup_thread=nil
+  @@cleanup_thread_mutex=Mutex.new
+  
+  before_filter :start_clean_config_thread
 
   def ConfigurationController.get_server_version
     @@SERVER_VERSION
@@ -53,10 +58,7 @@ class ConfigurationController < ApplicationController
       return
     end
 
-    # get a tempfile name, TODO: make this a mixin utility function on Tempfile
-    tmp=Tempfile.new("tmp_config")
-    temp_file=tmp.path
-    tmp.close!
+    temp_file=self.tmpFilename()
 
     File.open(local_config_file.to_s()+".lock", "a+") { |lock|
       lock.flock(File::LOCK_EX)
@@ -95,10 +97,7 @@ class ConfigurationController < ApplicationController
       return
     end
 
-    # get a tempfile name, TODO: make this a mixin utility function on Tempfile
-    tmp=Tempfile.new("tmp_config")
-    temp_file=tmp.path
-    tmp.close!
+   temp_file=self.tmpFilename()
    
    File.open(local_config_file.to_s()+".lock", "a+") { |lock|
      lock.flock(File::LOCK_EX)
@@ -130,10 +129,7 @@ class ConfigurationController < ApplicationController
       return
     end
     
-    # get a tempfile name, TODO: make this a mixin utility function on 
-    tmp=Tempfile.new("tmp_config")
-    temp_file=tmp.path
-    tmp.close!
+    temp_file=self.tmpFilename()
     
     File.open(temp_file, "w") { |tf|
       tf.puts %[# Initial Configuration\n\n]
@@ -342,5 +338,41 @@ class ConfigurationController < ApplicationController
       # shortcut and just copy it from local file
       FileUtils.copy(src.local_path, dest)
     end
+  end
+  
+  TMP_MAX_AGE=3600 # 1 hr
+  def start_clean_config_thread
+      return unless @@cleanup_thread.nil?
+      @@cleanup_thread_mutex.synchronize {
+         if @@cleanup_thread.nil?
+             @@cleanup_thread=Thread.new {
+                 now=Time.now
+                 # find all files in tmp dir more than 1 hr old and erase them
+                 Dir.glob("#{tmpDir.expand_path}/#{TEMP_BASE_NAME}.*") { |fn|
+                    if (now - File.mtime(fn) > TMP_MAX_AGE)
+                       File.delete(fn) 
+                    end
+                 }
+                 # sleep 2 hours
+                 sleep(7200) 
+            }     
+         end
+      }
+  end
+  
+  # temp helpers
+  # TO DO: True Ruby-ness would have this be a module mixin to TempFile or some crap
+  
+  TEMP_BASE_NAME="inv_temp"
+  TEMP_DIR=Pathname.new(RAILS_ROOT)+"tmp"
+  def self.tmpFilename(basename=TEMP_BASE_NAME, dir=TEMP_DIR.expand_path)
+      tmp=Tempfile.new(basename, dir)
+      temp_file=tmp.path
+      tmp.close!
+      temp_file
+  end
+  
+  def self.tmpDir
+     TEMP_DIR 
   end
 end
