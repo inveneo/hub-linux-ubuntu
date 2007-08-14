@@ -10,6 +10,18 @@ class CreateInitialConfigs < ActiveRecord::Migration
     add_index :sessions, :session_id
     add_index :sessions, :updated_at
 
+    # users
+    create_table "users", :force => true do |t|
+      t.column :login,                     :string
+      t.column :email,                     :string
+      t.column :crypted_password,          :string, :limit => 40
+      t.column :salt,                      :string, :limit => 40
+      t.column :created_at,                :datetime
+      t.column :updated_at,                :datetime
+      t.column :remember_token,            :string
+      t.column :remember_token_expires_at, :datetime
+    end
+
     # initial configs
     create_table :initial_configs do |t|
       t.column :mac,		:string,	{:null=>false, :unique=>true }
@@ -34,6 +46,7 @@ class CreateInitialConfigs < ActiveRecord::Migration
   
   def self.down
     drop_table :initial_configs
+    drop_table "users"
     drop_table :sessions
   end
 end
