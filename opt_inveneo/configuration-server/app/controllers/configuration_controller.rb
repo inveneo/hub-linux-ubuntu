@@ -58,7 +58,7 @@ class ConfigurationController < ApplicationController
       return
     end
 
-    temp_file=self.tmpFilename()
+    temp_file=tmpFilename()
 
     File.open(local_config_file.to_s()+".lock", "a+") { |lock|
       lock.flock(File::LOCK_EX)
@@ -97,7 +97,7 @@ class ConfigurationController < ApplicationController
       return
     end
 
-   temp_file=self.tmpFilename()
+   temp_file=tmpFilename()
    
    File.open(local_config_file.to_s()+".lock", "a+") { |lock|
      lock.flock(File::LOCK_EX)
@@ -129,7 +129,7 @@ class ConfigurationController < ApplicationController
       return
     end
     
-    temp_file=self.tmpFilename()
+    temp_file=tmpFilename()
     
     File.open(temp_file, "w") { |tf|
       tf.puts %[# Initial Configuration\n\n]
@@ -325,7 +325,6 @@ class ConfigurationController < ApplicationController
   end
 
   private
-  
   # wow this sucks, file may be one of TWO kinds of objects
   # so we have to save them differently
   def save_posted_file(src, dest)
@@ -339,40 +338,47 @@ class ConfigurationController < ApplicationController
       FileUtils.copy(src.local_path, dest)
     end
   end
-  
+
   TMP_MAX_AGE=3600 # 1 hr
   def start_clean_config_thread
-      return unless @@cleanup_thread.nil?
-      @@cleanup_thread_mutex.synchronize {
-         if @@cleanup_thread.nil?
-             @@cleanup_thread=Thread.new {
-                 now=Time.now
-                 # find all files in tmp dir more than 1 hr old and erase them
-                 Dir.glob("#{tmpDir.expand_path}/#{TEMP_BASE_NAME}.*") { |fn|
-                    if (now - File.mtime(fn) > TMP_MAX_AGE)
-                       File.delete(fn) 
-                    end
-                 }
-                 # sleep 2 hours
-                 sleep(7200) 
-            }     
-         end
-      }
+    logger.debug("Cleanup thread: #{@@cleanup_thread}")
+    return unless @@cleanup_thread.nil?
+    @@cleanup_thread_mutex.synchronize {
+      if @@cleanup_thread.nil?
+        logger.info("Starting clean-up thread")
+        @@cleanup_thread=Thread.new {
+          while true
+            now=Time.now
+            # find all files in tmp dir more than 1 hr old and erase them
+            Dir.glob("#{tmpDir()}/#{TEMP_BASE_NAME}.*") { |fn|
+              mod_time=File.mtime(fn)
+              if ((now -  mod_time) > TMP_MAX_AGE)
+                logger.debug("will remove old temp file: #{fn} last modified: #{mod_time}")
+                File.delete(fn) 
+              end
+            }
+            # sleep 2 hours
+            sleep(7200) 
+          end
+        }
+        logger.info(@@cleanup_thread.inspect)
+      end
+    }
   end
   
   # temp helpers
   # TO DO: True Ruby-ness would have this be a module mixin to TempFile or some crap
   
   TEMP_BASE_NAME="inv_temp"
-  TEMP_DIR=Pathname.new(RAILS_ROOT)+"tmp"
-  def self.tmpFilename(basename=TEMP_BASE_NAME, dir=TEMP_DIR.expand_path)
+  TEMP_DIR=(Pathname.new(RAILS_ROOT)+"tmp").expand_path.to_s
+  def tmpFilename(basename=TEMP_BASE_NAME, dir=TEMP_DIR)
       tmp=Tempfile.new(basename, dir)
       temp_file=tmp.path
       tmp.close!
       temp_file
   end
   
-  def self.tmpDir
+  def tmpDir()
      TEMP_DIR 
   end
 end
