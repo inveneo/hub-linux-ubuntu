@@ -16,7 +16,7 @@ class InitialConfig < ActiveRecord::Base
     :phone_home_on => true,
     :phone_home_reg => "http://community.inveneo.org/phonehome/reg",
     :phone_home_checkin => "http://community.inveneo.org/phonehome/checkin",
-    :locale => "en_UK.UTF-8",
+    :locale => "en_US.UTF-8",
     :single_user_login => true
   }
 
