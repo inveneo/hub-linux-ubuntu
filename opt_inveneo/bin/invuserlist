@@ -1,0 +1,7 @@
+#!/bin/sh
+
+for line in `ldapsearch -x  -LLL "(objectClass=sambaSamAccount)" uidNumber uid | grep "^uid" |  tr -d ":"`
+do
+	echo $line
+done
+

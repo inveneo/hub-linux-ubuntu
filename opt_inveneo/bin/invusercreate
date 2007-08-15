@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# $1 = uname
+# $2 = password  
+# $3 = Real name
+
+smbldap-useradd -a -n -g "Domain Users" -G dialout,cdrom,floppy,adm,plugdev,scanner,fuse,audio,video,dip,lpadmin -c "$3" -m -d /srv/samba/user_docs/$1 -k /opt/inveneo/skeleton/samba/user-share-dir $1
+
+/opt/inveneo/bin/invuserpasswd -u $1 -p $2
+
+
