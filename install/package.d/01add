@@ -17,7 +17,9 @@ ruby1.8	install
 emacs-nox   install
 
 # services
-dnsmasq	install
+#dnsmasq	install
+dhcp3-server	install
+dhcpd		install
 apache2 	install
 squid3	install
 squid-cgi	install
@@ -25,6 +27,7 @@ libnss-mdns	install
 samba	install
 avahi-utils	install
 mysql-server-5.0   	install
+webmin		install
 #freeradius	install
 #freeradius-mysql	install
 
@@ -35,6 +38,7 @@ smbldap-tools	install
 slapd	install
 libnss-ldap	install
 phpldapadmin install
+libnet-ldap-perl install
 
 
 # dev, not needed in production
