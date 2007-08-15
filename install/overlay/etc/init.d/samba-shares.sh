@@ -14,22 +14,24 @@ set -e
 
 PATH=/bin:/usr/bin:/sbin:/usr/sbin
 
-INV_SAMBA_CONF_D=/etc/inveneo/samba
-SHARES_D=${INV_SAMBA_CONF_D}/shares.d
-SHARES_CONF=${INV_SAMBA_CONF_D}/shares.conf
+INCLUDE_D=/etc/inveneo/samba
+INCLUDE_FILE=${INCLUDE_D}/shares.conf
+SAMBA_SHARES_D=${INCLUDE_D}/shares.d
 
-HEADER="# ========= DO NOT EDIT: GENERATED AT BOOT TIME FROM CONTENTS OF shares.d"
+HEADER="# ========= DO NOT EDIT: GENERATED AT BOOT TIME FROM CONTENTS OF ${SAMBA_SHARES_D}"
 
 . /lib/lsb/init-functions
 
 do_start () {
-    echo ${HEADER} > ${SHARES_CONF}
+    mkdir -p "${INCLUDE_D}"
+
+    echo ${HEADER} > "${INCLUDE_FILE}"
     
-    if [ -d "${SHARES_D}" ]
+    if [ -d "${SAMBA_SHARES_D}" ]
 	then
-	for f in "${SHARES_D}"/*.conf
+	find "${SAMBA_SHARES_D}" -name "*.conf" | while read f
 	  do
-	  echo "include = $f" >> "${SHARES_CONF}"
+	  echo "include = $f" >> "${INCLUDE_FILE}"
 	done
     fi
 }
