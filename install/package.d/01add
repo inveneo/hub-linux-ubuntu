@@ -1,5 +1,6 @@
 # core system
-ssh	install
+openssh-server	install
+openssh-client	install
 php5	install
 php5-ldap	install
 php5-mysql	install
@@ -12,6 +13,7 @@ cupsys install
 cupsys-client install
 hplip install
 hpijs install
+hpijs-ppds install
 
 # for Rails
 sqlite3 install 

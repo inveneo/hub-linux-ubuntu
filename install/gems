@@ -1,0 +1,7 @@
+# gems to add
+
+rake	install
+sqlite3-ruby	install
+rails	install
+mongrel	install
+mongrel_cluster	install
