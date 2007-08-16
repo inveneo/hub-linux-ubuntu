@@ -39,7 +39,7 @@ webmin		install
 
 # ldap
 libpam-ldap	install
-ldapscripts	install
+# ldapscripts	install
 smbldap-tools	install
 slapd	install
 libnss-ldap	install
