@@ -13,9 +13,6 @@ def fix_owners(opt)
     FileUtils.chown_R('root', 'root', (opt+"install/overlay"))
 
     # NOTE: Fix any one-off's that are owned by a special user like CUPS or AVAHI
-    # fix any special owners
-    FileUtils.chown_R('cupsys', 'lp', (opt+"install/overlay/etc/cups"))
-    FileUtils.chmod(3755, (opt+"install/overlay/etc/cups"))
 end
 
 def pre_overlay_transfer(overlay_root, dest)

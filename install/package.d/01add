@@ -23,7 +23,7 @@ emacs-nox   install
 # services
 #dnsmasq	install
 dhcp3-server	install
-dhcpd		install
+dhcp3-client 	install
 apache2 	install
 squid3	install
 squid-cgi	install
