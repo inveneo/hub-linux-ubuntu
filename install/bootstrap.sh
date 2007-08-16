@@ -86,10 +86,10 @@ gem update --system
 cd /tmp
 
 echo "checking out /opt/inveneo"
-svn co http://svn.inveneo.org/repos/hub-linux/trunk/opt_inveneo /opt/inveneo
+svn co http://svn.inveneo.org/repos/hub-linux-ubuntu/trunk/opt_inveneo /opt/inveneo
 
 echo "checking out /opt/install"
-svn co http://svn.inveneo.org/repos/hub-linux/trunk/install /opt/install
+svn co http://svn.inveneo.org/repos/hub-linux-ubuntu/trunk/install /opt/install
 
 
 

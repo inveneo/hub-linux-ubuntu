@@ -45,7 +45,7 @@ phpldapadmin install
 libnet-ldap-perl install
 
 
-# dev, not needed in production
+# dev, not needed in production but not a bad idea to have...
 subversion	install
 ri	install
 swig	install
