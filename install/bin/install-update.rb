@@ -23,7 +23,7 @@ if $0 == __FILE__
   system("#{root+"bin/xubuntu-to-inveneo.rb"} #{root+"package.d/02Adds"}")
 
   puts("\nInstalling Ruby Gems...\n")
-  system("#{root+bin/install-ruby-gems.rb'} #{root+'gems-adds'}")
+  system("#{root+'bin/install-ruby-gems.rb'} #{root+'gems-adds'}")
   
   puts("\nReinstalling overlay\n")
   system("#{root+"bin/install-overlay.rb"}")
