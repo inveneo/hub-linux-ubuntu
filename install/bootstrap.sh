@@ -61,7 +61,7 @@ echo "Updating package list"
 apt-get update
 
 echo "installing Subversion and Ruby"
-apt-get -y install subversion ruby
+apt-get -y install subversion ruby rdoc
 
 if [ $? -ne 0 ]
 then
