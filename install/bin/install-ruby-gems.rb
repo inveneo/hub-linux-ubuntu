@@ -40,7 +40,7 @@ if $0 == __FILE__
             when "install"
                 %x[gem install #{match[1]} --no-rdoc --no-test --include-dependencies]
             when "deinstall"
-                %x[gem install #{match[1]} --no-rdoc --no-test --include-dependencies]
+                %x[gem uninstall #{match[1]} --force -x]
             end
         }
     rescue
