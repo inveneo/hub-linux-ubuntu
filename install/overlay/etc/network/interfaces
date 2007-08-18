@@ -6,7 +6,7 @@ auto lo
 iface lo inet loopback
 
 # The primary network interface
-auto lan0 wan0
+auto lan0 
 iface lan0 inet static
 	address 192.168.100.1
 	netmask	255.255.255.0
@@ -14,9 +14,9 @@ iface lan0 inet static
 auto wan0
 iface wan0 inet dhcp
 	pre-up iptables -t nat -A POSTROUTING -o $IFACE -j MASQUERADE
-	pre-up sysctlnet.ipv4.conf.default.forwarding=1
+	pre-up sysctl net.ipv4.conf.default.forwarding=1
 	pre-up sysctl net.ipv6.conf.default.forwarding=1
 	post-down iptables -t nat -D POSTROUTING -o $IFACE -j MASQUERADE
-	post-down sysctlnet.ipv4.conf.default.forwarding=0
+	post-down sysctl net.ipv4.conf.default.forwarding=0
 	post-down sysctl net.ipv6.conf.default.forwarding=0
 
