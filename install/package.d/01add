@@ -24,6 +24,7 @@ emacs-nox   install
 
 # services
 #dnsmasq	install
+bind		install
 dhcp3-server	install
 dhcp3-client 	install
 apache2 	install
