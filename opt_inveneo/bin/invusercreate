@@ -4,8 +4,22 @@
 # $2 = password  
 # $3 = Real name
 
+smbsharetmpl=/opt/inveneo/skeleton/samba/user.conf
+usersharedir=/etc/inveneo/samba/shares.d
+samba_shares=/etc/init.d/samba-shares.sh
+samba_reload=/etc/init.d/samba 
+
 smbldap-useradd -a -n -g "Domain Users" -G dialout,cdrom,floppy,adm,plugdev,scanner,fuse,audio,video,dip,lpadmin -c "$3" -m -d /srv/samba/user_docs/$1 -k /opt/inveneo/skeleton/samba/user-share-dir $1
 
 /opt/inveneo/bin/invuserpasswd -u $1 -p $2
+
+# creating user share conf file
+sed "s/%USERNAME%/$1/g" $smbsharetmpl > $usersharedir/$1_docs.conf
+
+# generatine new shares.conf file
+$samba_shares start
+
+# samba reloads its config files 
+$samba_reload reload
 
 
