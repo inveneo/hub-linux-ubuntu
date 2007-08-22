@@ -14,9 +14,5 @@ iface lan0 inet static
 auto wan0
 iface wan0 inet dhcp
 	pre-up iptables -t nat -A POSTROUTING -o $IFACE -j MASQUERADE
-	pre-up sysctl net.ipv4.conf.default.forwarding=1
-	pre-up sysctl net.ipv6.conf.default.forwarding=1
 	post-down iptables -t nat -D POSTROUTING -o $IFACE -j MASQUERADE
-	post-down sysctl net.ipv4.conf.default.forwarding=0
-	post-down sysctl net.ipv6.conf.default.forwarding=0
 
