@@ -91,7 +91,10 @@ svn co http://svn.inveneo.org/repos/hub-linux-ubuntu/trunk/opt_inveneo /opt/inve
 echo "checking out /opt/install"
 svn co http://svn.inveneo.org/repos/hub-linux-ubuntu/trunk/install /opt/install
 
+echo "generating /etc/iftab"
+/opt/install/bin/geniftab.sh
 
-
+echo "installing /etc/network/interfaces"
+cp -a /opt/install/overlay/etc/network/interfaces /etc/network/interfaces
 
 exit 0 
