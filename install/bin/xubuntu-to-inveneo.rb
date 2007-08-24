@@ -64,8 +64,8 @@ if $0 == __FILE__
     puts("\n\nRunning autoremove\n")
     system("/usr/bin/apt-get -y --force-yes --purge autoremove")
 
-    puts("\n\nRunning upgrade\n")
-    system("/usr/bin/apt-get -ym --force-yes dist-upgrade")
+#    puts("\n\nRunning upgrade\n")
+#    system("/usr/bin/apt-get -ym --force-yes dist-upgrade")
 
     puts("\n\nrunning clean\n")
     system("/usr/bin/apt-get -y --purge clean")
