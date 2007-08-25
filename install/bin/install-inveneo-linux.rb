@@ -16,11 +16,11 @@ if $0 == __FILE__
     puts("\nInstalling apt packages...\n")
     system("#{root+'bin/xubuntu-to-inveneo.rb'} #{root+'package.d'}")
 
-    puts("\nInstalling Ruby Gems...\n")
-    system("#{root+'bin/install-ruby-gems.rb'} #{root+'gems'}")
+#    puts("\nInstalling Ruby Gems...\n")
+#    system("#{root+'bin/install-ruby-gems.rb'} #{root+'gems'}")
    
-    puts("\nInstalling overlay...\n")
-    system("#{root+'bin/install-overlay.rb'}")  
+#    puts("\nInstalling overlay...\n")
+#    system("#{root+'bin/install-overlay.rb'}")  
     
     exit 0
 end

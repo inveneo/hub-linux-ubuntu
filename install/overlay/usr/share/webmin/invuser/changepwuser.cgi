@@ -4,17 +4,20 @@
 require './invuser-lib.pl';
 &ReadParse();
 
-$username=$in{'uname'};
-$upasswd=$in{'upasswd'};
-$realname="Inveneo User";
+$username=$in{'user'};
 $usercreatecmd="/opt/inveneo/bin/invusercreate";
 
+#print "<h2>Add new user</h2>\n";
+
 # Ask for Username and password
-	&ui_print_header(undef, "User creation", "", undef, 1, 1);
-	print "Creating user: " . $in{'uname'} ." with password " . $in{'upasswd'} . "....";
+	&ui_print_header(undef, "Password Reset", "", undef, 1, 1);
 
-	system "$usercreatecmd $username $upasswd \"$realname\"";
+	print &ui_form_start("changepwuser2.cgi");
+	print "<b>Set new password for $username</b>\n";
+	print &ui_textbox("upasswd", undef, 32),"\n";
+	print &ui_hidden("uname", $username),"\n";
+	print &ui_submit("Submit"),"\n";
+	print &ui_form_end();
 
-	print "done<br>";
 	&ui_print_footer("/", $text{'index'});
 

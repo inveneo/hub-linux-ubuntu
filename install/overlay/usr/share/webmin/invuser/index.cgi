@@ -29,25 +29,21 @@ else {
 		}
 	}
 
-	#print "uidNumberCount: $uidNumberCount - uidCount: $uidCount\n";
-	#@userlisttable = ("Username", "Edit", "Delete");
-	#print &ui_columns_start(@userlisttable);
-	print "<table>\n";
-	print "<th>Username (uid)</th><th>Edit</th><th>Delete</th>\n";
+	@userlisttable = ("Username", "Edit", "Delete");
+	print "<h2>User list</h2>\n";
+	print &ui_columns_start(\@userlisttable);
 	for ($i=1; $i<= $uidCount; $i++) {
 		if ($uidNumber[$i] > 9999) {
-			print "<tr>\n";
-			#@usertablerow = ($uid[$i], "Edit", "Delete");
-			#print &ui_columns_row(@usertablerow,@usertablerow);
-			print "<td>" . $uid[$i] . "(" . $uidNumber[$i] . ")</td>";
-			print "<td><a href='changepwuser.cgi?user=" . $uid[$i] . "'>Reset Password</a></td>\n";
-			print "<td><a href='deluser.cgi?user=" . $uid[$i] . "'>Delete</a></td>\n";
-#			print "$i - $uid[$i] - $uidNumber[$i] \n";
+			$column1 = $uid[$i] . "(" . $uidNumber[$i] . ")";
+			$column2 = "<a href='changepwuser.cgi?user=" . $uid[$i] . "'>Reset Password</a>";
+			$column3 = "<a href='deluser.cgi?user=" . $uid[$i] . "'>Delete</a>";
+			@usertablerow = ($column1, $column2, $column3);
+			print &ui_columns_row(\@usertablerow);
 		}
 	}
-	#print &ui_columns_end();
-	print "</table>\n";
-
+	print &ui_columns_end();
+	print "<br>\n";
+	print "<h2>Add new user</h2>\n";
 	print &ui_form_start("createuser.cgi");
 	print "<b>Username</b>\n";
 	print &ui_textbox("uname", undef, 32),"\n";
