@@ -1,22 +1,13 @@
 #!/bin/sh
 
 # $1 = uname
+# $2 = password
 
 smbsharetmpl=/opt/inveneo/skeleton/samba/user.conf
 usersharedir=/etc/inveneo/samba/shares.d
 samba_shares=/etc/init.d/samba-shares.sh
 samba_reload=/etc/init.d/samba
 
-
-
-smbldap-userdel $1
-
-rm $usersharedir/$1_docs.conf
-
-# generatine new shares.conf file
-$samba_shares start
-
-# samba reloads its config files
-$samba_reload reload
+/opt/inveneo/bin/invuserpasswd -u $1 -p $2
 
 
