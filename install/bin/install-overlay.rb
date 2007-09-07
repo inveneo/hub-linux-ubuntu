@@ -19,6 +19,8 @@ def pre_overlay_transfer(overlay_root, dest)
 end
 
 def post_overlay_transfer(overlay_root, dest)
+   # HACK: Fix Squid perms 
+   FileUtils.chown_R('proxy','proxy', '/var/log/squid3')
 end
 
 def transfer_overlay(src, dest)
