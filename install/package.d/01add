@@ -9,6 +9,7 @@ sysv-rc-conf install
 screen install
 libnss-mdns install
 ntp install
+network-manager install
 
 # printing
 cupsys install
