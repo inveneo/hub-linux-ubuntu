@@ -9,11 +9,15 @@ sysv-rc-conf install
 screen install
 libnss-mdns install
 ntp install
+
+# printing
 cupsys install
 cupsys-client install
 hplip install
 hpijs install
 hpijs-ppds install
+openprinting-ppds install
+foo2zjs install
 
 # for Rails
 sqlite3 install 
