@@ -60,6 +60,7 @@ swig	install
 libsqlite3-dev install
 build-essential install
 ruby1.8-dev	install
+patch	install
 
 # Ruby Gem packages--noted here for completeness, but currently installed manually
 # GEMS, install directly from source! 
