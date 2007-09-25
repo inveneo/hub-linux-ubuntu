@@ -92,7 +92,7 @@ echo "checking out /opt/install"
 svn co http://svn.inveneo.org/repos/hub-linux-ubuntu/trunk/install /opt/install
 
 echo "generating /etc/iftab"
-/opt/install/bin/geniftab.sh
+/opt/install/bin/geniftab.sh > /etc/iftab
 
 echo "installing /etc/network/interfaces"
 cp -a /opt/install/overlay/etc/network/interfaces /etc/network/interfaces
