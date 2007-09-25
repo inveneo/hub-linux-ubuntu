@@ -82,6 +82,13 @@ then
 fi 
 
 gem update --system
+if [ $? -ne 0 ]
+then
+	echo -n "retrying gem update --system"
+	sleep 10
+	echo " ... now"
+	gem update --system
+fi
 
 cd /tmp
 
