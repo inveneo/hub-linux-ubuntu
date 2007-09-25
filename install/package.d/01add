@@ -17,8 +17,13 @@ cupsys-client install
 hplip install
 hpijs install
 hpijs-ppds install
+<<<<<<< .mine
+foo2zjs install
+foomatic-db-engine install
+=======
 openprinting-ppds install
 foo2zjs install
+>>>>>>> .r157
 
 # for Rails
 sqlite3 install 

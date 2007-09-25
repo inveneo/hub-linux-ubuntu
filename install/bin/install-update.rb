@@ -20,7 +20,7 @@ if $0 == __FILE__
   system("svn update #{install_path}")
   
   puts("\nAdding packages\n")
-  system("#{root+"bin/xubuntu-to-inveneo.rb"} #{root+"package.d/02Adds"}")
+  system("#{root+"bin/xubuntu-to-inveneo.rb"} #{root+"package.d/"}")
 
   puts("\nInstalling Ruby Gems...\n")
   system("#{root+'bin/install-ruby-gems.rb'} #{root+'gems-adds'}")
