@@ -26,12 +26,14 @@ check_raid() {
 	    then
 	    DRIVE1=$2
 	else
+	    echo "$2 not found, marking as 'missing'"
 	    DRIVE1="missing"
 	fi
 	if  part_exists $3 
 	    then
 	    DRIVE2=$3
 	else
+	    echo "$3 not found, marking as 'missing'"
 	    DRIVE2="missing"
 	fi
 	
