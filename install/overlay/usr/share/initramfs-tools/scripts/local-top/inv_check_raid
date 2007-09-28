@@ -27,6 +27,6 @@ fi
 
 # run check
 /sbin/inv_check_superblocks.sh /etc/mdadm/mdadm.conf
-log_end_message "Inveneo RAID check"
+log_end_msg "Inveneo RAID check"
 exit 0
 
