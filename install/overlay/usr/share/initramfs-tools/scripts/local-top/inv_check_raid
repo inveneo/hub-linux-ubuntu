@@ -15,11 +15,18 @@ prereqs)
 	;;
 esac
 
+. /scripts/functions
+
+log_begin_msg "Inveneo RAID check"
+
 # exit with success if no mdadm script, 'cause then we can't be running raid
-if [ -e /scripts/local-top/mdadm ]; then
+if [ ! -e /scripts/local-top/mdadm ]; then
+    log_warning_msg "Not /scripts/local-top/mdadm, exiting"
     exit 0
 fi
 
 # run check
 /sbin/inv_check_superblocks.sh /etc/mdadm/mdadm.conf
+log_end_message "Inveneo RAID check"
+exit 0
 
