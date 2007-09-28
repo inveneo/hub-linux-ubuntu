@@ -49,7 +49,7 @@ check_raid() {
 	    then
 	    echo "Attempting to rewrite super-blocks for DEVICES: $DRIVE1,$DRIVE2 on ARRAY: $1"
 	    yes | mdadm --create $1 --level=1 --raid-devices=2 --auto=yes  $DRIVE1 $DRIVE2
-	    if $?
+	    if [ $? -eq 0 ]
 		then
 		echo "stopping newly created array"
 		mdadm --stop $1
@@ -85,8 +85,7 @@ awk '/^ARRAY/ {
 		printf("%s ", devices[j]) 
 	    } 
 	} 
-	printf("\n") 
-} ' $CONF | while read line; do
+	printf("\n") } ' $CONF | while read line; do
     check_raid $line
 done
 
