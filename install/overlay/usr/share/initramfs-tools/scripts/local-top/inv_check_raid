@@ -17,6 +17,7 @@ esac
 
 . /scripts/functions
 
+MDADM_CONF=/etc/mdadm/mdadm.conf
 log_begin_msg "Inveneo RAID check"
 
 # exit with success if no mdadm script, 'cause then we can't be running raid
@@ -25,8 +26,16 @@ if [ ! -e /scripts/local-top/mdadm ]; then
     exit 0
 fi
 
+if [ ! -e $MDADM_CONF]
+then
+    log_warning_msg "mdadm conf: $MDADM_CONF not found. Not running check"
+    exit 0
+fi
+
 # run check
-/sbin/inv_check_superblocks.sh /etc/mdadm/mdadm.conf
-log_end_msg "Inveneo RAID check"
+log_warning_msg "Running: /sbin/inv_check_superblocks.sh $MDADM_CONF"
+/sbin/inv_check_superblocks.sh $MDADM_CONF
+log_warning_msg "Completed check"
+log_end_msg 
 exit 0
 
