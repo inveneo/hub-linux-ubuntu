@@ -12,10 +12,10 @@ part_exists() {
 check_raid() { 
     # try to examine superblocks
     mdadm -E $2 2> /dev/null
-    DRIVE1_SUPERBLOCK_OK = $?
+    DRIVE1_SUPERBLOCK_OK=$?
 
     mdadm -E $3 2> /dev/null
-    DRIVE2_SUPERBLOCK_OK = $?
+    DRIVE2_SUPERBLOCK_OK=$?
 
     if  [ $DRIVE1_SUPERBLOCK_OK -eq 0 ] &&  [ $DRIVE2_SUPERBLOCK_OK -eq 0 ]
 	then 
