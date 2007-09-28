@@ -41,6 +41,7 @@ check_raid() {
 	    then
 	    SHOULD_REWRITE=0
 	elif [ ! $DRIVE2_SUPERBLOCK_OK -eq 0 ] && [ $DRIVE2 != "missing" ]
+	    then
 	    SHOULD_REWRITE=0
 	fi
 
