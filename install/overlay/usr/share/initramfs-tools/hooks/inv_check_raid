@@ -1,0 +1,27 @@
+#!/bin/sh -e
+# initramfs hook for inv_check_raid
+
+PREREQ="udev"
+
+# Output pre-requisites
+prereqs()
+{
+	echo "$PREREQ"
+}
+
+case "$1" in
+    prereqs)
+	prereqs
+	exit 0
+	;;
+esac
+
+. /usr/share/initramfs-tools/hook-functions
+
+# lets get sfdisk
+copy_exec /sbin/sfdisk /sbin
+
+# and our check script
+copy_exec /opt/inveneo/sbin/inv_check_superblocks.sh /sbin
+
+exit 0
