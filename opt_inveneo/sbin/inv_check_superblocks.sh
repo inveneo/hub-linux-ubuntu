@@ -11,7 +11,13 @@ part_exists() {
 # e.g. check_raid /dev/md0 /dev/sdb1 /dev/sdb2
 check_raid() { 
     # try to examine superblocks
-    if  mdadm -E $2 2> /dev/null && mdadm -E $3 2> /dev/null
+    mdadm -E $2 2> /dev/null
+    DRIVE1_SUPERBLOCK_OK = $?
+
+    mdadm -E $3 2> /dev/null
+    DRIVE2_SUPERBLOCK_OK = $?
+
+    if  [ $DRIVE1_SUPERBLOCK_OK -eq 0 ] &&  [ $DRIVE2_SUPERBLOCK_OK -eq 0 ]
 	then 
 	echo "RAID at $1: OK"
     else
@@ -29,8 +35,25 @@ check_raid() {
 	    DRIVE2="missing"
 	fi
 	
-	echo "Attempting to rewrite super-blocks for DEVICES: $DRIVE1,$DRIVE2 on ARRAY: $1"
-	yes | mdadm --create $1 --level=1 --raid-devices=2 --auto=yes  $DRIVE1 $DRIVE2
+	# see if we have the drive present that has the problem to bother rewriting
+	SHOULD_REWRITE=1 # false
+	if [ ! $DRIVE1_SUPERBLOCK_OK -eq 0 ] && [ $DRIVE1 != "missing" ]
+	    then
+	    SHOULD_REWRITE=0
+	elif [ ! $DRIVE2_SUPERBLOCK_OK -eq 0 ] && [ $DRIVE2 != "missing" ]
+	    SHOULD_REWRITE=0
+	fi
+
+	if [ $SHOULD_REWRITE -eq 0 ]
+	    then
+	    echo "Attempting to rewrite super-blocks for DEVICES: $DRIVE1,$DRIVE2 on ARRAY: $1"
+	    yes | mdadm --create $1 --level=1 --raid-devices=2 --auto=yes  $DRIVE1 $DRIVE2
+	    if $?
+		then
+		echo "stopping newly created array"
+		mdadm --stop $1
+	    fi
+	fi
     fi
 }
 
