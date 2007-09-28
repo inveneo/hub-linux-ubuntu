@@ -21,6 +21,9 @@ end
 def post_overlay_transfer(overlay_root, dest)
    # HACK: Fix Squid perms 
    FileUtils.chown_R('proxy','proxy', '/var/log/squid3')
+
+   # install new initramfs - we need the scripts to handle raid drives
+   system("update-initramfs -k all -u")
 end
 
 def transfer_overlay(src, dest)
