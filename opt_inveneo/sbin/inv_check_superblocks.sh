@@ -68,6 +68,8 @@ awk '/^ARRAY/ {
     check_raid $line
 done
 
+# always exit with success
+exit 0
 
 
 
