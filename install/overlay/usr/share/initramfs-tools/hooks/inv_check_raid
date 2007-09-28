@@ -21,6 +21,9 @@ esac
 # lets get sfdisk
 copy_exec /sbin/sfdisk /sbin
 
+# and 'yes'
+copy_exec /usr/bin/yes /bin
+
 # and our check script
 copy_exec /opt/inveneo/sbin/inv_check_superblocks.sh /sbin
 
