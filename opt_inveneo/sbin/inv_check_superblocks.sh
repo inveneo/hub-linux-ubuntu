@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# set a reasonable path
+PATH=/bin:/sbin:/usr/bin:/usr/sbin
+
 part_exists() {
     part=${1##/*/}
     drive=`expr "${part}" : '\([a-z]*\)'`
