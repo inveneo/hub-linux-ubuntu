@@ -10,10 +10,8 @@ part_exists() {
 # args are: array-device device1 device2
 # e.g. check_raid /dev/md0 /dev/sdb1 /dev/sdb2
 check_raid() { 
-    # try to examine superbock
-    mdadm -E $1 2> /dev/null
-
-    if [ $? -eq 0 ]
+    # try to examine superblocks
+    if  mdadm -E $2 2> /dev/null && mdadm -E $3 2> /dev/null
 	then 
 	echo "RAID at $1: OK"
     else
@@ -32,7 +30,7 @@ check_raid() {
 	fi
 	
 	echo "Attempting to rewrite super-blocks for DEVICES: $DRIVE1,$DRIVE2 on ARRAY: $1"
-	mdadm --create $1 --level=1 --raid-devices=2 --auto=yes  $DRIVE1 $DRIVE2
+	yes | mdadm --create $1 --level=1 --raid-devices=2 --auto=yes  $DRIVE1 $DRIVE2
     fi
 }
 
