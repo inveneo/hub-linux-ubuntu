@@ -1,0 +1,25 @@
+#!/bin/sh
+
+PREREQ="udev"
+
+prereqs()
+{
+	echo "$PREREQ"
+}
+
+case $1 in
+# get pre-requisites
+prereqs)
+	prereqs
+	exit 0
+	;;
+esac
+
+# exit with success if no mdadm script, 'cause then we can't be running raid
+if [ -e /scripts/local-top/mdadm ]; then
+    exit 0
+fi
+
+# run check
+/sbin/inv_check_superblocks.sh /etc/mdadm/mdadm.conf
+
