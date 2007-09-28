@@ -24,7 +24,7 @@ case ${1:-} in
     exit 0
     ;;
   from-udev)
-    log_warning_msg "mdadm initramfs script called from UDEV"
+    echo "INV: mdadm initramfs script called from UDEV"
     # yuk
     MD_DEGRADED_ARGS=--no-degraded
     quiet=n
@@ -39,7 +39,7 @@ case ${1:-} in
     ;;
 esac
 
-log_warning_msg "mdadm initramfs: main script"
+log_warning_msg "INV: mdadm initramfs: main script"
 
 if [ -e /scripts/local-top/md ]; then
   log_warning_msg "old md initialisation script found, getting out of its way..."
