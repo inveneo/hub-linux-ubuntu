@@ -1,7 +1,7 @@
 #!/bin/sh
 
 MDADM_CONF=/etc/mdadm/mdadm.conf
-MAX_WAIT=10 # in seconds
+MAX_WAIT=7 # in seconds
 PREREQ="udev"
 DEVICES="sda sdb" 
 
@@ -18,16 +18,18 @@ prereqs)
 	;;
 esac
 
+DEVICES_FOUND=1 # assume false
 
 find_devices() {
+    DEVICES_FOUND=0 # assume all found at beginning of loop
     for drive in $DEVICES
       do
-      if [ ! -e $drive ]
+      if [ ! -e /dev/$drive ]
 	  then
-	  return 1
+	  DEVICES_FOUND=1 # false
+	  break
       fi
     done
-    return 0
 }
 
 . /scripts/functions
@@ -36,7 +38,7 @@ log_begin_msg "Inveneo RAID check"
 
 # exit with success if no mdadm script, 'cause then we can't be running raid
 if [ ! -e /scripts/local-top/mdadm ]; then
-    log_warning_msg "Not /scripts/local-top/mdadm, exiting"
+    log_warning_msg "No /scripts/local-top/mdadm, exiting"
     exit 0
 fi
 
@@ -48,13 +50,15 @@ fi
 
 # Wait for udev to populate /dev
 wait=$MAX_WAIT
-while [ ! find_devices ] && [ $wait -gt 0 ] 
+echo $wait
+while [ ! $DEVICES_FOUND -eq 0 ] && [ $wait -gt 0 ] 
   do
   sleep 1
+  find_devices
   wait=$(( $wait - 1 ))
 done
 
-if [ ! find_devices ] 
+if [ ! $DEVICES_FOUND -eq 0 ] 
     then
     log_warning_msg "Not all devices ($DEVICES) found."
     log_warning_msg "Continuing anyway with RAID check"
