@@ -7,7 +7,7 @@ part_exists() {
     part=${1##/*/}
     drive=`expr "${part}" : '\([a-z]*\)'`
     
-    return [ -e /sys/block/$drive/$part ]
+    [ -e /sys/block/$drive/$part ]
 }
 
 
