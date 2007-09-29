@@ -1,6 +1,9 @@
 #!/bin/sh
 
+MDADM_CONF=/etc/mdadm/mdadm.conf
+MAX_WAIT=10 # in seconds
 PREREQ="udev"
+DEVICES="sda sdb" 
 
 prereqs()
 {
@@ -15,9 +18,20 @@ prereqs)
 	;;
 esac
 
+
+find_devices() {
+    for drive in $DEVICES
+      do
+      if [ ! -e $drive ]
+	  then
+	  return 1
+      fi
+    done
+    return 0
+}
+
 . /scripts/functions
 
-MDADM_CONF=/etc/mdadm/mdadm.conf
 log_begin_msg "Inveneo RAID check"
 
 # exit with success if no mdadm script, 'cause then we can't be running raid
@@ -30,6 +44,20 @@ if [ ! -e $MDADM_CONF ]
 then
     log_warning_msg "mdadm conf: $MDADM_CONF not found. Not running check"
     exit 0
+fi
+
+# Wait for udev to populate /dev
+wait=$MAX_WAIT
+while [ ! find_devices ] && [ $wait -gt 0 ] 
+  do
+  sleep 1
+  wait=$(( $wait - 1 ))
+done
+
+if [ ! find_devices ] 
+    then
+    log_warning_msg "Not all devices ($DEVICES) found."
+    log_warning_msg "Continuing anyway with RAID check"
 fi
 
 # run check
