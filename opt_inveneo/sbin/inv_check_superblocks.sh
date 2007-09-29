@@ -6,15 +6,8 @@ PATH=/bin:/sbin:/usr/bin:/usr/sbin
 part_exists() {
     part=${1##/*/}
     drive=`expr "${part}" : '\([a-z]*\)'`
-
-    if [ -e /sys/block/$drive/$part ]
-	then
-	return 0
-    else
-	echo "Can't find $part, trying to forcing a partprobe"
-	partprobe /dev/$drive
-	[ -e /sys/block/$drive/$part ]
-    fi
+    
+    return [ -e /sys/block/$drive/$part ]
 }
 
 
