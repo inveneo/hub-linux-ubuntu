@@ -75,6 +75,8 @@ check_raid() {
 	    echo "stopping newly created array"
 	    mdadm --stop $1
 	fi
+    else
+	echo "All present drives have superblocks. Nothing to fix"
     fi
 }
 
