@@ -50,7 +50,7 @@ fi
 
 # Wait for udev to populate /dev
 wait=$MAX_WAIT
-echo $wait
+
 while [ ! $DEVICES_FOUND -eq 0 ] && [ $wait -gt 0 ] 
   do
   sleep 1
