@@ -10,6 +10,7 @@ screen install
 ntp install
 network-manager install
 mdadm install
+python-pexpect 	install
 
 # printing
 cupsys install
@@ -26,6 +27,7 @@ ruby1.8	install
 
 # For Jeff's sanity
 emacs-nox   install
+python-mode install
 
 # services
 #dnsmasq	install
