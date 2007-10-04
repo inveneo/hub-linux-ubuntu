@@ -30,9 +30,9 @@ def main():
     user_name=None
     password=None
     for o, a in opts:
-        if o == "-p":
+        if o == "-p" and len(a.strip()) !=0:
             password=a
-        elif o == "-u":
+        elif o == "-u" and len(a.strip()) !=0:
             user_name =a
 
     if user_name == None or password == None:
