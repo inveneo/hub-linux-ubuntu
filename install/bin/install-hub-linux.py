@@ -1,28 +1,33 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 
-from __future__ import with_statement
-
 import os
-from os import path
 import sys
 import syslog
 import traceback
 import subprocess as sp
-
-sys.path.append("/opt/inveneo/lib/python")
-
+from os import path
+from sys import stdout, stderr
 
 def main():
     syslog.openlog('install-hub-linux', 0, syslog.LOG_LOCAL5)
+    
     install_root=path.dirname(path.dirname(path.abspath(sys.argv[0])))
     overlay_root=path.join(install_root, "overlay")
+    install_bin=path.join(install_root, 'bin')
 
-    print "\nRemoving and adding packages...\n"
-    sp.check_call([path.join(install_root, 'bin','install-packages.py'),
+    stdout.write("\nRemoving and adding packages...\n")
+    sp.check_call([path.join(install_bin,'install-packages.py'),
                    path.join(install_root, 'package.d')])
-
-    # TO DO: install ruby and overlay
+    
+    stdout.write("\nInstalling Hub Overlay...\n")
+    ret=sp.check_call([path.join(install_bin,'install-hub-overlay.py')])
+    
+    stdout.write("\nPopulating LDAP server...\n")
+    sp.check_call([path.join(install_bin,'populate-hub-ldap.py')])
+    
+    
+    # TO DO: install ruby
     #
     
     return 0

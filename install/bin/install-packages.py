@@ -12,8 +12,6 @@ import subprocess as sp
 from os import path
 from sys import stderr,stdout
 
-sys.path.append("/opt/inveneo/lib/python")
-
 APT_DIRNAME="apt"
 APT_REMOVE_CMD='apt-get -y --force-yes --purge remove '
 APT_INSTALL_CMD='apt-get -y --force-yes install '

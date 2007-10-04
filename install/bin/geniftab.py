@@ -7,8 +7,7 @@ import os
 import sys
 import syslog
 import traceback
-
-sys.path.append("/opt/inveneo/lib/python")
+from os import stderr,stdout
 
 PROC_PATH="/sys/class/net"
 MAC_FILE="address"
@@ -35,8 +34,8 @@ def main():
         traceback.print_exc(20,sys.stderr)
         return 1
 
-    print HEADER+"# "+WAN+"\n"+WAN+" mac "+wan_mac+" arp 1\n"
-    print "# "+LAN+"\n"+LAN+" mac "+lan_mac+" arp 1\n"
+    stdout.write(HEADER+"# "+WAN+"\n"+WAN+" mac "+wan_mac+" arp 1\n")
+    stdout.write("# "+LAN+"\n"+LAN+" mac "+lan_mac+" arp 1\n")
     
     return 0
         
