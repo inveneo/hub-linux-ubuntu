@@ -10,7 +10,10 @@ screen install
 ntp install
 network-manager install
 mdadm install
+
+# python libraries
 python-pexpect 	install
+python-ldap	install
 
 # printing
 cupsys install
