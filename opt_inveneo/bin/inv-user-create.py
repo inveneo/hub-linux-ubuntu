@@ -51,17 +51,19 @@ def main():
     for o, a in opts:
         if o == "--no-share":
             no_share=True
-        elif o == "-u":
+        elif o == "-u" and len(a.strip()) != 0:
             uid = int(a)
-        elif o == "-c":
+        elif o == "-c" and len(a.strip()) != 0:
             real_name=a
-        elif o == "-p":
+        elif o == "-p" and len(a.strip()) != 0:
             password = a
 
-    if uid != None: user_add_cmd += " -u %d" % uid
-    if real_name: user_add_cmd += " -c %s" % real_name
+    if uid: user_add_cmd += " -u %d" % uid
+    if real_name: user_add_cmd += ' -c "%s"' % real_name
     user_add_cmd += " %(user_name)s"
-    ret=os.system(user_add_cmd % {'user_name':user_name})
+    cmd = user_add_cmd % {'user_name':user_name}
+    syslog.syslog("issuing cmd: "+cmd)
+    ret=os.system(cmd)
     if ret != 0:
         stderr('failed to add user: '+user_name)
         return 4
