@@ -5,7 +5,7 @@ require './invuser-lib.pl';
 &ReadParse();
 
 $username=$in{'user'};
-$usercreatecmd="/opt/inveneo/bin/invusercreate";
+$usercreatecmd="/opt/inveneo/bin/inv-user-create.py";
 
 #print "<h2>Add new user</h2>\n";
 

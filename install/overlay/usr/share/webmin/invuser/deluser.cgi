@@ -5,7 +5,7 @@ require './invuser-lib.pl';
 &ReadParse();
 
 $username=$in{'user'};
-$userdelcmd="/opt/inveneo/bin/invuserdel";
+$userdelcmd="/opt/inveneo/bin/inv-user-del.py";
 
 &ui_print_header(undef, "User removal", "", undef, 1, 1);
 print "Deleting user: " . $username ." ... ";

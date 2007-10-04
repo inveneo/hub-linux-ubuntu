@@ -7,13 +7,13 @@ require './invuser-lib.pl';
 $username=$in{'uname'};
 $upasswd=$in{'upasswd'};
 $realname="Inveneo User";
-$usercreatecmd="/opt/inveneo/bin/invusercreate";
+$usercreatecmd="/opt/inveneo/bin/inv-user-create.py";
 
 # Ask for Username and password
 	&ui_print_header(undef, "User creation", "", undef, 1, 1);
 	print "Creating user: " . $in{'uname'} ." with password " . $in{'upasswd'} . "....";
 
-	system "$usercreatecmd $username $upasswd \"$realname\"";
+	system "$usercreatecmd -p $upasswd -c \"$realname\"  $username ";
 
 	print "done<br>";
 	&ui_print_footer("/", $text{'index'});

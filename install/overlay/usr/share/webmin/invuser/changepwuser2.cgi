@@ -6,13 +6,13 @@ require './invuser-lib.pl';
 
 $username=$in{'uname'};
 $upasswd=$in{'upasswd'};
-$userpwresetcmd="/opt/inveneo/bin/invuserchgpw";
+$userpwresetcmd="/opt/inveneo/bin/inv-passwd.py";
 
 # Ask for Username and password
 	&ui_print_header(undef, "Password Reset", "", undef, 1, 1);
 	print "Setting password for $username....";
 
-	system "$userpwresetcmd $username $upasswd";
+	system "$userpwresetcmd -u $username -p $upasswd";
 
 	print "done<br>";
 	&ui_print_footer("/", $text{'index'});
