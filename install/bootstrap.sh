@@ -46,7 +46,7 @@ usermod -aG powerdev inveneo
 
 # download and install Inveneo GPG key
 echo "Installing Inveneo GPG key"
-wget http://community.inveneo.org/apt/inveneo.gpg
+wget http://community.inveneo.org/certs/inveneo.gpg
 apt-key add inveneo.gpg
 
 # comment out cdrom in sources list
@@ -54,40 +54,13 @@ sed s/^deb\ cdrom/\#deb\ cdrom/ < /etc/apt/sources.list > /etc/apt/sources.list.
 mv /etc/apt/sources.list /etc/apt/sources.list~
 mv /etc/apt/sources.list.new /etc/apt/sources.list
 
-echo "Cleaning package cache"
-apt-get clean
-
-echo "Updating package list"
-apt-get update
-
-echo "installing Subversion and Ruby"
-apt-get -y install subversion ruby rdoc
+echo "installing Subversion"
+apt-get -y install subversion
 
 if [ $? -ne 0 ]
 then
-	echo "Failed to install SVN and Ruby. Cannot continue"
+	echo "Failed to install SVN. Cannot continue"
 	exit -1
-fi
-
-echo "installing Rubygems"
-wget -O rubygems.tar.gz http://rubyforge.org/frs/download.php/20989/rubygems-0.9.4.tgz
-tar -xvzf rubygems.tar.gz
-cd rubygems-*/
-ruby setup.rb
-
-if [ $? -ne 0 ]
-then
-        echo "Could not install rubygems"
-        exit -1
-fi 
-
-gem update --system
-if [ $? -ne 0 ]
-then
-	echo -n "retrying gem update --system"
-	sleep 10
-	echo " ... now"
-	gem update --system
 fi
 
 cd /tmp
@@ -98,8 +71,17 @@ svn co http://svn.inveneo.org/repos/hub-linux-ubuntu/trunk/opt_inveneo /opt/inve
 echo "checking out /opt/install"
 svn co http://svn.inveneo.org/repos/hub-linux-ubuntu/trunk/install /opt/install
 
+echo "copying in APT settings"
+cp -a /opt/install/overlay/etc/apt /etc
+
+echo "updating packages"
+apt-get update
+apt-get -y --force-yes dist-upgrade
+apt-get autoremove
+apt-get clean
+
 echo "generating /etc/iftab"
-/opt/install/bin/geniftab.sh > /etc/iftab
+/opt/install/bin/geniftab.py > /etc/iftab
 
 echo "installing /etc/network/interfaces"
 cp -a /opt/install/overlay/etc/network/interfaces /etc/network/interfaces
