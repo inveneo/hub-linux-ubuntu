@@ -43,6 +43,7 @@ usermod -aG fuse inveneo
 usermod -aG netdev inveneo
 usermod -aG admin inveneo
 usermod -aG powerdev inveneo
+usermod -aG admin inveneo
 
 # download and install Inveneo GPG key
 echo "Installing Inveneo GPG key"
