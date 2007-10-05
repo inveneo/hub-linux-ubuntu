@@ -19,7 +19,7 @@ groupadd -g  202 fuse 2>/dev/null || groupmod -g 202 fuse
 
 # make inveeno user/group
 echo "removing 'inveneo' user and group if they exist"
-userdel -r inveneo 2>/dev/null
+userdel -fr inveneo 2>/dev/null
 groupdel inveneo 2>/dev/null
 
 echo "adding new 'inveneo' user/group"
