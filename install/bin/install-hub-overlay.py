@@ -35,7 +35,7 @@ def folder_visitor(func, dirname, fnames):
         
 def fix_perms(opt_root):
     """docstring for fix_perms"""
-    pass
+    os.chmod(path.join(opt_root,"install","overlay","srv","samba","shared_docs"),0777)
          
 ######## transfer event helpers #########
 def fix_owners(opt_root):
@@ -93,7 +93,7 @@ def main():
     stdout.write('\nTransfering overlay files to root (/)...\n')
     transfer_overlay(overlay_root, overlay_dest)
     
-    stdout.write('\Setting up any missing symlinks in destination...\n')
+    stdout.write('\nSetting up any missing symlinks in destination...\n')
     make_links(overlay_dest)
     
     stdout.write('\nRunning post-transfer processing...\n')
