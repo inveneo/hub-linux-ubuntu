@@ -81,11 +81,11 @@ def main():
     overlay_root=path.join(install_root, "overlay")
     overlay_dest='/'
     
-    stdout.write('\nFixing Permissions in: '+opt_root+'...\n')
-    fix_perms(opt_root)
-    
     stdout.write('\nFixing ownership in: '+opt_root+'...\n')
     fix_owners(opt_root)
+    
+    stdout.write('\nFixing Permissions in: '+opt_root+'...\n')
+    fix_perms(opt_root)
     
     stdout.write('\nRunning pre-transfer processing...\n')
     pre_overlay_transfer(overlay_root, overlay_dest)
