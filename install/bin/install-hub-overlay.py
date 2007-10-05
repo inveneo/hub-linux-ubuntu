@@ -35,16 +35,16 @@ def folder_visitor(func, dirname, fnames):
         
 def fix_perms(opt_root):
     """docstring for fix_perms"""
+    pass
+         
+######## transfer event helpers #########
+def fix_owners(opt_root):
+    """docstring for fix_owners"""
     # Globally switch ownership of overlay to root
     uinfo=pwd.getpwnam('root')
     path.walk(path.join(opt_root,'install','overlay'), \
          folder_visitor, \
          lambda f: os.chown(f, uinfo[2],uinfo[3]))
-         
-######## transfer event helpers #########
-def fix_owners(opt_root):
-    """docstring for fix_owners"""
-    pass
     
 def pre_overlay_transfer(overlay_root, dest):
     """docstring for pre_overlay_transfer"""
