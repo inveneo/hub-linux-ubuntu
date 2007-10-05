@@ -7,7 +7,7 @@ import os
 import sys
 import syslog
 import traceback
-from os import stderr,stdout
+from sys import stderr,stdout
 
 PROC_PATH="/sys/class/net"
 MAC_FILE="address"
