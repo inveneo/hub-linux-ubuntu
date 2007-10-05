@@ -86,4 +86,7 @@ echo "generating /etc/iftab"
 echo "installing /etc/network/interfaces"
 cp -a /opt/install/overlay/etc/network/interfaces /etc/network/interfaces
 
+echo "Restart required. Hit enter/return to do reboot"
+read -n 1 char
+reboot
 exit 0 
