@@ -34,8 +34,8 @@ def main():
         traceback.print_exc(20,sys.stderr)
         return 1
 
-    stdout.write(HEADER+"# "+WAN+"\n"+WAN+" mac "+wan_mac+" arp 1\n")
-    stdout.write("# "+LAN+"\n"+LAN+" mac "+lan_mac+" arp 1\n")
+    stdout.write(HEADER+"# wan0\nwan0 mac "+wan_mac+" arp 1\n\n")
+    stdout.write("# lan0\nlan0 mac "+lan_mac+" arp 1\n")
     
     return 0
         
