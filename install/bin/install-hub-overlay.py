@@ -58,7 +58,7 @@ def post_overlay_transfer(overlay_root, dest):
         lambda f: os.chown(f, uinfo[2],uinfo[3]))
 
     # install new initramfs - we need the scripts to handle raid drives
-    sp.check_call(['update-initramfs','-k','all','-u')
+    sp.check_call(['update-initramfs','-k','all','-u'])
     
 def transfer_overlay(src,dest):
     """docstring for transfr_overlay"""

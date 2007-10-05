@@ -38,7 +38,10 @@ case "$1" in
     start)
     do_start
     ;;
-    restart|reload|force-reload)
+    reload)
+    do_start
+    ;;
+    restart|force-reload)
     echo "Error: argument '$1' not supported" >&2
     exit 3
     ;;
