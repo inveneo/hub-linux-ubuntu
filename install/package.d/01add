@@ -26,7 +26,6 @@ openprinting-ppds install
 
 # for Rails
 sqlite3 install 
-ruby1.8	install
 
 # For Jeff's sanity
 emacs-nox   install
@@ -61,19 +60,8 @@ libnet-ldap-perl install
 
 # dev, not needed in production but not a bad idea to have...
 subversion	install
-ri	install
-swig	install
-libsqlite3-dev install
 build-essential install
-ruby1.8-dev	install
 patch	install
 
-# Ruby Gem packages--noted here for completeness, but currently installed manually
-# GEMS, install directly from source! 
-# rails manual dependcies: rake, sqlite3-ruby
-# rails auto-installed dependencies:  activesupport, activerecord, actionpack, actionmailer, actionwebservice
-# rails
-# mongrel auto-installed dependencies: fastthread, cgi_multipart_eof_fix
-# mongrel
-# mongrel_cluster
+
  
