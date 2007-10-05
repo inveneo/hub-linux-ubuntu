@@ -42,6 +42,7 @@ squid3	install
 squid-cgi	install
 libnss-mdns	install
 samba	install
+smbclient install
 avahi-utils	install
 mysql-server-5.0   	install
 webmin		install
