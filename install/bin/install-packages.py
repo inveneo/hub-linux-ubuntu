@@ -103,7 +103,7 @@ def main(dir_or_file):
     # copy apt config if found
     if path.exists(apt_dir):
         stdout.write('\nUpdating sources list and apt configuration...\n')
-        sp.check_call(['cp','-r','-p',apt_dir,'/etc/']) # shutil not smart enough to copy just contents
+        sp.check_call(['cp','-r','-p',apt_dir+'/','/etc/']) # shutil not smart enough to copy just contents
         
     # set-up gpg keys
     stdout.write("\nUpdating GPG keys...\n")
