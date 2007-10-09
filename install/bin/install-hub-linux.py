@@ -21,7 +21,7 @@ def main():
                    path.join(install_root, 'package.d')])
     
     stdout.write("\nInstalling Hub Overlay...\n")
-    ret=sp.check_call([path.join(install_bin,'install-hub-overlay.py')])
+    sp.check_call([path.join(install_bin,'install-hub-overlay.py')])
     
     stdout.write("\nPopulating LDAP server...\n")
     sp.check_call([path.join(install_bin,'populate-hub-ldap.py')])

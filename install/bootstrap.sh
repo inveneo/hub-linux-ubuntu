@@ -24,7 +24,7 @@ groupdel inveneo 2>/dev/null
 
 echo "adding new 'inveneo' user/group"
 groupadd -g 1400 inveneo
-useradd -s /bin/bash -d /home/inveneo -g inveneo -u 1400 -p $PWD inveneo
+useradd -s /bin/bash -m -d /home/inveneo -g inveneo -u 1400 -p $PWD inveneo
 echo "adding 'inveneo' to permissions groups, one at a time in case any fail"
 usermod -aG adm inveneo
 usermod -aG dialout inveneo

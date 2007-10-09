@@ -10,7 +10,7 @@ import subprocess as sp
 from os import path
 from sys import stdout, stderr
 
-OTHER_GROUPS='dialout,cdrom,floppy,adm,plugdev,scanner,fuse,audio,video,dip,lpadmin'
+OTHER_GROUPS='adm,dialout,fax,voice,cdrom,floppy,audio,dip,video,plugdev,games,lpadmin,scanner,fuse'
 DEFAULT_GROUP='Domain\\ Users'
 SKELETON_DIR='/opt/inveneo/skeleton/samba/user-share-dir'
 HOME_DIR_BASE='/srv/samba/user_docs'
