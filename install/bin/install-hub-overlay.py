@@ -20,6 +20,9 @@ from os import path
 from sys import stderr,stdout
 
 
+SERVICES=('samba','samba-shares.sh','slapd','squid3','dhcp3-server', \
+          'apache2','avahi-daemon','cupsys','mysql','webmin')
+
 # Folder walking 'cause os.path functions aren't recursive 
 def folder_visitor(func, dirname, fnames):
     """This function is used as a visitor in a 'walk'
@@ -39,7 +42,7 @@ def fix_perms(opt_root):
     os.chmod(path.join(opt_root,"install","overlay","srv","samba","shared_docs"),0777)
 
     # fix /etc/libnss-ldap.secret
-    os.chmod(path.join(opt_root,"install","overlay","etc","lib-nss-ldap.secret"),0600)
+    os.chmod(path.join(opt_root,"install","overlay","etc","libnss-ldap.secret"),0600)
     
          
 ######## transfer event helpers #########
@@ -53,7 +56,12 @@ def fix_owners(opt_root):
     
 def pre_overlay_transfer(overlay_root, dest):
     """docstring for pre_overlay_transfer"""
-    pass
+
+    # stop services
+    for service in SERVICES:
+        sp.call(['/etc/init.d/'+service,'stop'])
+
+
     
 def post_overlay_transfer(overlay_root, dest):
     # HACK: Fix Squid perms 
@@ -64,6 +72,11 @@ def post_overlay_transfer(overlay_root, dest):
 
     # install new initramfs - we need the scripts to handle raid drives
     sp.check_call(['update-initramfs','-k','all','-u'])
+
+    # start-up services (in reverse order of stop)
+    for service in SERVICES[::-1]:
+        sp.call(['/etc/init.d/'+service,'start'])
+
     
 def transfer_overlay(src,dest):
     """docstring for transfr_overlay"""

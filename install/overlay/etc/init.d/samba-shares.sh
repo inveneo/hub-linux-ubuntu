@@ -23,27 +23,25 @@ HEADER="# ========= DO NOT EDIT: GENERATED AT BOOT TIME FROM CONTENTS OF shares.
 . /lib/lsb/init-functions
 
 do_start () {
+    log_daemon_msg "Generating ${SHARES_CONF}"
     echo ${HEADER} > ${SHARES_CONF}
     
     if [ -d "${SHARES_D}" ]
 	then
 	for f in "${SHARES_D}"/*.conf
 	  do
+	  log_progress_msg "Adding $f..."
 	  echo "include = $f" >> "${SHARES_CONF}"
 	done
     fi
 }
 
 case "$1" in
-    start)
+    start|restart)
     do_start
     ;;
-    reload)
+    reload|force-reload)
     do_start
-    ;;
-    restart|force-reload)
-    echo "Error: argument '$1' not supported" >&2
-    exit 3
     ;;
     stop)
 	# No-op
