@@ -35,7 +35,12 @@ def folder_visitor(func, dirname, fnames):
         
 def fix_perms(opt_root):
     """docstring for fix_perms"""
+    # fix samba shared docs
     os.chmod(path.join(opt_root,"install","overlay","srv","samba","shared_docs"),0777)
+
+    # fix /etc/libnss-ldap.secret
+    os.chmod(path.join(opt_root,"install","overlay","etc","lib-nss-ldap.secret"),0600)
+    
          
 ######## transfer event helpers #########
 def fix_owners(opt_root):
