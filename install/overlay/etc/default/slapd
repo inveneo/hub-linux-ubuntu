@@ -23,7 +23,7 @@ SLURPD_START=auto
 # service requests on TCP-port 636 (ldaps) and requests via unix
 # sockets.
 # Example usage:
-SLAPD_SERVICES="ldap://127.0.0.1:389 ldap://192.168.100.1:389/ ldapi://%2fvar%2frun%2fldapi_sock"
+SLAPD_SERVICES="ldap://127.0.1.1:389/ ldap://192.168.100.1:389/ ldapi://%2Fvar%2Frun%2Fslapd%2Fldapi_sock"
 
 
 
