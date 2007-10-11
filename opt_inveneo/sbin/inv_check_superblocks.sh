@@ -62,7 +62,7 @@ check_raid() {
     if [ $SHOULD_REWRITE -eq 0 ]
 	then
 	echo "Attempting to rewrite super-blocks for DEVICES: $DRIVE1,$DRIVE2 on ARRAY: $1"
-	yes | mdadm --create $1 --level=1 --raid-devices=2 --auto=yes  $DRIVE1 $DRIVE2
+	yes | mdadm --create $1 --size=max --level=1 --raid-devices=2 --auto=yes  $DRIVE1 $DRIVE2
 	if [ $? -eq 0 ]
 	    then
 	    echo "stopping newly created array"
