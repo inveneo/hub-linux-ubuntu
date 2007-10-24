@@ -33,7 +33,7 @@ python-mode install
 
 # services
 #dnsmasq	install
-bind		install
+bind9		install
 dhcp3-server	install
 dhcp3-client 	install
 apache2 	install

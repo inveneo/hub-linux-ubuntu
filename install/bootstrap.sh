@@ -81,8 +81,8 @@ apt-get -y --force-yes dist-upgrade
 apt-get autoremove
 apt-get clean
 
-echo "generating /etc/iftab"
-/opt/install/bin/geniftab.py > /etc/iftab
+echo "generating network device rules"
+/opt/install/bin/gennetrules.py > /etc/udev/rules.d/70-persistent-net.rules
 
 echo "installing /etc/network/interfaces"
 cp -a /opt/install/overlay/etc/network/interfaces /etc/network/interfaces
