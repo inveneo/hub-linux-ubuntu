@@ -1,6 +1,0 @@
-# Inveneo release repository
-deb http://community.inveneo.org/apt/ twooh main
-
-# inveneo hub
-deb http://community.inveneo.org/apt/ hub-oneoh main
-
