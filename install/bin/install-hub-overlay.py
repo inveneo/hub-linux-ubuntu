@@ -20,7 +20,7 @@ from os import path
 from sys import stderr,stdout
 
 
-SERVICES=('samba','samba-shares.sh','slapd','squid3','dhcp3-server', \
+SERVICES=('asterisk','samba','samba-shares.sh','slapd','squid3','dhcp3-server', \
           'apache2','avahi-daemon','cupsys','mysql','webmin')
 
 # Folder walking 'cause os.path functions aren't recursive 
