@@ -60,10 +60,15 @@ def pre_overlay_transfer(overlay_root, dest):
     # stop services
     for service in SERVICES:
         try:
-            stdout.write("Attempting to stop: "+service+"\n")
             sp.call(['/etc/init.d/'+service,'stop'])
         except Exception, ex:
             stderr.write("Failed to stop: "+service+"\n")
+
+    # remove /etc/rc2.d/S12hal which needs to be moved to S13hal
+    try:
+        os.remove("/etc/rc2.d/S12hal")
+    except OSError, ex:
+        pass # silent, must not have been there
     
 def post_overlay_transfer(overlay_root, dest):
     # HACK: Fix Squid perms 
