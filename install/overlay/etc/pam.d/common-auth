@@ -7,5 +7,10 @@
 # (e.g., /etc/shadow, LDAP, Kerberos, etc.).  The default is to use the
 # traditional Unix authentication mechanisms.
 #
-auth    sufficient      pam_ldap.so 
-auth	required	pam_unix.so try_first_pass nullok_secure 
+#auth	sufficient 	pam_ldap.so
+#auth	required	pam_unix.so nullok_secure try_first_pass
+
+
+auth [success=1 default=ignore] pam_unix.so
+auth required pam_ldap.so use_first_pass
+auth required pam_permit.so
