@@ -1,0 +1,722 @@
+<!--
+ * Asterisk-GUI	-	an Asterisk configuration interface
+ *
+ * Digital Card Setup / Detection 
+ *
+ * Copyright (C) 2006-2007, Digium, Inc.
+ *
+ * Brandon Kruse <bkruse@digium.com>
+ *
+ * See http://www.asterisk.org for more information about
+ * the Asterisk project. Please do not directly contact
+ * any of the maintainers of this project for assistance;
+ * the project provides a web site, mailing lists and IRC
+ * channels for your use.
+ *
+ * This program is free software, distributed under the terms of
+ * the GNU General Public License Version 2. See the LICENSE file
+ * at the top of the source tree.
+ *
+-->
+<script src="scripts/prototype.js"></script>
+<script src="scripts/astman.js"></script>
+<script src="scripts/tooltip.js"></script>
+<link href="stylesheets/schwing.css" media="all" rel="Stylesheet" type="text/css" />
+<style>
+
+	.taglist {
+		border: 1px solid #666666;
+		margin-top:10px;
+		margin-bottom:10px;
+		max-width: 745;
+	}
+
+	.taglist tr.frow {
+		background-color: #6b79a5;
+		color: #CED7EF;
+	}
+
+	.taglist tr.even {
+		background-color: #DFDFDF;
+	}
+
+	.taglist tr.odd{
+		background-color: #FFFFFF;
+	}
+
+	.taglist tr.even:hover, .taglist tr.odd:hover {
+		background-color: #a8b6e5;
+	}
+
+	#errmsg{
+		border: 1px solid #666666;
+		margin-left:50px;
+		margin-right:50px;
+		padding : 20px 10px 20px 10px;
+		font-size: 125%;
+		text-align: center;
+		background-color:#FFFFFF;
+	}
+
+	.pageheading{
+		padding : 10px 10px 10px 10px;
+		font-size: 135%;
+		text-align: center;
+		font-weight: bold;
+	}
+</style>
+<script>
+var SPANS = {};
+var oldSpanCount = 0; // we get this from previuos applyzap.conf
+var oldLoadZone;
+var menu ; // document.getElementById('mymenu');
+
+function hide_mymenu(){ menu.style.display="none"; }
+
+function verify_priChLimit(){
+	var l = String( menu.span_value );
+	if(_$('editspan_signalling').value.beginsWith('fx')){ return true;}
+	var y = Number(_$('edit_DefinedChans').value);
+	if( Number(SPANS[l]['totchans'] ) <= 24 && y ==24){return false;}//alert("You should leave atleast 1 channel for PRI signalling");
+	if( Number(SPANS[l]['totchans'] ) > 24 && y ==31){return false;}//alert("You should leave atleast 1 channel for PRI signalling");
+	return true;
+};
+
+function calc_bchan_fxx(l){ // calculates the bchan,and fxx strings for a given span
+	var y = Number(SPANS[l]['min_ch']);
+	var z = Number(SPANS[l]['definedchans']);
+	if(z==1){return String(y);}
+
+	if( SPANS[l]['signalling'] && SPANS[l]['signalling'].beginsWith('fx') ){
+
+		return y + "-" + String(y+z-1);
+	}else{
+		if(SPANS[l]['totchans'] <= 24){ // if T1
+			return y + "-" + String(y+z-1);
+		}else{ // if E1 - take first 15 as b-channels, then a d channel and then take the next 15 as bchannels
+			if(z==16){ return y+"-"+String(y+14)+","+String(y+16); }
+			if(z<= 15){
+				return y+"-"+String(y+z-1);
+			}else{
+				return y+"-"+String(y+14)+","+String(y+16) +"-"+ String(y+z);
+			}
+		}
+	}
+}
+
+
+function canelSpanInfo(){
+	_$('edit_span').style.display = "none";
+	_$('bg_transparent').style.display = "none";
+}
+
+function preparemenus(){
+	menu.style.width="80";
+	menu.style.borderColor = "#eee #bbb #bbb #ddd";
+	ASTGUI.events.add( document.body , "click", function(){ menu.style.display="none"; } );
+	var edit_DefinedChans_changed = function(){
+		var b = String( menu.span_value );
+		var y = Number(_$('edit_DefinedChans').value);
+		if( !verify_priChLimit() ){
+			alert("You should leave atleast one channel for signalling");
+			return true;
+		}
+
+		SPANS[b]['definedchans'] = y;
+		//_$('edit_labelReserved').innerHTML = SPANS[b]['reserved_ch'];
+		_$('edit_labelZapchan').innerHTML = calc_bchan_fxx(b);
+	};
+
+	ASTGUI.events.add( _$('edit_DefinedChans'), "change", edit_DefinedChans_changed );
+
+	var editSPAN = function(l){ // show values for SPAN l in the edit_span dialog box
+		_$('editspan_SPAN').innerHTML = SPANS[l]['description'];
+		_$('editspan_ALARMS').innerHTML = SPANS[l]['alarms'];
+
+		// console.log( SPANS[l]['min_ch'] );
+		// console.log( SPANS[l]['max_ch'] );
+		// console.log( SPANS[l]['definedchans']  );
+
+		ASTGUI.selectbox.clear( _$('editspan_fac') );
+		var w = _$('edit_DefinedChans') ;
+
+		var ijkl = function(){
+			ASTGUI.selectbox.clear(w);
+			var f = Number( SPANS[l]['totchans'] ), g=0;
+			for(g=1; g <=f; g++){ ASTGUI.selectbox.append(w,g,g); }
+			ASTGUI.selectbox.selectOption(w,SPANS[l]['definedchans']);
+			_$('edit_labelReserved').innerHTML = SPANS[l]['reserved_ch'];
+			_$('edit_labelZapchan').innerHTML = calc_bchan_fxx(l);
+		}();
+
+		if ( Number(SPANS[l]['totchans']) <= 24 ){
+			ASTGUI.selectbox.append(_$('editspan_fac'),'ESF/B8ZS', 'ESF/B8ZS');
+			ASTGUI.selectbox.append(_$('editspan_fac'),'D4/AMI', 'D4/AMI');
+		}else{
+			ASTGUI.selectbox.append(_$('editspan_fac'),'CAS/AMI', 'CAS/AMI');
+			ASTGUI.selectbox.append(_$('editspan_fac'),'CCS/HDB3', 'CCS/HDB3');
+			ASTGUI.selectbox.append(_$('editspan_fac'),'CCS/CRC4/HDB3', 'CCS/CRC4/HDB3');
+		}
+
+		ASTGUI.selectbox.selectOption( _$('editspan_fac') , SPANS[l]['fac'] );
+
+		_$('editspan_channels').innerHTML = String(SPANS[l]['usedchans']) + "/" + String(SPANS[l]['totchans']) + " ("+SPANS[l]['spantype']+")";
+	
+		if( SPANS[l]['signalling'] ){
+			ASTGUI.selectbox.selectOption( _$('editspan_signalling') , SPANS[l]['signalling'] );
+		}else{
+			_$('editspan_signalling').selectedIndex = -1 ; 
+		}
+		disablEnable_sc();
+		if(SPANS[l]['switchtype']){
+			ASTGUI.selectbox.selectOption( _$('editspan_switchtype') , SPANS[l]['switchtype'] );
+		}else{
+			_$('editspan_switchtype').selectedIndex = -1 ;
+		}
+		ASTGUI.selectbox.selectOption( _$('editspan_syncsrc') , SPANS[l]['syncsrc'] );
+		ASTGUI.selectbox.selectOption( _$('editspan_lbo') , SPANS[l]['lbo'] );
+		_$('edit_span').style.display = "";
+		_$('bg_transparent').style.display = "";
+	};
+
+	var menuitem1 = document.createElement('div');
+	menuitem1.innerHTML = "Edit" ;
+	menuitem1.onclick =  function(){ hide_mymenu();  editSPAN( this.parentNode.span_value); };
+	menu.appendChild(menuitem1);
+}
+
+function show_downmenu(s){
+	var a = _$("span_"+s);
+	menu.span_value = s ;
+	ASTGUI.alignBbelowA(a,menu);
+	setTimeout( function(){ menu.style.display=""; } , 100 );
+}
+
+function showtable(){ // navigates through the SPANS object and presents as a table to the user
+	var tbl = _$('digitalcardstable') ;
+
+	var add_fRow = function(){
+		var newRow = tbl.insertRow(-1);
+		newRow.className = "frow";
+
+		var newCell0 = newRow.insertCell(0);
+		newCell0.innerHTML = "SPAN";
+
+		var newCell1 = newRow.insertCell(1);
+		newCell1.innerHTML = "ALARMS";
+
+		var newCell2 = newRow.insertCell(2);
+		newCell2.innerHTML =  "Framing/Coding";
+
+		var newCell3 = newRow.insertCell(3);
+		newCell3.innerHTML = "channels<BR>Used/Total" ;
+		newCell3.align = "center";
+
+		var newCell4 = newRow.insertCell(4);
+		newCell4.innerHTML = "Signalling" ;
+		newCell4.align = "center";
+
+		var newCell5 = newRow.insertCell(5);
+		newCell5.innerHTML = "" ;
+
+	};
+
+	var addrow_totable = function(span){
+		var sno = tbl.rows.length + 1;
+		var newRow = tbl.insertRow(-1);
+		newRow.className = ((tbl.rows.length)%2==1)?"odd":"even";
+
+		newRow.id ="row" + span ;
+		newRow["span_value"] = span;
+
+		var newCell0 = newRow.insertCell(0);
+		newCell0.innerHTML = SPANS[span]['description'] + "&nbsp;&nbsp;";
+		newCell0.align = "center";
+	
+		var newCell1 = newRow.insertCell(1);
+		newCell1.innerHTML = SPANS[span]['alarms'];
+		newCell1.align = "center";
+
+		var newCell2 = newRow.insertCell(2);
+		newCell2.innerHTML =  SPANS[span]['fac'];
+
+		var newCell3 = newRow.insertCell(3);
+		newCell3.innerHTML = String(SPANS[span]['usedchans'])+"/"+String(SPANS[span]['totchans'])+" ("+SPANS[k]['spantype']+")";
+		newCell3.align = "center";
+
+		var newCell4 = newRow.insertCell(4);
+		newCell4.innerHTML = (SPANS[span]['signalling'])?SPANS[span]['signalling'] : "<font color=red>NOT DEFINED</font>" ;
+		newCell4.align = "center";
+
+
+		var newCell5 = newRow.insertCell(5);
+		newCell5.innerHTML = "<span class=\"downmenubutton\" id='" + "span_" + span + "'  onclick=\"show_downmenu( '"+ span + "');\">Options&nbsp;&nbsp;<img src=images/1.gif></span>" ;
+		newCell5.style.width = 90;
+		newCell5.align = "center";
+	};
+
+	ASTGUI.domActions.clear_table(tbl);
+	add_fRow();
+	for( var k in SPANS ){ if( SPANS.hasOwnProperty(k) ){ addrow_totable(k); }}
+
+}
+
+function localajaxinit(){
+	menu = document.getElementById('mymenu');
+	setWindowTitle("Digital Setup Wizard");
+	top._$('mainscreen').width= 798;
+	_$('save_b').disabled = true;
+	_$('cancel_b').disabled = true;
+
+	ASTGUI.events.add( _$('loadZone') , "change" , function(){_$('save_b').disabled = false; _$('cancel_b').disabled = false;}) ;
+
+	showdiv_statusmessage(); // create status message dialog
+	_$('message_text').innerHTML = "Detecting Digital Cards ... (Beta)";
+	_$('status_message').style.display="block";
+	setTimeout(function(){ _$('status_message').style.display='none';}, 1000);
+	preparemenus();
+	parent.loadscreen(this);
+	loadConfigFiles.readApplyzap();
+}
+
+var loadConfigFiles = {
+	// read applyzap.conf (if exists) - so that the GUI knows the last configured hardware
+	// run ztscan - to detect digital cards
+	// read ztscan.conf - read spans information - also set the max , min values for each span
+	//   see if the number of spans in ztscan.conf matches with that from applyzap.conf 
+	//   (this way we know if any changes in digital hardware since the gui was last used)
+	// read users.conf - and read spans information 
+	//   check if the channels in zapchan are within max and min
+	//   if yes then set the current range values
+
+	readApplyzap: function(){
+		
+		var applyZapParse = function(n){ // read applyzap.conf
+			if( ASTGUI.checkType.isString(n) &&  n=="ERROR: CONFIG FILE NOT FOUND" ){ 
+				// applyzap.conf not found - probably running this page for the first time 
+				// touch applyzap.conf - we need to have a file to be a able to write to it
+				oldSpanCount = 0;
+				oldLoadZone ='us';
+				 setTimeout( function(){ parent.astmanEngine.run_tool("/bin/touch /etc/asterisk/applyzap.conf", function(){} ); } , 100);
+
+			}else{
+				try{
+					for (var i=0; i < n['general'].length; i++){
+						if( n['general'][i].beginsWith('span=') ){ oldSpanCount++; continue; }
+						if( n['general'][i].contains('loadzone=') ){
+							oldLoadZone = n['general'][i].split('loadzone=')[1]; 
+							ASTGUI.selectbox.selectOption( _$('loadZone') , oldLoadZone );
+							continue;
+						}
+	
+					}
+				}catch(err){
+
+				}
+			}
+			loadConfigFiles.runZtscan(); // to next step - run ztscan and read ztscan.conf
+		};
+		config2json("applyzap.conf", 0, applyZapParse);
+	},
+
+	runZtscan: function(){
+		parent.astmanEngine.run_tool(asterisk_guiZtscan, function(t) { // run ztscan and then try loading ztscan.conf
+			setTimeout( function(){ loadConfigFiles.readZtscanConf(); } , 700); // leave some time for ztscan to generate ztscan.conf
+		});
+	},
+
+	readZtscanConf:function(){
+		var digitalparse = function(n){
+			if( n == "ERROR: CONFIG FILE NOT FOUND"){
+				_$('errmsg').innerHTML = "Please check if <B>ztscan</B> is installed ? <BR> /etc/asterisk/ztscan.conf not found";
+				_$('errmsg').style.display = '';
+				_$('div_digitalcardstable').style.display = 'none';
+				gui_feedback("No Cards/Spans found,  No Config File found !!");
+				//_$('tablecontainer').style.display="none";
+				return false;
+			}
+			var q = 0;
+			for( var l in n ){ if(n.hasOwnProperty(l)){
+				if( l =='general') { 
+					if(n[l]['continue'] && n[l]['continue'] == "no") {
+						_$('errmsg').innerHTML = "No digital Cards detected (found 0 spans)! <BR> Error: " + n[l]['error'];
+						_$('errmsg').style.display = '';
+						_$('div_digitalcardstable').style.display = 'none';
+						gui_feedback("No Cards/Spans found !!");
+						//_$('tablecontainer').style.display="none";
+						return false;
+					}
+					if(n[l]['continue'] && n[l]['continue'] == "yes") {
+						//var t = (n[l]['totalspans']) ? n[l]['totalspans'] : 'Unknown';
+						if(n[l]['isnew'] && n[l]['isnew'] == "yes") {
+							var uri = build_action('update', 0, 'general', 'isnew', 'no', '');
+							makerequest('u','ztscan.conf', uri, function(t){ return true;} );
+						}
+					}
+					continue;
+				}
+				SPANS[l] = {};
+				for( var k in n[l] ){ if(n[l].hasOwnProperty(k)){ 
+					SPANS[l][k] = n[l][k];
+					if( k == 'totchans' ){
+						SPANS[l]['spantype'] = ( Number(n[l][k]) <= 24) ? "T1" : "E1";
+						SPANS[l]['min_ch'] = q + 1;
+						SPANS[l]['max_ch'] = q + Number(n[l][k]) ;
+						SPANS[l]['reserved_ch'] = q + ( (Number(n[l][k])<=24)? 24 : 16 );
+						SPANS[l]['definedchans'] = 1; // default value
+						q += Number(n[l][k]);
+					}
+				}}
+			}}
+			loadConfigFiles.checkHardwareChanges();
+		};
+		config2json("ztscan.conf", 1, digitalparse);
+	},
+
+	checkHardwareChanges: function(){
+		var usersparse = function(n){ // read users.conf and load switchtype, signalling, zapchan into the SPANS object
+			if( n == "ERROR: CONFIG FILE NOT FOUND"){
+				_$('errmsg').innerHTML = "/etc/asterisk/users.conf not found";
+				_$('errmsg').style.display = '';
+				_$('div_digitalcardstable').style.display = 'none';
+				gui_feedback("No Users File found !!");
+				//_$('tablecontainer').style.display="none";
+				return false;
+			}
+
+			var efgh = function(zc){ 
+					// calculate the number of channels defined for use in zapchan string
+					// zc can be in the format 'u', 'u-v', 'u-v,w-x' or 'u-v,w'
+					// the function returns 1 if u, (v-u +1) for the second case 
+					// and x-u for the third and // v-u+2 for the fourth case
+				try{
+					if( zc.contains('-') ){
+						if(zc.contains(',')){ // case 3 or case 4
+							if( zc.split('-').length > 2 ) { // case 3
+								return (Number(zc.split('-')[2]) - Number(zc.split('-')[0]));
+							}else{ // case 4
+								return (Number((zc.split('-')[1]).split(',')[0])-Number(zc.split('-')[0]) + 2);
+							}
+						} else { // case 'u-v'
+							return (Number(zc.split('-')[1])-Number(zc.split('-')[0])+1);
+						}
+					}else{ // case 1
+						return 1;
+					}
+				}catch(err){
+					return null;
+				}
+			};
+
+			var abcd = function(){
+				var tmp;
+				for( var l in n ){ if(n.hasOwnProperty(l)){
+					if( l.beginsWith('span_')) {
+						tmp = l.split('span_')[1];
+						if (!SPANS[tmp]){SPANS[tmp] = {};}
+						for( var k in n[l] ){ if(n[l].hasOwnProperty(k)){ 
+							SPANS[tmp][k] = n[l][k];
+							if( k=='zapchan' || k=='fxochannels'){ SPANS[tmp]['definedchans'] = efgh(n[l][k]); }
+						}}
+					}
+				}}
+			}();
+			showtable();
+		};
+		config2json("users.conf", 1, usersparse);
+	}
+};
+
+
+
+function resetmainscreen(){ top._$('mainscreen').width= 540; }
+
+function reloadpage(){ window.location.href="digital.html"; }
+
+function disablEnable_sc() {
+	if( _$('editspan_signalling').value.beginsWith('fx') ){
+		_$('editspan_switchtype').disabled =  true;
+		_$('editspan_switchtype').selectedIndex = -1;
+	}else{
+		_$('editspan_switchtype').disabled =  false;
+	}
+	return true;
+}
+
+function updateSpanInfo(){
+	if( !verify_priChLimit() ){
+		alert("You should leave atleast one channel for signalling.");
+		return true;
+	}
+	if(!_$('editspan_fac').value){
+		alert("Please select a Framing/Coding !");
+		return true;
+	}
+	if(!_$('editspan_signalling').value){
+		alert("Please select a signalling !");
+		return true;
+	}
+	if(_$('editspan_signalling').value.beginsWith('pri') &&  !_$('editspan_switchtype').value ){
+		alert("Please select a Switch Type !");
+		return true;
+	}
+
+	var b = String( menu.span_value );
+	SPANS[b]['fac'] = _$('editspan_fac').value;
+	SPANS[b]['signalling'] = _$('editspan_signalling').value;
+	SPANS[b]['switchtype'] = _$('editspan_switchtype').value;
+	SPANS[b]['syncsrc'] = _$('editspan_syncsrc').value;
+	SPANS[b]['lbo'] = _$('editspan_lbo').value;
+	canelSpanInfo();
+	_$('save_b').disabled = false;
+	_$('cancel_b').disabled = false;
+}
+
+var applySettings = {
+	generate_zaptel: function(){
+		parent.astmanEngine.run_tool(asterisk_guiEditZap + " applysettings", function(t) {
+			/* anything we need to do here? */
+			// inform the user to restart
+			alert("You need to restart your machine for these settings to take effect");
+			window.location.href= "digital.html";
+			return true; 
+		});
+		/* to run ztcfg and apply settings, you can do this call, but replace applysettings with ztcfg.
+		You can then read /var/lib/asterisk/static-http/config/ztcfg_output.html to look at ztcfg errors */
+	},
+
+	updateUsersConf: function(){
+		/* update the users.conf to make sure there are corresponding [SPAN_x] contexts are updated */
+		
+		var uri1 = [];
+		var uri2 = '';
+		var add_lines = function(){
+			// for each span update span with new values of 'switchtype', 'singalling'
+			var c = 0, d ='', e ='', f=0, uri = '';
+			for( var k in SPANS ){ if( SPANS.hasOwnProperty(k) ){ if(SPANS[k]['signalling']){
+				uri = '', c=0;
+				d = 'span_'+ String(k);
+				e = asterisk_guiTDPrefix + d ;
+				uri += build_action('delcat', c, d , "", ""); c++;
+				uri += build_action('newcat', c, d , "", ""); c++;
+				uri += build_action('update', c, d , "switchtype", SPANS[k]['switchtype']); c++;
+				uri += build_action('update', c, d , "signalling", SPANS[k]['signalling']); c++;
+				uri += build_action('update', c, d , "trunkname", 'Span '+String(k)); c++;
+				uri += build_action('update', c, d , "trunkstyle", 'digital'); c++;
+				uri += build_action('update', c, d , "context", e); c++;
+
+				if ( !SPANS[k]['signalling'].beginsWith('fxo') ){
+					uri += build_action('update', c, d , "group", String(k)); c++;
+					uri += build_action('update', c, d , "zapchan", SPANS[k]['zapchanstring'] ); c++;
+				}else{ 
+					// if fxs signalling , donot add zapchan under span_x,
+					// we would want to define zapchan under the user extension to which we want the station to be assigned to
+					uri += build_action('update', c, d , "fxochannels", SPANS[k]['zapchanstring'] ); c++;
+				}
+
+				uri2 += build_action('delete', f, 'globals', d, "", ""); f++;
+				uri2 += build_action('update', f, 'globals', d,'Zap/g'+String(k)); f++;
+				uri2 += build_action('delcat', f, e , "", ""); f++;
+				uri2 += build_action('newcat', f, e , "", ""); f++;
+				uri2 += build_action('update', f, e , 'include', 'default'); f++;
+
+				uri1.push(uri);
+			}}}
+		}();
+
+		var something = function(){
+			if(uri1.length){
+				makerequest('u', "users.conf", uri1.shift() , function(t) { something(); } );
+			}else{
+				makerequest('u', "extensions.conf", uri2 , function(t) { applySettings.generate_zaptel(); });
+			}
+		};
+		something();
+	},
+
+	updateZaptel: function(){ 
+	// navigate through the SPANS object and save it to the applyzap.conf, 
+	// then call a script which will generate zaptel.conf from it and asks the user to restart his machine
+		var uri = '';
+		var add_lines = function(){
+			var fxx={};
+			var c = 0, bchanstring = '', dchanstring = '', context = 'general';
+			var totalchans = 0, firstpart , secondpart, tmp2 , tmp3;
+
+			uri = build_action('delcat', c, context,"", ""); c++;
+			uri += build_action('newcat', c , context, "", ""); c++;
+
+
+			for( var k in SPANS ){ if( SPANS.hasOwnProperty(k) ){ if(SPANS[k]['signalling']){
+				firstpart = "span";
+				/* XXX Timing source for card is being set to zero? */
+				/* LBO is being set to 0 */
+				secondpart = k + "," + SPANS[k]['syncsrc']  + "," + SPANS[k]['lbo'] + "," + SPANS[k]['fac'].toLowerCase().replace("/", ",");
+				uri += build_action('append', c, context, firstpart, secondpart ); c++;
+				tmp2 = (bchanstring)? ",":"";
+				tmp3 = (dchanstring)? ",":"";
+
+				var ppp = calc_bchan_fxx(k);
+				if ( SPANS[k]['signalling'].beginsWith('fx') ){ 
+					fxx[SPANS[k]['signalling']] = ((fxx[SPANS[k]['signalling']])? fxx[SPANS[k]['signalling']] + ",":"") + ppp;
+				}else{
+					bchanstring += tmp2 + ppp;
+					dchanstring += tmp3 + SPANS[k]['reserved_ch'];
+				}
+				SPANS[k]['zapchanstring'] = ppp;
+			}}}
+
+			for( var e in fxx ){ if(fxx.hasOwnProperty(e)){
+				uri += build_action('append', c, context, e, fxx[e]); c++;
+			}}
+			uri += build_action('append', c, context, 'bchan', bchanstring); c++;
+			uri += build_action('append', c, context, 'dchan', dchanstring); c++;
+			uri += build_action('append', c, context, 'loadzone', _$('loadZone').value); c++;
+			uri += build_action('append', c, context, 'defaultzone', 'us'); c++;
+		}();
+		makerequest('u', "applyzap.conf", uri , function(t) { applySettings.updateUsersConf(); });
+	}
+};
+
+
+function applyDigitalSettings(){
+ 	// write to applyzap.conf - generate new applyzap.conf
+ 	// write to users.conf - update [spans_x] contexts
+ 	// call the asterisk_guiEditZap - which will generate zaptel.conf from applyzap.conf
+	applySettings.updateZaptel();
+}
+
+
+</script>
+<body onload="localajaxinit()" onunload="resetmainscreen()"  bgcolor="#EFEFEF">
+
+<div style="font-size : 12px; padding : 4px 6px 4px 6px; border-style : solid none solid none; border-top-color : #BDC7E7; border-bottom-color : #182052; border-width : 1px 0px 1px 0px; background-color : #ef8700; color : #ffffff;">
+	<span style="margin-left: 4px;font-weight:bold;">Digital Card Configuration Wizard (Beta)</span>
+	<span style="cursor: pointer; cursor: hand;" onclick="window.location.href=window.location.href;" >&nbsp;<img src="images/refresh.png" title=" Refresh " border=0 >&nbsp;</span>
+</div>
+
+<div class="pageheading">Digital Card Setup</div>
+
+<div style="overflow:auto;left:40" id="div_digitalcardstable">
+	<table class="taglist" id="digitalcardstable" cellpadding=5 cellspacing=1 border=0 align=center></table>
+	<table  cellpadding=5 cellspacing=1 align=center border=0>
+		<tr>	<td align="right">LoadZone :
+				<select id="loadZone">
+					<option value="us">us</option>
+					<option value="us-old">us-old</option>
+					<option value="gr">gr</option>
+					<option value="it">it</option>
+					<option value="fr">fr</option>
+					<option value="de">de</option>
+					<option value="uk">uk</option>
+					<option value="fi">fi</option>
+					<option value="jp">jp</option>
+					<option value="sp">sp</option>
+					<option value="hu">hu</option>
+					<option value="lt">lt</option>
+					<option value="pl">pl</option>
+					<option value="pl">pl</option>
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<input type="button" id="save_b" value="Apply Changes" onclick="applyDigitalSettings()"> &nbsp;&nbsp;
+				<input type="button" id="cancel_b" value="Cancel Changes" onclick="reloadpage()">
+			</td>
+		</tr>
+	</table>
+</div>
+
+<div id="errmsg" style="display:none"></div>
+<div id="mymenu" class="mymenu" style="display:none"></div>
+<div id="bg_transparent" STYLE="display:none; position: absolute; left: 0; top: 0; width:100%; height:100%;  background-color:#FFFFFF; filter:alpha(opacity=50); -moz-opacity:.50;opacity:.50; border-width: 0px; z-index:4">
+</div>
+
+<div id="edit_span" STYLE="display:none; position: absolute; left: 30; top: 40; width:500; height:310;  background-color:#F4EFE5;   border-width: 1px; border-color: #7E5538; border-style: solid; z-index:5">
+	<table width="100%" cellpadding=0 cellspacing=0  onmousedown="ASTGUI.startDrag(event , 'edit_span');">
+	<TR bgcolor="#7E5538"  style="background-image:url('images/title_gradient.gif');">
+		<TD Height="20" align="left" style="cursor: move">
+			<font style="color:#FFFFFF; font-size: 12px; font-weight:bold;">
+			&nbsp;&nbsp;SPAN : <span id="editspan_SPAN"></span>
+			</font>
+		</TD>
+		<TD Height="20" align="right" style="cursor: move" width=20>
+			<A href="#" onclick="$('cancel_a').click();"><font style="color:#FFFFFF; font-size: 12px; font-weight:bold;">X</font></A>
+		</TD>
+		<TD width=4></TD>
+	</TR>
+	</table>
+	<TABLE	align=center cellpadding=2 cellspacing=2 border=0>
+	<TR>	<TD align="right">ALARMS:</TD>
+		<TD><span id="editspan_ALARMS"></span></TD>
+	</TR>
+	<TR>	<TD align="right">Framing/Coding:</TD>
+		<TD>	<select id="editspan_fac"></select> </TD>
+	</TR>
+	<TR>	<TD align="right">Channels:</TD>
+		<TD><span id="editspan_channels"></span></TD>
+	</TR>
+	<TR>	<TD align="right">Signalling</TD>
+		<TD>	<select id="editspan_signalling" onChange="disablEnable_sc();">
+			<option value="pri_net">PRI - Net</option>
+			<option value="pri_cpe">PRI - CPE</option>
+			<option value="fxoks">FXOKS</option>
+			<option value="fxols">FXOLS</option>
+			<!--<option value="fxsks">FXSKS</option>
+			<option value="fxsls">FXSLS</option>-->
+			</select>
+		</TD>
+	</TR>
+	<TR id="signalling_container">	<TD align="right">Switch Type</TD>
+		<TD>	<select id="editspan_switchtype">
+				<option value="national">National ISDN 2 (default)</option>
+				<option value="dms100">Nortel DMS100</option>
+				<option value="4ess">AT&T 4ESS</option>
+				<option value="5ess">Lucent 5ESS</option>
+				<option value="euroisdn">EuroISDN</option>
+				<option value="ni1">Old National ISDN 1</option>
+				<option value="qsig">Q.SIG</option>
+			</select>
+		</TD>
+	</TR>
+	<TR>	<TD align="right">Sync/Clock Source</TD>
+		<TD>	<select id="editspan_syncsrc">
+				<option value="0">Master (0) (Set Timing)</option>
+				<option value="1">Slave (1) (Take Timing)</option>
+			</select>
+		</TD>
+	</TR>
+	<TR>	<TD align="right">Line Build Out</TD>
+		<TD>	<select id="editspan_lbo">
+				<option value="0">0 db (CSU)/0-133 feet (DSX-1)</option>
+				<option value="1">133-266 feet (DSX-1)</option>
+				<option value="2">266-399 feet (DSX-1)</option>
+				<option value="3">399-533 feet (DSX-1)</option>
+				<option value="4">533-655 feet (DSX-1)</option>
+				<option value="5">-7.5db (CSU)</option>
+				<option value="6">-15db (CSU)</option>
+				<option value="7">-22.5db (CSU)</option>
+			</select>
+		</TD>
+	</TR>
+
+	<TR>    <TD align="right" valign=top>Channels:</TD>
+		<TD>    <table border=0 cellpadding=2 cellspacing=1>
+				<tr>	<td> Use : <select id="edit_DefinedChans"></select>	</td>	</tr>
+				<tr>	<td> From : <span id="edit_labelZapchan"></span>	</td>	</tr>
+				<tr>	<td> Reserved : <span id="edit_labelReserved"></span>	</td>	</tr>
+			</table>
+		</TD>
+	</TR>
+
+	<TR>	<TD colspan=2 align=center height=50 valign=middle>  
+			<input type="button" id="save_a" value="Update" onclick="updateSpanInfo();">&nbsp;&nbsp;
+			<input type="button" id="cancel_a" value="Cancel" onclick="canelSpanInfo();">
+		</TD>
+	</TR>
+	</TABLE>
+</div>
+
+</body>
+</html>

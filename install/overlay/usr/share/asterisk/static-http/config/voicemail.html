@@ -1,0 +1,421 @@
+<!--
+ * Asterisk-GUI	-	an Asterisk configuration interface
+ *
+ * Global VoiceMail Settings
+ *
+ * Copyright (C) 2006-2007, Digium, Inc.
+ *
+ * Mark Spencer <markster@digium.com>
+ * Pari Nannapaneni <pari@digium.com>
+ *
+ * See http://www.asterisk.org for more information about
+ * the Asterisk project. Please do not directly contact
+ * any of the maintainers of this project for assistance;
+ * the project provides a web site, mailing lists and IRC
+ * channels for your use.
+ *
+ * This program is free software, distributed under the terms of
+ * the GNU General Public License Version 2. See the LICENSE file
+ * at the top of the source tree.
+ *
+-->
+<script src="scripts/prototype.js"></script>
+<script src="scripts/astman.js"></script>
+<script src="scripts/tooltip.js"></script>
+<link href="stylesheets/schwing.css" media="all" rel="Stylesheet" type="text/css" />
+<script>
+var origwidth;
+var vmwidgets = {};
+var widgets = {};
+var vmexten='';
+//var adstatus;
+var voicemails;
+var callbacks = new Object;
+var usercallbacks = new Object;
+var voicemailcallbacks = new Object;
+var localextenlength;
+var vmfields = ['attach' ,'attachfmt' ,'cancel' ,'deletevoicemail' ,'envelope' ,'maxgreet' ,'maxmessage' ,'maxmsg' ,'minmessage' ,'operator' ,'review' ,'save' ,'saycid' ,'sayduration'];
+
+var fields = new Array('name');
+
+function changed_extension() {
+	var app;
+	var tmp = $('extensions').value.split(']');
+	app = findapp($('extensions').stored_config.catbyname[tmp[0]].subfields[tmp[1]]['app']);
+	$('name').value = $('extensions').stored_config.catbyname[tmp[0]].subfields[tmp[1]]['name'];
+};
+
+callbacks.format = function(t, x) {
+	if ((t.name != specialcontext))
+		return null;
+	return format_extension($('extensions'), t, x);
+}
+
+callbacks.beforeSaving = function(){
+	if( !checklength() ){ return false; }
+	if (!check_patternonfields( ['name', 'maxgreet'] ) ){
+		return false;
+	}
+
+	for(var k=0; k<$('extensions').length; k++ ){
+		var tmp = $('extensions').options[k].innerHTML.split(' -- '); 
+		if( tmp[0] ==  $('name').value   ){
+			gui_alert("Sorry, an entry named " + $('name').value + " already exists!");
+			return false;
+		}
+	}
+
+	return true;
+}
+
+callbacks.loaded = function() {
+	var whichexten = "";
+	merge_extensions($('extensions'), $('hiddenusers'));
+	for (var x=0;x<$('extensions').options.length;x++) {
+		var tmp;
+		tmp = $('extensions').options[x].value.split(']');
+		if (tmp.length > 1) {
+			if ($('extensions').stored_config.catbyname[tmp[0]].subfields[tmp[1]]['app'].toLowerCase() != "voicemailmain") {
+				//$('extensions').options[x].disabled = true;
+				$('extensions').options[x].style.color = "#ABABAB";
+				$('extensions').options[x].value = "reserved";
+			} else {
+				whichexten = $('extensions').stored_config.catbyname[tmp[0]].subfields[tmp[1]]['name'];
+				$('extensions').selectitem(x);
+				vmexten = whichexten;
+			}
+		}
+	}
+	$('extensions').contentEditable = 'true';
+	$('extensions').disabled = 0;
+	$('extensions').current_category = specialcontext;
+
+	ASTGUI.events.add( $('name') , 'keydown', function(){ this.oldvalue = this.value ;} );
+
+	ASTGUI.events.add( $('name') , 'keyup', function(){
+		if(this.oldvalue == this.value){return true;}
+		$('save').disabled = false;
+		$('cancel').disabled = false;
+	});
+
+	$('name').disabled = false;
+	if (whichexten.length ==0 ){
+		gui_alert("Looks like a default Voicemail Extension is not yet configured \n\n Please set an \'Extension for Checking messages\'  and \n click on 'save' button");
+	}else{
+		
+	}
+	parent.loadscreen(this);
+}
+
+callbacks.fields2val = function() {
+	return $('name').value + ",1,VoiceMailMain";
+}
+
+callbacks.sortfunc = function(a,b) {
+	return (a.name < b.name) ? -1 : 1;
+}
+
+callbacks.newsubitem = function() {
+	var tmp = new Object;
+	tmp['name'] = $('name').value;
+	tmp['>'] = true;
+	return new Array(specialcontext, 'exten', tmp);
+}
+
+callbacks.postselect = function(box, val) {
+	var fields_to_disable  = new Array('attach', 'saycid', 'sayduration', 'deletevoicemail', 'maxmsg', 'maxmessage', 'minmessage', 'operator', 'attachfmt', 'review', 'envelope', 'maxgreet');
+	parent.$('tooltip').innerHTML = parent.tooltip_default ; 
+	if( box.selectedIndex == -1)
+		return true;
+	if(val == "reserved" ){
+		for( var i=0; i < fields_to_disable.length; i ++ ){
+			_$(fields_to_disable[i]).disabled = true;
+		}
+		$('save').disabled = true;
+		$('cancel').disabled = true;
+
+		if( box.options[box.selectedIndex].text.toLowerCase().match("-- call queue")     ){
+			//parent.$('tooltip').innerHTML = " <font size=\"-2\" color=\"#FF0000\">Click on \'Call Queues\' panel to edit call queues </font>";
+			box.selectedIndex = -1;
+			gui_alert(" You can not edit the selected entry from here.\n Please click on the \'Call Queues\' panel to edit the selected entry");
+			return true;
+		}
+		if( box.options[box.selectedIndex].text.toLowerCase().match("-- conference bridge")     ){
+			//parent.$('tooltip').innerHTML = " <font size=\"-2\" color=\"#FF0000\">Click on \'Conferencing\' panel to edit a Conference Bridge</font>";
+			box.selectedIndex = -1;
+			gui_alert(" You can not edit the selected entry from here.\n Please click on the \'Conferencing\' panel to edit the selected entry");
+			return true;
+		}
+		if( box.options[box.selectedIndex].text.toLowerCase().match("-- voice menu")     ){
+			box.selectedIndex = -1;
+			//parent.$('tooltip').innerHTML = " <font size=\"-2\" color=\"#FF0000\">Click on \'Voicemail\' panel to edit Voicemail Preferences</font>";
+			gui_alert(" You can not edit the selected entry from here.\n Please click on the \'Voice Menus\' panel to edit the selected entry");
+			return true;
+		}
+		box.selectedIndex = -1;
+		gui_alert(" You can not edit the selected entry from here.\n Please click on the \'Users\' panel to edit the selected entry");
+		return true;
+	}
+
+	for( var i=0; i < fields_to_disable.length; i ++ ){
+			$(fields_to_disable[i]).disabled = false;
+	}
+	//$('cancel').disabled = false;
+}
+
+callbacks.identifier = "extension";
+callbacks.eachline = true;
+callbacks.usesubfields = true;
+
+usercallbacks.format = function(t) {
+	if ((t.name == 'general')){
+		if (t.fieldbyname['localextenlength'] && t.fieldbyname['localextenlength'].length){
+			localextenlength =  t.fieldbyname['localextenlength'] ;
+		}else{
+			localextenlength = 4;
+		}
+		return null;
+	}
+	//if (t.name.substring(0,6) == 'trunk_')
+	//	return null;
+	if ( t.fieldbyname['context'] == asterisk_guiTDPrefix + t.name ) {
+		return null;
+	}
+	if (t.fieldbyname['fullname'] && t.fieldbyname['fullname'].length) {
+		return t.name + " -- " + t.fieldbyname['fullname'];
+	} else
+		return t.name;
+}
+usercallbacks.loaded = function() {
+	parent.astmanEngine.config2list("extensions.conf", $('extensions'), widgets, callbacks);
+}
+
+/*
+function togglefeatures() {
+	if (adstatus == "shown") {
+		adstatus = "hidden";
+		new Rico.Effect.Size('advancedw', null, 1, 120, 8, {complete:function() { $('advancedw').style.height=1;} } );
+	} else {
+		adstatus = "shown";
+		$('advancedw').style.visibility = "visible";
+		new Rico.Effect.Size('advancedw', null, 140, 120, 8 );
+	}
+}
+*/
+
+voicemailcallbacks.cancelchanges = function(){
+	$('name').value = vmexten ; 
+}
+
+voicemailcallbacks.beforeSaving = function(){
+	// check whether the length of extension is valid
+	if( !checklength( ) ){ return false; }
+	if (!check_patternonfields( ['name', 'maxgreet'] ) ){
+		return false;
+	}
+	return true;
+}
+
+voicemailcallbacks.savechanges = function() {
+	if (vmexten != $('name').value) {
+		if (vmexten.length) {
+			if (!$('name').value.length) {
+				delete_item($('extensions'),null,1);
+				gui_alert("Default Voicemail Extension has been removed");
+			} else {
+				save_item($('extensions'));
+			}
+		} else {
+			new_subitem($('extensions'));
+			save_item($('extensions'));
+		}
+		vmexten = $('name').value;
+		$('name').disabled = false;
+		return true;
+	}
+	$('name').disabled = false;
+	return false;
+}
+
+voicemailcallbacks.loaded = function() {
+	$('hiddenvoicemail').selectedIndex = 0;
+	if ($('hiddenvoicemail').onchange)
+		$('hiddenvoicemail').onchange($('hiddenvoicemail'));
+	parent.astmanEngine.config2list("users.conf", $('hiddenusers'), new Array(), usercallbacks);
+}
+
+voicemailcallbacks.format = function(t) {
+	if (t.name != 'general')
+		return null;
+	return "General";
+}
+
+function checklength(){
+	// check whether the length of extension is valid
+	if(  !$('name').value.length ) { gui_alert("Please enter an extension !"); $('name').focus(); return false; }
+
+	if( localextenlength !=0 && ( localextenlength !=  $('name').value.length ) ) {
+		gui_alert("Sorry, An Extension must be "+ localextenlength  + " digits !");
+		$('name').focus();
+		return false;
+	}
+	return true;
+}
+
+
+function localajaxinit() {
+	ASTGUI.events.add(document, 'mouseover', show_tooltip);
+	setWindowTitle("Voicemail");
+	//$('advancedi').style.width = $('split').width - 60;
+
+	$('extensions').contentEditable = 'false';
+
+	/*
+	if( navigator.userAgent.indexOf("MSIE") != -1){
+		togglefeatures = function(){ } ;
+		$('advancedw').style.height=140;
+	}else{
+		$('advancedw').style.overflow = "hidden";
+		$('advancedw').style.height = 1;	
+		$('extensions').style.height = "415px";
+	}
+	$('advancedw').style.width = $('split').style.width;
+	*/
+
+	for (var x =0; x< vmfields.length; x++) {
+		vmwidgets[vmfields[x]] = _$(vmfields[x]);
+		vmwidgets[vmfields[x]].disabled = true;
+	}
+	for (var x =0; x < fields.length; x++) {
+		widgets[fields[x]] = _$(fields[x]);
+		widgets[fields[x]].disabled = true;
+	}
+
+	parent.astmanEngine.config2list("voicemail.conf", _$('hiddenvoicemail'), vmwidgets, voicemailcallbacks);
+}
+
+function free_mem( ){
+	if( navigator.userAgent.indexOf("MSIE") == -1 ){ return true; }
+	try{
+		vmwidgets['save'].hostselectbox = null ;
+		vmwidgets['cancel'].hostselectbox = null ;
+		purge( document.body );
+	}catch(e){ }
+}
+</script>
+<body id="foo" onload="localajaxinit()"  bgcolor="EFEFEF"   onunload="free_mem()">
+<div class="mainscreenTitleBar">
+	<span style="margin-left: 4px;font-weight:bold;">Voicemail Configuration</span>
+	<span style="cursor: pointer; cursor: hand;" onclick="window.location.href=window.location.href;" >&nbsp;<img src="images/refresh.png" title=" Refresh " border=0 >&nbsp;</span>
+</div>
+<div class="mainscreenContentBox" id="mailboxcontent">
+<table class="mainscreenTable" align="center">
+	<tr valign="top"><td colspan='2'>VoiceMail Settings:</td></tr>
+	<tr valign="top">
+		<td><select disabled size="25" id="extensions" style="width:220px;" class="input10"><option>Loading...</option></select></td>
+		<td style="height: 415px; width:310px">
+			<select id='hiddenusers' style='display:none;'></select>
+			<select id='hiddenvoicemail' style='display:none;'></select>
+			<div>
+				<table cellspacing='0' cellpadding='0' width=300>
+				<tr>	<td class="field_text" tip="en,voicemail,0">Extension for checking messages:</td>
+					<td>&nbsp;<input size='5' id='name' pattern='^\d*$' onKeyUp="$('cancel').disabled=false;"  class="input8" ></td>
+				</tr>
+				<tr>	<td class="field_text" tip="en,voicemail,1">Attach recordings to e-mail:</td>
+					<td><input type='checkbox' id='attach'></td>
+				</tr>
+
+				<tr>	<td class="field_text" tip="en,voicemail,13">Max&nbsp;greeting&nbsp;(seconds)</td>
+					<td>&nbsp;<input size=4 id='maxgreet' pattern='^\d*$' class="input8"></td>
+				</tr>
+				<tr>	<td class="field_text" tip="en,voicemail,9">Dial&nbsp;'0'&nbsp;for&nbsp;Operator:</td>
+					<td><input type='checkbox' id='operator'></td>
+				</tr>
+				</table>
+				<BR>
+			</div>
+			<div>	<fieldset  style="width: 225px;">
+				<legend>&nbsp;Message Options:&nbsp;</legend>
+				<table align='center' cellpadding=1 cellspacing=1 border=0 width=270>
+					<tr>	<td class="field_text" align=right tip="en,voicemail,10">Attach&nbsp;Format:</td>
+						<td>
+							<select id='attachfmt' class="input8">
+							<option value='wav49'>WAV (GSM)</option>
+							<option value='wav'>WAV (16-bit)</option>
+							<option value='gsm'>Raw GSM</option>
+							</select>
+						</td>
+					</tr>
+					<tr>	<td class="field_text" valign=top align=right tip="en,voicemail,5">Maximum messages :<BR>(per folder)&nbsp;</td>
+						<td  valign=top>&nbsp;<select id='maxmsg' class="input8">
+							<option value='10'>10</option>
+							<option value='25'>25</option>
+							<option value='100'>100</option>
+							<option value='250'>250</option>
+							<option value='500'>500</option>
+							<option value='1000'>1000</option>
+							</select>
+						</td>
+					</tr>
+					<tr>	<td class="field_text"  align=right tip="en,voicemail,6">Max message time:</td>
+						<td>&nbsp;<select id='maxmessage' class="input8">
+							<option value='60'>1 minute</option>
+							<option value='120'>2 minutes</option>
+							<option value='300'>5 minutes</option>
+							<option value='900'>15 minutes</option>
+							<option value='1800'>30 minutes</option>
+							<option value='0'>Unlimited</option>
+							</select>
+						</td>
+					</tr>
+					<tr>	<td class="field_text"  align=right tip="en,voicemail,7">Min message time:</td>
+						<td>&nbsp;<select id='minmessage' class="input8">
+							<option value='0'>No minimum</option>
+							<option value='1'>1 second</option>
+							<option value='2'>2 seconds</option>
+							<option value='3'>3 seconds</option>
+							<option value='4'>4 seconds</option>
+							<option value='5'>5 seconds</option>
+							</select>
+						</td>
+					</tr>
+				</table>
+				</fieldset>
+				<BR>
+			</div>
+
+
+			<div>	<fieldset  style="width: 225px;">
+				<legend>&nbsp;Playback Options:&nbsp;</legend>
+				<table align='center' cellpadding=1 cellspacing=0 border=0 width=270>
+				<tr>	<td><input type='checkbox' id='deletevoicemail'></td>
+					<td class="field_text" tip="en,voicemail,4">Send messages by e-mail only</td>
+				</tr>
+
+				<tr>	<td><input type='checkbox' id='saycid'></td>
+					<td class="field_text" tip="en,voicemail,2">Say message Caller-ID</td>
+				</tr>
+				<tr>	<td><input type='checkbox' id='sayduration'></td>
+					<td class="field_text" tip="en,voicemail,3">Say message duration</td>
+				</tr>
+				<tr>	<td><input type='checkbox' id='envelope'></td>
+					<td class="field_text" tip="en,voicemail,12">Play&nbsp;envelope</td>
+				</tr>
+				<tr>	<td><input type='checkbox' id='review'></td>
+					<td class="field_text" tip="en,voicemail,11">Allow&nbsp;users&nbsp;to&nbsp;review</td>
+				</tr>
+				</table>
+				</fieldset>
+			</div>
+
+		</div>
+		</td>
+	</tr>
+	<tr>	<td align='center'></td>
+		<td align='center' colspan='2'>
+			<input type='button' id='save' value='Save' class="buttonbold">&nbsp;<input type='button' id='cancel' value='Cancel' class="buttonbold">
+		</td>
+	</tr>
+</table>
+</div>
+</body>

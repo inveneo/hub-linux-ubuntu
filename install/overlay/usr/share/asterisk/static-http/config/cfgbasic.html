@@ -1,0 +1,451 @@
+<!--
+ * Asterisk-GUI	-	an Asterisk configuration interface
+ *
+ * Top level for configuration file
+ *
+ * Copyright (C) 2006-2007, Digium, Inc.
+ *
+ * Mark Spencer <markster@digium.com>
+ * Pari Nannapaneni <pari@digium.com>
+ *
+ * See http://www.asterisk.org for more information about
+ * the Asterisk project. Please do not directly contact
+ * any of the maintainers of this project for assistance;
+ * the project provides a web site, mailing lists and IRC
+ * channels for your use.
+ *
+ * This program is free software, distributed under the terms of
+ * the GNU General Public License Version 2. See the LICENSE file
+ * at the top of the source tree.
+ *
+-->
+<script>
+var browser_alert = "You owe it to yourself to try it out !<BR><A href='http://www.getfirefox.com' style='font-size: 13px; font-family:arial,sans-serif,Helvetica,Trebuchet MS; color : #6C74A3;' target='_blank'>Get Firefox</A>";
+</script>
+<script src="scripts/prototype.js"></script>
+<script src="scripts/astman.js"></script>
+<link href="stylesheets/schwing.css" media="all" rel="Stylesheet" type="text/css" />
+<script>
+var eventeater = new Object;
+var loggedon = -1;
+var accordion;
+var tooltip_default = "Move the mouse over to a field to see tooltips";
+var asterisk_guitools_inextconf = 0;
+eventeater.pingstatus = false;
+var keepPinging;
+var has_digital = 0;
+var needs_reloadzap = 0;
+var int_handle;
+var MainScreenPanels = [];
+var newMSpanel = function(s){
+	var r = {};
+	r.PanelName = s[0];
+	r.FileName = s[1];
+	r.PanelDesc = s[2];
+	MainScreenPanels.push(r);
+};
+
+function updateMainScreenPanels(){
+	MainScreenPanels = [];
+	newMSpanel( ["Home", "home.html", "Asterisk Configuration Panel - Please click on a panel to manage related features"]);
+	newMSpanel( ["Users", "users.html", "Users is a short cut for quickly adding and removing all the necessary configuration components for any new phone."]);
+	newMSpanel( ["Conferencing", "meetme.html", "MeetMe conference bridging allow quick, ad-hoc conferences with or without security."]);
+	newMSpanel( ["Voicemail", "voicemail.html", "General settings for voicemail"]);
+	newMSpanel( ["Call Queues", "queues.html", "Call queues allow calls to be sequenced to one or more agents."]);
+	newMSpanel( ["Service Providers", "trunks.html", "Service Providers are outbound lines used to allow the system to make calls to the real world.  Trunks can be VoIP lines or traditional telephony lines."]);
+	newMSpanel( ["Digital Config(beta)", "digital.html", "Digital Configuration and setup allow the user to detect all digital cards (t1/e1/j1) and configure them. The user can access each individual line property, and also set each line as a trunk."]);
+	newMSpanel( ["mISDN Configuration", "misdn.html", "mISDN configuration from the asterisk GUI"]);
+	newMSpanel( ["Calling Rules", "numberplan.html", "The Calling Rules define dialing permissions and least cost routing rules."]);
+	newMSpanel( ["Incoming Calls", "incoming.html", "Define how your incoming calls should be handled & configure DID (Direct inward Dialing)"]);
+	newMSpanel( ["Voice Menus", "menus.html", "Menus allow for more efficient routing of calls from incoming callers. Also known as IVR (Interactive Voice Response) menus or Digital Receptionist"]);
+	newMSpanel( ["Time Based Rules", "timerules.html", "define call routing rules based on date and time"]);
+	newMSpanel( ["Call Parking", "callparking.html", "configure call parking features"]);
+	newMSpanel( ["Ring Groups", "ringgroups.html", "define RingGroups to dial more than one extension"]);
+	newMSpanel( ["Record a Menu", "record.html", "Allows you to record custom voicemenus over a phone"]);
+	newMSpanel( ["Active Channels", "status.html", "Monitor active channels."]);
+	newMSpanel( ["Graphs", "graphs.html", "View Graphs of your System Information."]);
+	newMSpanel( ["System Info", "sysinfo.html", "System Information."]);
+	newMSpanel( ["Asterisk Logs", "syslog.html", "Asterisk Log messages."]);
+	// newpanel( ["CDR Configuration", "cdr_conf.html", "CDR Engine Configuration."]); // Uncomment when cdr_conf.html is finished, there are still some errors. 
+	newMSpanel( ["CDR Reader", "cdr.html", "Read all your call records from Asterisk."]);
+	newMSpanel( ["File Editor", "feditor.html", "Edit Asterisk Config Files"]);
+	newMSpanel( ["Asterisk CLI", "cli.html", "Asterisk Command Line Interface"]);
+	newMSpanel( ["Backup", "backup.html", "Backup Management."]);
+	newMSpanel( ["Options", "localexts.html", "Admin Settings"]);
+}
+
+function fit_toScreen(){
+	var t = ASTGUI.displayHeight();
+	var minimumheight = 150;
+	var c =_$('configpanel'); 
+	c.WIH = t;
+	_$('TOP_MAINTABLE').rows[1].cells[0].height = (t - 70) ;
+	var pnameheight = 22;
+	c.pnameheight = pnameheight;
+	var panels = returnpanels();
+	var pheight = (( t - 70)  - (pnameheight*panels.length) ) ;
+	if(pheight > minimumheight){
+		c.pheight = pheight;
+	}else{
+		pheight = minimumheight;
+		c.pheight = minimumheight ;
+	}
+
+	if( c.childNodes.length ){
+		var s;
+		for( var r=0; r < panels.length; r++ ){
+			s = panels[r].page.split(".html")[0];
+			if( _$(s+"_U").style.display == "" ){
+				_$(s+"_U").style.height = pheight;
+			}
+		}
+	}
+
+	setTimeout( function(){_$('mainscreen').style.height = (panels.length * 22) + pheight ;}, 1500 );
+}
+
+function createpanels(){
+	var t,u,v;
+	var a = _$('configpanel');
+
+//	ASTGUI.events.add(a, 'mouseover', my_tooltip);
+//	ASTGUI.events.add(a, 'mouseout', default_tooltip);
+	ASTGUI.events.add(a, 'click', fghjhhs);
+
+	var panels = returnpanels();
+	var this_id ;
+	for( var r=0; r < panels.length; r++ ){
+		this_id = panels[r].page.split(".html")[0];
+
+		t = document.createElement("div");
+		t.className = "accordionTabTitleBar";
+		t.style.display = "none";
+		t.setAttribute('id', this_id );
+		t.height = a.pnameheight;
+		t.innerHTML = "<nobr><img style='vertical-align: middle;' src='images/accordion-icon.gif'><span style='margin-left: 0px; font-weight: bold;'>&nbsp;" + panels[r].caption + "</span></nobr>";
+
+		u = document.createElement("div");
+		u.className = "accordionTabContentBox";
+
+		u.style.borderStyle = "solid";
+		u.style.borderColor = "#1F669B";
+		u.style.borderWidth = "0px 1px";
+		u.style.margin = "0px";
+		u.style.overflow = "hidden";
+		u.style.backgroundImage = "url(images/panel.png)";
+		u.style.height = "1px";
+		u.style.display = "none";
+		u.setAttribute('id', this_id+"_U" );
+		u.innerHTML =panels[r].desc; 
+
+		a.appendChild(t);
+		a.appendChild(u);
+	}
+
+	_$( "home" ).style.display = "";
+	_$( "home_U" ).style.display = "";
+	_$( "home_U" ).style.height = a.pheight;
+}
+
+function my_tooltip(event){
+	var s = (event.srcElement)?event.srcElement:this;
+	show_Acctooltip(_$(s.id+"_U").innerHTML );
+}
+
+function default_tooltip(event){
+	var s = (event.srcElement)?event.srcElement:this;
+
+	_$(s.id).style.backgroundColor="#6B79A5";
+	_$(s.id).style.color="#CED7EF";
+	_$(s.id).style.fontWeight="normal";
+
+	show_Acctooltip("Move the mouse over to a field to see tooltips");
+}
+
+function fghjhhs(event){
+	var f = ASTGUI.events.getTarget(event);
+	var s = f;
+	if (f.nodeName.toLowerCase() == 'img' || f.nodeName.toLowerCase() == 'span' ){
+		s = f.parentNode.parentNode;
+	}
+	if ( s.className != 'accordionTabTitleBar' )return;
+	if( $('mainscreen').currentpage == s.id + ".html")return;
+	var t;
+
+	var panels = returnpanels();
+	for( var r=0; r < panels.length; r++ ){
+		t = panels[r].page.split(".html")[0];
+		_$( t + "_U" ).style.height = "1px";
+		_$( t + "_U" ).style.display = "none";
+	}
+	_$( s.id + "_U" ).style.height = _$('configpanel').pheight;
+	_$( s.id + "_U" ).style.display = "";
+
+	_$('AdvancedOptionsSelect').selectedIndex=-1;
+	_$('mainscreen').style.display = "none";
+	_$('mainscreen').src = s.id + ".html";
+	_$('mainscreen').currentpage = s.id + ".html";
+}
+
+function returnpanels(){
+	var panels = [];
+
+	var newpanel = function(s){
+		var r = {};
+		r.caption = s[0];
+		r.page = s[1];
+		r.desc = s[2];
+		panels.push(r);
+	}
+
+	newpanel( ["Home", "home.html", "Asterisk Configuration Panel - Please click on a panel to manage related features"]);
+	newpanel( ["Users", "users.html", "Users is a short cut for quickly adding and removing all the necessary configuration components for any new phone."]);
+	newpanel( ["Conferencing", "meetme.html", "MeetMe conference bridging allow quick, ad-hoc conferences with or without security."]);
+	newpanel( ["Voicemail", "voicemail.html", "General settings for voicemail"]);
+	newpanel( ["Call Queues", "queues.html", "Call queues allow calls to be sequenced to one or more agents."]);
+	newpanel( ["Service Providers", "trunks.html", "Service Providers are outbound lines used to allow the system to make calls to the real world.  Trunks can be VoIP lines or traditional telephony lines."]);
+	newpanel( ["Digital Config(beta)", "digital.html", "Digital Configuration and setup allow the user to detect all digital cards (t1/e1/j1) and configure them. The user can access each individual line property, and also set each line as a trunk."]);
+	newpanel( ["Calling Rules", "numberplan.html", "The Calling Rules define dialing permissions and least cost routing rules."]);
+	newpanel( ["Incoming Calls", "incoming.html", "Define how your incoming calls should be handled & configure DID (Direct inward Dialing)"]);
+	newpanel( ["Voice Menus", "menus.html", "Menus allow for more efficient routing of calls from incoming callers. Also known as IVR (Interactive Voice Response) menus or Digital Receptionist"]);
+	newpanel( ["Time Based Rules", "timerules.html", "define call routing rules based on date and time"]);
+	newpanel( ["Call Parking", "callparking.html", "configure call parking features"]);
+	newpanel( ["Ring Groups", "ringgroups.html", "define RingGroups to dial more than one extension"]);
+	newpanel( ["Record a Menu", "record.html", "Allows you to record custom voicemenus over a phone"]);
+	newpanel( ["Active Channels", "status.html", "Monitor active channels."]);
+	newpanel( ["Graphs", "graphs.html", "View Graphs of your System Information."]);
+	newpanel( ["System Info", "sysinfo.html", "System Information."]);
+	newpanel( ["Asterisk Logs", "syslog.html", "Asterisk Log messages."]);
+	// newpanel( ["CDR Configuration", "cdr_conf.html", "CDR Engine Configuration."]); // Uncomment when cdr_conf.html is finished, there are still some errors. 
+	newpanel( ["CDR Reader", "cdr.html", "Read all your call records from Asterisk."]);
+	newpanel( ["File Editor", "feditor.html", "Edit Asterisk Config Files"]);
+	//newpanel( ["My New Gui Page", "sample.html", "My custom gui page goes here"]); /* Should be disabled in trunk, just for an example. XXX */
+	/* Put your new panel definition here, with a sample text and title, and the name of your page */
+	newpanel( ["Asterisk CLI", "cli.html", "Asterisk Command Line Interface"]);
+	newpanel( ["GUI Access", "http_options.html", "GUI Access settings."]);
+	newpanel( ["Backup", "backup.html", "Backup Management."]);
+	newpanel( ["Options", "localexts.html", "Admin Settings"]);
+	return panels;
+}
+
+
+function pingevery(a){
+	window.setTimeout(makeping, 1000);
+	keepPinging = setInterval( makeping, a*250 );
+}
+
+function makeping(){
+	makerequest("","","action=ping", function(t){ if( t.match(asterisk_guipingerror) ){ window.location.href=window.location.href;} } );
+}
+
+eventeater.eventcb = function(msgs) {
+	if (loggedon == 1){
+		astmanEngine.pollEvents();
+	}
+}
+
+function setLoggedOn(onoff) {
+	if(!onoff){return;}
+	loggedon = 1;
+	var panels = returnpanels();
+	for( var r=0; r < panels.length; r++ ){
+		t = panels[r].page.split(".html")[0];
+		_$( t + "_U" ).style.height = "1px";
+		_$( t + "_U" ).style.display = "none";
+		_$( t ).style.display = "";
+	}
+	_$("home").style.display = "";
+	_$("home_U").style.height = _$('configpanel').pheight;
+	_$("home_U").style.display = "";
+}
+
+function loadscreen(srcbody) {
+	_$('mainscreen').style.display = '';
+}
+
+
+function show_Acctooltip(tip){
+	if( loggedon != 1){ return; }
+	_$('tooltip').innerHTML = tip ;
+
+}
+
+function check_digital(n) {
+
+	var l, h;
+	for( l in n ){	if(n.hasOwnProperty(l)){
+		if( l =='general') { 
+			if(n[l]['continue'] == "no") {
+				has_digital = 0; /* ztscan.conf was NOT found */
+				/* Maybe check to see if isnew is set to one, then redirect them on a setup wizard about modprobing the drivers and what not */
+				return false;
+			}
+			if(n[l]['continue'] == "yes") {
+				has_digital = 1;
+				var tot_spans = n[l]['totalspans'];
+				if(n[l]['isnew'] == "yes") {
+					_$('status_message').style.display="block";
+					_$('status_message').innerHTML = '<TABLE border=0 cellpadding=0 cellspacing=4 align=center>' +
+		                        '<TR><TD><img src="/asterisk/static/config/images/loading.gif"></TD>' +
+		                        '<TD><div id=message_text></div></TD></TR></TABLE>';
+					_$('message_text').innerHTML = "Time: <div id='counter'>10</div> Digital Cards Detected! Total Spans: " + tot_spans + "<BR>Options:<br>1. <A href=\"#\" class=\"splbutton\" onclick=\"_$('status_message').style.display='none'; _$('mainscreen').src = 'digital.html';\">Digital Card Setup Wizard</A><br>2. <A href=\"#\" class=\"splbutton\" onclick=\"_$('status_message').style.display='none';>Continue<br></a>";
+					setTimeout("_$('status_message').style.display='none';", 10000);
+					int_handle = setInterval("_$('counter').innerHTML = (_$('counter').innerHTML - 1);", 1000);
+					setTimeout("clearInterval(int_handle);", 10000);
+					return true;
+				}
+			}
+		} 
+
+	}}
+	return true;
+
+}
+function registerajax() {
+	showdiv_statusmessage();
+	fit_toScreen();
+	ASTGUI.events.add( window , 'resize', fit_toScreen );
+	pao();
+	astmanEngine = new Astman();
+	astmanEngine.setURL(asterisk_rawmanPath );
+
+	createpanels();
+	/* If ztscan is not installed, the config file will not be generated. */
+	if(!config2json("ztscan.conf", 1, check_digital)) {
+			has_digital = 0; /* ztscan.conf was NOT found */
+	}
+	
+	_$('mainscreen').src = "home.html" ;
+	if( navigator.userAgent.indexOf("MSIE") != -1 || navigator.userAgent.indexOf("Konqueror") != -1 || navigator.userAgent.indexOf("Safari") != -1 ){
+		gui_feedback(browser_alert, 'green');
+	}
+}
+
+function Logoff() {
+	if(!confirm("Are you sure ?")){ return true; }
+	makerequest("","","action=logoff", function(t){ window.location.href=window.location.href; } );
+}
+
+function system_link(){
+	var newwindow_href = location.protocol + '//' + location.hostname + ':8003';
+	window.open(newwindow_href ,'mainwindow','width=1024,height=768,resizable=yes, scrollbars=no, toolbar=no, location=no,status=yes, menubar=no')
+}
+
+function reloadConfig(){
+	_$('reloadconfig').style.display = 'none'; 
+	window.setTimeout( function(){ _$('reloadconfig').style.display=""; }, asterisk_guifbt );
+
+	var uri = parent.build_action('renamecat', 0, "","", "", "");
+	var r = "action=updateconfig&reload=yes&srcfilename=" + encodeURIComponent("extensions.conf") + "&dstfilename=" + encodeURIComponent("extensions.conf") + uri;
+	makerequest("","",r, function(t){ gui_feedback("Restarted Asterisk !!",'blue'); } );
+}
+
+
+function pao(){
+	var acb = _$('dimg');
+	var tmp_left = acb.offsetLeft -1;
+	var tmp_top = acb.offsetTop -1 ;
+	var tmp_parent = acb;
+	while(tmp_parent.offsetParent != document.body){
+		tmp_parent = tmp_parent.offsetParent;
+		tmp_left += tmp_parent.offsetLeft;
+	}
+	_$('AdvancedOptions').style.left = tmp_left + 700 ;
+	_$('AdvancedOptions').style.top = 1 ;
+	_$('AdvancedOptionsSelect').selectedIndex=-1;
+}
+
+function hide_advops(){
+	_$('AdvancedOptions').style.display='none';
+
+	if ( _$('mainscreen').contentWindow.flipadvbasic  ){
+		_$('mainscreen').contentWindow.flipadvbasic();
+	}
+
+}
+
+function goto_advancedoption(){ 
+	_$('mainscreen').style.display = "none";
+	if( _$('AdvancedOptionsSelect').value == 'TOSETUP'){top.window.location.href = "./setup/install.html"; return;}
+
+	var t;
+	var panels = returnpanels();
+	for( var r=0; r < panels.length; r++ ){
+		t = panels[r].page.split(".html")[0];
+		_$( t + "_U" ).style.height = "1px";
+		_$( t + "_U" ).style.display = "none";
+	}
+	_$( "localexts_U" ).style.height = _$('configpanel').pheight;
+	_$( "localexts_U" ).style.display = "";
+
+	_$('mainscreen').src = _$('AdvancedOptionsSelect').value ;
+}
+</script>
+<head>
+	<title>Asterisk Configuration GUI</title>
+	<link rel="shortcut icon" href="images/favicon.ico" />
+</head>
+<body onload="registerajax()" topmargin=1>
+<table align="center" bgcolor="#dddddd" border="0" cellpadding="0" cellspacing="0" width="950" id="TOP_MAINTABLE">
+<tbody>
+	<tr height="47">
+		<td align="right" bgcolor="white" height="47" valign="bottom" id="dimg"><img src="images/digiumlogo.gif" align="left"></td>
+		<td align="center" bgcolor="white" valign="middle">
+		<div id="feedback_round" style="background-color: #FFFFFF; width: 400px; display: none;">
+			<div id="feedback" style="font-family: Arial,sans-serif,Helvetica,Trebuchet MS; font-size: 13px; font-weight: bold;"></div>
+		</div>
+
+	</td>
+	<td align="right" bgcolor="white" valign="bottom">
+		<!-- <a href="#" onclick=" system_link()">System Configuration</a>&nbsp;|&nbsp; -->
+		<a target="_extern" href="http://www.digium.com/en/company/profile/">About Digium</a>&nbsp;|&nbsp;
+		<a target="_extern" href="http://www.asterisknow.org/bugs">Report a Bug</a>&nbsp;|&nbsp;
+		<a target="_extern" href="http://www.asterisknow.org/help">Help</a>&nbsp;
+		<input id="login_name" type="hidden">
+	</td>
+</tr>
+<tr>	<td valign=top>
+		<div id="configpanel" style="border-bottom: 1px solid rgb(31, 102, 155); width: 150px;"></div>
+	</td>
+	<td id="screenholder" bgcolor="#efefef" valign="top" width="550">
+		<div id="titlebar" class="mainscreenTitleBar" style="position: absolute; top: 48px;">
+			<span style="margin-left: 4px; font-weight: bold;">Loading Screen&nbsp;<img src="images/dots.gif"></span>
+		</div>
+		<div id="borderbox" class="mainscreenBorderBox" height="100%"></div>
+		<iframe border="0" marginheight="0" marginwidth="0" id="mainscreen" style="position: absolute; top: 48px;" frameborder="0" scrolling="no" width="540"></iframe>
+	</td>
+	<td valign="top" width="250">
+		<div class="mainscreenTooltipBar" align="right">
+			<span id="reloadconfig" style="display:none">Activate Changes</span>&nbsp;&nbsp;&nbsp;<span id="logoutlink" style="display:none">Logout</span>&nbsp;
+		</div>
+		<div style="padding-top: 0pt; padding-bottom: 0pt;" id="tooltip_round" class="tooltip_round"><div style="background-color: rgb(221, 221, 221);"><span style="border-style: solid; border-color: rgb(206, 206, 206); border-width: 0px 1px; overflow: hidden; background-color: rgb(191, 191, 191); display: block; height: 1px; font-size: 1px; margin-left: 1px; margin-right: 1px;"></span><span style="border-style: solid; border-color: rgb(206, 206, 206); border-width: 0px 1px; overflow: hidden; background-color: rgb(191, 191, 191); display: block; height: 1px; font-size: 1px; margin-left: 0px; margin-right: 0px;"></span></div>
+		<div id="tooltip" style="margin-left: 4px; font-family: Trebuchet MS,Arial,Helvetica,sans-serif; font-size: 11px;">Move the mouse over to a field to see tooltips</div>
+		<div style="background-color: rgb(221, 221, 221);"><span style="border-style: solid; border-color: rgb(206, 206, 206); border-width: 0px 1px; overflow: hidden; background-color: rgb(191, 191, 191); display: block; height: 1px; font-size: 1px; margin-left: 0px; margin-right: 0px;"></span><span style="border-style: solid; border-color: rgb(206, 206, 206); border-width: 0px 1px; overflow: hidden; background-color: rgb(191, 191, 191); display: block; height: 1px; font-size: 1px; margin-left: 1px; margin-right: 1px;"></span></div></div>
+	</td>
+</tr>
+<tr><td colspan="3" align="center" height="18">
+		<div id="status" class="statusbar">Copyright 2006-2007 Digium, Inc.  Digium and Asterisk are registered <a href="http://www.digium.com/en/company/profile/trademarkpolicy.php">trademarks</a> of Digium, Inc.  All Rights Reserved. <i><a href="http://www.digium.com/en/company/profile/terms.php">Legal Information</a></i></div>
+		</td>
+</tr>
+</tbody></table>
+<div id="AdvancedOptions" style="display:none; position:absolute; z-index:1004; width:220px; background-color : #EFEFEF; padding : 2px 2px 4px 2px;">
+	<table cellpadding=1 cellspacing=0 border=0 width=220>
+		<tr>	<td align=right>Goto:&nbsp;</td>
+			<td align="center">
+			<select id="AdvancedOptionsSelect" class="input9" onchange="goto_advancedoption()">
+				<option value="moh.html">Music on Hold</option>
+				<option value="emailsettings.html">VM Email settings</option>
+				<option value="sip.html">Global SIP Settings</option>
+				<option value="iax.html">Global IAX Settings</option>
+			<!--	<option value="jabber.html">Jabber</option>
+				<option value="jingle.html">Jingle</option>
+				<option value="zapata.html">Zap Channel</option>	-->
+				<option value="options.html">Change Password</option>
+				<option value="TOSETUP">Setup Wizard</option>
+			</select>
+			</td>
+			<td align="right" valign="top"><span style="color: #909090; font-size: 8pt;cursor:pointer;" onclick="hide_advops();">X</span></td>
+		</tr>
+	</table>
+</div>
+</body>

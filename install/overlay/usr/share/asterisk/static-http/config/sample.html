@@ -1,0 +1,293 @@
+<!--
+ * Asterisk-GUI	-	an Asterisk configuration interface
+ *
+ * XXX Description of your project here! XXX 
+ *
+ * Copyright (C) 2006-2007, Digium, Inc.
+ *
+ * Brandon Kruse <bkruse@digium.com>
+ * Your name <email@domain.com>
+ *
+ * See http://www.asterisk.org for more information about
+ * the Asterisk project. Please do not directly contact
+ * any of the maintainers of this project for assistance;
+ * the project provides a web site, mailing lists and IRC
+ * channels for your use.
+ *
+ * This program is free software, distributed under the terms of
+ * the GNU General Public License Version 2. See the LICENSE file
+ * at the top of the source tree.
+ * 
+ * \author Brandon Kruse <bkruse@digium.com>
+ *
+-->
+
+
+<!-- Through this Tutorial I will guide you through different ways of accessing and storing data via the astman interface/library -->
+
+<!-- Things To Note:
+	XXX Is a marking where title/text can be replaced with your text. 
+	You will want to add your page to config/cfgbasic.html as a panel, look at sample in config/cfgbasic.html about sample.html 
+-->
+
+<script src="scripts/prototype.js"></script>
+<!-- Include our prototype library for manipulating ajax calls to our asterisk server. --> 
+
+<script src="scripts/astman.js"></script>
+<!-- Include your astman library for methods and functions for retreiving, saving and manipulating data from asterisk --> 
+
+<script src="scripts/tooltip.js"></script>
+<!-- Include our tooltips library, here you can define new arrays for your page. eg:
+
+	In tooltips.js (bottom)
+
+	tooltips['sample'] = new Object;
+	tooltips['sample'].en = new Array;
+	tooltips['sample'].en[0] = "<b>Button Click:</b> Click this button to retreive the value of the variable blah in users.conf";
+
+	___________________________________________
+
+	Then in our code (sample.html) we would put it inside an atribute.
+	
+	<td width=40 align=right><input type='checkbox' id='our_box'></td>
+	<td class="field_text" tip="en,sample,0">Get Variable</td>
+
+-->
+
+<link href="stylesheets/schwing.css" media="all" rel="Stylesheet" type="text/css" />
+<!-- Include our default css file for formatting. --> 
+
+<script>
+
+/* Define your global variables here, including a multiple TAB layout as we will do here. */
+var tabs = new Array('tooltip_tab', 'boxes_tab', 'astman_tab', 'shell_tab'); 
+
+/* Our divs that we will hide when the page loads */
+var divs_tohide = new Array('tooltip_div', 'boxes_div', 'astman_div', 'shell_div'); 
+
+
+/* Function used in the GUI to show and hide the different tabs we defined, pretty basic. */
+function show_window(x){
+	for(i=0; i < tabs.length ; i++){
+		_$(tabs[i]).className = "tab";
+	}
+	_$(tabs[x]).className = "tabselected";
+	_$(tabs[x]).blur();
+
+	/* Traverse through the tabs to see which one we want to display. */
+	if(divs_tohide[x]) {
+		var divs_toshow = new Array(divs_tohide[x]);
+		/* Here we will declare divs to show as whatever element in the array is the tab we want to show! */
+	} else { 
+		return false;
+		/* We did not find the tab that we were called to show. */
+	}
+
+	/* Here we will hide all of our divs that we do not want to show, and then show our last div. */
+	for(var i=0; i < divs_tohide.length; i++ ) {
+		_$(divs_tohide[i]).style.display = "none";
+	}
+	for(var i=0; i < divs_toshow.length; i++ ) {
+		_$(divs_toshow[i]).style.display = "";
+	}
+
+	return true;
+}
+
+/* Simple function to change the text inside the browser, just another learning utility. */
+function change_txt() {
+	_$('refresh_txt').innerHTML = _$('change_txt_var').value;
+	/* Take our element refresh_txt and change its innerHTML from 'I am _$('refresh_txt'): to whatever you input */
+	return true;
+}
+
+/* Simple function to change the text inside the browser, just another learning utility. */
+function change_tool() {
+	top._$('tooltip').innerHTML = _$('change_tool_var').value;
+	/* Take our element tooltip and change its innerHTML from the current tooltip to whatever you input */
+	return true;
+}
+
+/* Function to call the astman engine to run a CLI command over manager */
+function submit_manager() {
+	var cmd = (_$('manager_command').value) ? _$('manager_command').value : '';	
+	_$('manager_hiddenhowto').style.display = "";
+	parent.astmanEngine.cliCommand(cmd, gotResponse);
+	/* gotResponse = callback function, gets called with response text 
+
+	If we did not want to call another function, you can do: 
+
+	parent.astmanEngine.cliCommand(cmd, function(response) { alert(response); } ); */
+
+	return true;
+}
+
+/* Our callback function from submit_manager, with the response text */
+function gotResponse(callback_object) {
+
+	if(_$('strip_response').checked) {
+		callback_object = callback_object.replace(/Response: Follows/, "");
+		callback_object = callback_object.replace(/Privilege: Command/, "");
+		callback_object = callback_object.replace(/--END COMMAND--/, "");
+		_$('manager_output').innerHTML = '<pre>' + callback_object + '</pre>';	
+	} else {
+		_$('manager_output').innerHTML = '<pre>' + callback_object + '</pre>';	
+	}
+
+	return true;
+}
+/* Local ajax init is one of the most important functions, as its run on page load. Do all your initialization and setup here. */
+function localajaxinit(){
+	ASTGUI.events.add(document, 'mouseover', show_tooltip);
+	ASTGUI.events.add(_$('change_txt'), 'click', change_txt);
+	ASTGUI.events.add(_$('change_tool'), 'click', change_tool);
+	/* An event system for adding and removing events, via dom manipulation */ 
+
+	/* If we wanted to do: 
+	/* <input id="blah" type="checkbox" onClick="javascript: alert('hi!');">
+	/* We could do:
+
+	/* <input id="blah" type="checkbox"> 
+
+	/* and in localajaxinit (or anywhere) add:
+	/* ASTGUI.events.add(_$('blah'), 'click', alert('Hi!'); 
+	/*
+	/* Obviously, you can get into extremely complex situations of adding and deleting events depending
+	/* On what you want the user to be able to do, and what each event triggers. */ 
+
+	/* Set the title of the page. */
+	setWindowTitle("Our Sample Test Page! XXX");
+
+	parent.loadscreen(this);
+	/* Load our screen. */
+
+	show_window(0);
+	/* We want to display our first window in the array divs_tohide. */
+}
+
+/* This is a good function to have in every page that has javascript, for IE's lameness. */
+function free_mem(){
+	if( navigator.userAgent.indexOf("MSIE") == -1 ){ return true; }
+	try{
+		purge( document.body );
+	} catch(e){ }
+}
+
+</script>
+<body id="foo" onload="localajaxinit()" bgcolor="EFEFEF"  onunload="free_mem()">
+<div class="mainscreenTitleBar">
+	<span id="refresh_txt" style="margin-left: 4px;font-weight:bold;">I am _$('refresh_txt'): </span>
+
+	<!-- Have a little refresher button on our page. -->
+	<span style="cursor: pointer; cursor: hand;" onclick="window.location.href=window.location.href;" >&nbsp;<img src="images/refresh.png" title=" Refresh " border=0 >&nbsp;</span>
+</div>
+<div class="mainscreenContentBox" id="userscontent">
+<table class="mainscreenTable" align="center">
+	<tr valign="top" height="18">	
+	<td align="left">
+		<!-- Here we define our Top Tabs -->
+		<!-- ** Tab Definition ** -->
+		<a href="#" class="tab" onclick="return show_window(0);" id="tooltip_tab" tip="en,sample,0">Tooltip Examples</a>&nbsp;&nbsp;
+		<a href="#" class="tab" onclick="return show_window(1);" id="boxes_tab" tip="en,sample,0">Config file Manipulation</a>&nbsp;&nbsp;
+		<a href="#" class="tab" onclick="return show_window(2);" id="astman_tab" tip="en,sample,0">Astman Demo</a>&nbsp;&nbsp;
+		<a href="#" class="tab" onclick="return show_window(3);" id="shell_tab" tip="en,sample,0">Shell</a>&nbsp;&nbsp;
+		<!-- ** End Tab Definition ** -->
+		<div id="samplehtml" style="display:none"></div>
+
+		<!-- Remember those tabs we defined earlier (var tabs = new Array ('tooltip_tab', etc etc)), here we actually create them for manipulation -->
+			<!-- ** Start Tab Declaration ** -->
+			<!-- ** Tooltip Tab ** -->		
+		<div id="information" style=" border: solid 0px black; background: transparent; padding: 4px; height:440px; width:95%;">
+			<BR>
+			<div id="tooltip_div" style="display:none">
+				<br>	
+				<input id="change_txt_var" class="field_text" type="text"> I am change_txt_var </input><br>
+				<input id="change_txt" class="field_text" type="checkbox" align="center"> Check to change text (astgui events watching this) </input>
+				<p>Here we use ASTGUI.events.add(_$('change_txt'), 'click', change_txt); to manipulate this txt area.
+				<br>Calls function change_txt: _$('refresh_txt').innerHTML = _$('change_txt_var').value;</p>
+				<br><br>
+				<input id="change_tool_var" type="text"> I change tooltip messages! </input><br>
+				<input id="change_tool" type="checkbox" align="center"> Check to change tooltip text </input>
+				<br><br>
+				<a href="#" class="tab" onclick="return show_window(1);" id="pattern_tab" tip="en,sample,0">Next Example</a>&nbsp;&nbsp;
+			</div>
+			<BR>
+
+			
+			<!-- ** Astman Tab ** -->		
+			<div id="astman_div" style="display:none">
+			<p> Here we will demonstrate a little integration with the manager interface, specifically using rawman and astman. <br><br>
+			First we will a manager command and get the output, try a cli command! </p> 
+			action: command<br>
+			command: <input value="core show channels" id="manager_command" type="text"></input><br>
+			<input type="submit" value="go!" onClick="submit_manager();" ></input>
+			<input type="checkbox" id="strip_response">Check here to strip manager response tags.</input>
+			<div style="display:none" id="manager_hiddenhowto"><p> What Just Happend? <br>
+			We Called function submit_manager on click of the submit button, which takes the value of the text field and 
+			then calls parent.astmanEngine.cliCommand, an astman function to run a cli command over manager and await the response.
+			Astman, then uses our callback function passed (gotReponse) which is called with the object.responseText variable. (aka response from manager)
+			</div>
+			<br><br> <a align="right" href="#" class="tab" onclick="return show_window(3);" tip="en,sample,0">Next Lesson</a>
+			<br>Result: 
+			
+				<a href="#" class="tab" id="manager_output" tip="en,sample,0"></a>&nbsp;&nbsp;
+			</div>
+			<BR>
+			<!-- ** Boxes Tab ** -->	
+			<div id="boxes_div" style="display:none">
+				<h2><li>Config File Manipulation.</li></h2>
+				<p>Config files can be read from, parsed, and saved, using a couple functions from astman.js.<br>
+				<p>Here are a list of the most commonly used functions when accessing config files and using them<br>
+				[1] build_action: Builds the specific request to be fed to manager (used with makerequest)<br>
+				[2] makerequest: Executes the given command into manager, based on actions (updateconfig, getconfig, etc) <br>
+				(usually a variable build with build_action). Provides a callback with the response from manager.<br>
+				[3] config2list: Populates select boxes with values from a config file, can be used to do catbyname/fieldbyname
+				[4] config2json: Returns a json object of the config, which can be easily navigated though.
+				<br>
+				<br> An example of build_action and makerequest is: <br>
+				build_action(action, count, cat, name, value, match);<br>
+				makerequest(type, filename, action, callback);<br>
+				<br>
+				We will put example code for deleting the default context from extensions.conf.<br>
+				var filename = "extensions.conf";<br>
+				var context = "default";<br>
+				var uri = build_action('delcat', 0, context, "", "");<br>
+				makerequest('u', filename, uri, function(t) { config2json(filename, 0, callback_function); });<br>
+				<br>With the above example, it would update extensions.conf and delete the catagory default.<br>
+				It would then use the config2json function to callback the function 'callback_function' with the <br>
+				<br> Json object as an argument. You can then use fieldbyname for the values (var type = t.fieldbyname['type'])<br>
+				<br> For the next example, we will do something simple, grab one var=value from the general section in users.conf<br>
+				The function I am about to show you can also be used to populate fields. You can also use config2json for this.<br>
+				<br>blah_object = new Object;<br>blah_object.format = function(t) { <br> //Format text here<br>return true;<br>}
+				<br> blah_object.loaded = function() {<br><br>
+				alert("the value for variable blah in the general section of users.conf is " + _$('select_box_id').stored_config.catbyname['general'].fieldbyname['blah']);<br><br>
+				config2list("users.conf", _$('select_box_id'), new Array(), blah_object);<br>
+					    ^^ Config ||  ^^Box to Populate || ^^tmparray || ^^ object
+				
+				<br><br><br>
+				<a href="#" class="tab" onclick="return show_window(2);" id="pattern_tab" tip="en,sample,0">Next Example</a>&nbsp;&nbsp;
+			</div>
+
+			<br>
+			<!-- ** Shell Tab ** -->	
+			<div id="shell_div" style="display:none">
+			<h2>Shell: </h2><p> The gui also has the ability to execute shell commands and retreive data from them.<br>
+			<br>However, this tutorial is not completed, as we will soon be redoing the way we execute system commands<br>
+			<br> In the 1.4 branch of the gui, you can use the function run_tool to run a system command, and redirect<br>
+			its output into /var/lib/asterisk/static-http/config and use Ajax.request to get the file.<br>
+			<br><br>I will be continuing to add to this, send a message on the mailing list to bkruse<br>
+			If you have suggestions on something you want to know how to do, or cool features/implementation. <br><br>
+			There are a lot of things I still want to add, this is just a rough draft, but happy developing! <br>-bk
+			</div>
+
+		</div>
+
+	<!-- ** End Tab Declaration ** -->
+
+	</td>
+	</tr>
+	<tr><td valign="top" align=center><div  id='status'></div></td></tr>
+	<tr><td></td></tr>
+</table>
+</div>
+</body>

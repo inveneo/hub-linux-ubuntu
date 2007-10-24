@@ -1,0 +1,264 @@
+<!--
+ * Asterisk-GUI	-	an Asterisk configuration interface
+ *
+ * Initial login screen
+ *
+ * Copyright (C) 2006-2007, Digium, Inc.
+ *
+ * Mark Spencer <markster@digium.com>
+ * Pari Nannapaneni <pari@digium.com>
+ *
+ * See http://www.asterisk.org for more information about
+ * the Asterisk project. Please do not directly contact
+ * any of the maintainers of this project for assistance;
+ * the project provides a web site, mailing lists and IRC
+ * channels for your use.
+ *
+ * This program is free software, distributed under the terms of
+ * the GNU General Public License Version 2. See the LICENSE file
+ * at the top of the source tree.
+ *
+-->
+<script src="scripts/prototype.js"></script>
+<script src="scripts/astman.js"></script>
+<link href="stylesheets/schwing.css" media="all" rel="Stylesheet" type="text/css" />
+<script>
+var localloggedon = -1;
+var asterisk_guitools = parent.asterisk_guitools;
+var asterisk_rawmanPath = parent.asterisk_rawmanPath;
+
+function updateButtons(){
+	var f = parent.loggedon;
+	_$('username').disabled = (f)?1:0;
+	_$('secret').disabled = (f)?1:0;
+	_$('logoff').disabled = (f)?0:1;
+	_$('login').disabled = (f)?1:0;
+	if(!f){ try{ _$('username').focus();}catch(err){ } }
+}
+
+function localinit() {
+	showdiv_statusmessage();
+	top.document.title = "Asterisk GUI (Beta) -- Home";
+	var tmp;
+	var opt = {
+		method: 'get',
+		parameters: "action=ping",
+		asynchronous: true,
+		onComplete: function(t){
+			var f = t.responseText;
+			if( f.match("Pong")){
+				_$('statusbar').innerHTML = "<img src='images/tick.gif'><i>Connected!</i>";
+				loggedOn();
+				parent.loadscreen(this);
+				return;
+			}
+			if( f.match(parent.asterisk_guipingerror)){
+				_$('statusbar').innerHTML = "<i>Please login...</i>";
+				loggedOff();
+				parent.loadscreen(this);
+				_$('username').focus();
+				return;
+			}
+		}
+	};
+	tmp = new Ajax.Request( asterisk_rawmanPath, opt);
+}
+
+function loggedOn() {
+	if ((parent.loggedon == 1) && (localloggedon == 1)){ return; }
+	if(!parent.eventeater.pingstatus){
+		parent.eventeater.pingstatus = true;
+		parent.pingevery(60);
+	}
+
+	if(_$('secret').value=="password"){
+		parent.loggedon = 1;
+		localloggedon = 1;
+		var _ll = parent._$('logoutlink'); 
+		_ll.innerHTML = "Logout";
+		_ll.onclick = parent.Logoff ;
+		_ll.style.display = "" ;
+		parent.gui_alert("You are using the default password provided by AsteriskNOW !! \n\n It is strongly recommended that you change your default password ");
+		window.location.href="options.html?forcepassword=yes";
+		return;
+	}
+
+	if( parent.asterisk_guitools_inextconf == 0){
+		checkessentials();
+	}
+
+	parent.setLoggedOn(1);
+	parent.loggedon = 1;
+	localloggedon = 1;
+	_$('username').className  = "input9_disabled";
+	_$('secret').className  = "input9_disabled";
+	updateButtons();
+	_$('statusbar').innerHTML = "<img src='images/tick.gif'><i>Connected!</i>";
+	var _rc = parent._$('reloadconfig'); 
+	_rc.innerHTML = "Activate Changes";
+	_rc.onclick = parent.reloadConfig ;
+	_rc.style.display = "" ;
+	var _ll = parent._$('logoutlink'); 
+	_ll.innerHTML = "Logout";
+	_ll.onclick = parent.Logoff ;
+	_ll.style.display = "" ;
+
+}
+
+function loggedOff() {
+	if ((parent.loggedon == 0) && (localloggedon == 0))
+		return;
+	parent.setLoggedOn(0);
+	parent.loggedon = 0;
+	parent.document.getElementById('logoutlink').innerHTML = "&nbsp;";
+	localloggedon = 0;
+	_$('username').disabled = 0;
+	_$('secret').disabled = 0;
+	_$('logoff').disabled = 1;
+	_$('login').disabled = 0;
+}
+
+
+function doLogin() {
+	if( _$('username').value == "" ){
+		parent.gui_feedback("Please enter a Username");
+		_$('username').focus();
+		return true;			
+	}
+
+	if( _$('secret').value == "" ){
+		parent.gui_feedback("Please enter a password");
+		_$('secret').focus();
+		return true;			
+	}
+	parent.document.getElementById('login_name').value = _$('username').value ;
+	_$('statusbar').innerHTML = "<i>Logging in...</i>";
+	parent.astmanEngine.sendRequest('action=login&username=' + encodeURIComponent( _$('username').value ) + "&secret=" + encodeURIComponent(_$('secret').value), afterlogin);
+}
+
+function check_digital(n) {
+
+	var l, h;
+	for( l in n ){	if(n.hasOwnProperty(l)){
+		if( l =='general') { 
+			if(n[l]['continue'] == "no") {
+				has_digital = 0; /* ztscan.conf was NOT found */
+				/* Maybe check to see if isnew is set to one, then redirect them on a setup wizard about modprobing the drivers and what not */
+				return false;
+			}
+			if(n[l]['continue'] == "yes") {
+				has_digital = 1;
+				var tot_spans = n[l]['totalspans'];
+				if(n[l]['isnew'] == "yes") {
+					_$('status_message').style.display="block";
+					_$('status_message').innerHTML = '<TABLE border=0 cellpadding=0 cellspacing=4 align=center>' +
+		                        '<TR><TD><img src="/asterisk/static/config/images/loading.gif"></TD>' +
+		                        '<TD><div id=message_text></div></TD></TR></TABLE>';
+					_$('message_text').innerHTML = "Time: <div id='counter'>10</div> Digital Cards Detected! Total Spans: " + tot_spans + "<BR>Options:<br>1. <A href=\"#\" class=\"splbutton\" onclick=\"_$('status_message').style.display='none'; parent._$('mainscreen').src = 'digital.html';\">Digital Card Setup Wizard</A><br>2. <A href=\"#\" class=\"splbutton\" onclick=\"_$('status_message').style.display='none';>Continue<br></a>";
+					setTimeout("_$('status_message').style.display='none';", 10000);
+					int_handle = setInterval("_$('counter').innerHTML = (_$('counter').innerHTML - 1);", 1000);
+					setTimeout("clearInterval(int_handle);", 10000);
+					return true;
+				}
+			}
+		} 
+
+	}}
+	return true;
+
+}
+
+afterlogin = function(msgs) {
+	_$('statusbar').innerHTML = msgs[0].headers['message'];
+	if ( msgs[0].headers['response'] == "Success" ){
+		parent.gui_feedback("Login Successful",'blue',6000);
+		_$('statusbar').innerHTML = "<img src='images/tick.gif'><i>Connected!</i>";
+		//parent.astmanEngine.pollEvents();
+		if(!config2json("ztscan.conf", 1, check_digital)) {
+			has_digital = 0; /* ztscan.conf was NOT found */
+		}
+		loggedOn();
+	}else if( msgs[0].headers['message'] == "Authentication failed" ){
+		parent.gui_feedback("Invalid Username/Password",'default',6000);
+		_$('username').focus();
+		_$('username').select();
+		loggedOff();
+	}else{
+		loggedOff();
+	}
+};
+
+
+function doLogoff() {
+	parent.Logoff();
+}
+
+function submitOnEnter(e){ 
+	if(e.keyCode == 13){ 
+		doLogin();
+		return false;
+	}
+}
+
+function checkessentials(){
+	// see if asterisk_guitools exists in extensions.conf
+	//if everything ok set  asterisk_guitools_inextconf = 1;
+	var opt = { method: 'get', asynchronous: true, onComplete: checkExtconfig };
+	opt.parameters="action=getconfig&filename=extensions.conf" ;
+	var tmp = new Ajax.Request(asterisk_rawmanPath , opt);
+}
+
+
+function checkExtconfig(originalRequest){
+	var lines = originalRequest.responseText.split("\n");
+	for( var i=0 ; i < lines.length ; i++){
+		if ( lines[i].substr(0,9) == "Category-"  ){
+			var tmp = lines[i].split(": ");
+			if( tmp[1].match(asterisk_guitools) ){
+				parent.asterisk_guitools_inextconf = 1;
+				break;
+			}
+		}
+	}
+	
+	if(parent.asterisk_guitools_inextconf == 0 ){	// if no context by name asterisk_guitools 
+		parent.window.location.href = "./setup/install.html";
+	}
+
+}
+
+</script>
+<body id="foo" onload="localinit()" topmargin=0  bgcolor="EFEFEF">
+<div class="mainscreenTitleBar">
+	<span style="margin-left: 4px;font-weight:bold">Welcome to the Asterisk&trade; Configuration Panel</span>
+</div>
+<div class="mainscreenContentBox" id="mailboxcontent">
+<table class="mainscreenTable" width="100%">
+	<tr valign="top">
+	<td colspan=2>
+		<table align="center">
+		<tr>	<td colspan="2"><h2>Asterisk&trade; Configuration Engine</h2></td>
+		<tr>	<td>Username:</td>
+			<td><input id="username"  class="input9" size=12></td>
+		</tr>
+		<tr>	<td>Password:</td>
+			<td><input type="password" id="secret" class="input9" size=12 onKeyPress="submitOnEnter(event)"></td>
+		</tr>
+		<tr>	<td colspan=2 align="center">
+			<div id="statusbar">
+				<span style="margin-left: 4px;font-weight:bold">&nbsp;</span>
+			</div>
+			</td>
+		</tr>
+		<tr>	<td align='center' colspan='2'>
+				<input type="submit" id="login" value="Login" onClick="doLogin()" class="input">
+				&nbsp;&nbsp;&nbsp;&nbsp;
+				<input type="submit" id="logoff" value="Logoff" disabled=1 onClick="doLogoff()" class="input">
+			</td>
+		</tr>
+		</table>
+	</td>
+	</tr>
+</table>
+</div>
+</body>
