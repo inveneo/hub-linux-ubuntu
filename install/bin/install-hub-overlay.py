@@ -59,9 +59,11 @@ def pre_overlay_transfer(overlay_root, dest):
 
     # stop services
     for service in SERVICES:
-        sp.call(['/etc/init.d/'+service,'stop'])
-
-
+        try:
+            stdout.write("Attempting to stop: "+service+"\n")
+            sp.call(['/etc/init.d/'+service,'stop'])
+        except Exception, ex:
+            stderr.write("Failed to stop: "+service+"\n")
     
 def post_overlay_transfer(overlay_root, dest):
     # HACK: Fix Squid perms 
@@ -75,8 +77,11 @@ def post_overlay_transfer(overlay_root, dest):
 
     # start-up services (in reverse order of stop)
     for service in SERVICES[::-1]:
-        sp.call(['/etc/init.d/'+service,'start'])
-
+        try:
+            stdout.write("Attempting to start: "+service+"\n")
+            sp.call(['/etc/init.d/'+service,'start'])
+        except Exception, ex:
+            stderr.write("Failed to start: "+service+"\n")
     
 def transfer_overlay(src,dest):
     """docstring for transfr_overlay"""
