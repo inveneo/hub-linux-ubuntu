@@ -41,11 +41,9 @@ def fix_perms(opt_root):
     # fix samba shared docs
     os.chmod(path.join(opt_root,"install","overlay","srv","samba","shared_docs"),0777)
 
-    # fix /etc/libnss-ldap.secret
-    os.chmod(path.join(opt_root,"install","overlay","etc","libnss-ldap.secret"),0600)
+    # fix /etc/ldap.secret
+    os.chmod(path.join(opt_root,"install","overlay","etc","ldap.secret"),0600)
     
-         
-######## transfer event helpers #########
 def fix_owners(opt_root):
     """docstring for fix_owners"""
     # Globally switch ownership of overlay to root
@@ -53,7 +51,18 @@ def fix_owners(opt_root):
     path.walk(path.join(opt_root,'install','overlay'), \
          folder_visitor, \
          lambda f: os.chown(f, uinfo[2],uinfo[3]))
+
+    # fix asterisk ownership
+    uinfo=pwd.getpwnam('asterisk')
+    path.walk(path.join(opt_root,'install','overlay','etc','asterisk'), \
+         folder_visitor, \
+         lambda f: os.chown(f, uinfo[2],uinfo[3]))
+
+    os.chown(path.join(opt_root,'install','overlay','etc','zaptel.conf'), \
+             uinfo[2],uinfo[3])
     
+
+######## transfer event helpers #########
 def pre_overlay_transfer(overlay_root, dest):
     """docstring for pre_overlay_transfer"""
 
