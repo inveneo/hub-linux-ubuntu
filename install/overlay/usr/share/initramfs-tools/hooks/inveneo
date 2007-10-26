@@ -18,6 +18,8 @@ esac
 
 . /usr/share/initramfs-tools/hook-functions
 
+# useful to hav
+copy_exec /usr/bin/vim.tiny /bin/vi
 
 # requirements for check script
 copy_exec /usr/bin/yes /bin

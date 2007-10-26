@@ -36,12 +36,7 @@ find_devices() {
 
 log_begin_msg "Inveneo RAID check"
 
-# exit with success if no mdadm script, 'cause then we can't be running raid
-if [ ! -e /scripts/local-top/mdadm ]; then
-    log_warning_msg "No /scripts/local-top/mdadm, exiting"
-    exit 0
-fi
-
+# exit with success if no mdadm.conf
 if [ ! -e $MDADM_CONF ]
 then
     log_warning_msg "mdadm conf: $MDADM_CONF not found. Not running check"
@@ -68,6 +63,11 @@ fi
 log_warning_msg "Running: /sbin/inv_check_superblocks.sh $MDADM_CONF"
 /sbin/inv_check_superblocks.sh $MDADM_CONF
 log_warning_msg "Completed check"
+
+# run mdadm assemble 
+log_warning_msg "assembling arrays"
+/sbin/mdadm --assemble --scan --run
+
 log_end_msg 
 exit 0
 
