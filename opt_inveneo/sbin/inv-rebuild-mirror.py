@@ -91,7 +91,6 @@ def main():
             break
 
         new_drive = strip_partition(get_phys_drives_for_array(array)[0])
-        stdout.write('Drive: '+new_drive+"\n\n\n")
         if good_drive != None and ( good_drive != new_drive ):
             # mismatched drives!
             good_drive = None
@@ -113,7 +112,7 @@ def main():
     try:
         with open(PARTITIONS) as f:
             for line in f:
-                dev=l.split
+                dev=line.split()
                 # checks for validity are:
                 # - line has data (not blank)
                 # - major number is '8' (scsi)
@@ -130,9 +129,9 @@ def main():
                 target_drive=dev[3]
                 stdout.write("Target drive: "+target_drive+"\n\n\n")
 
-        except Exception, ex:
-           traceback.print_exc(20, stdout)
-           target_drive=None
+    except Exception, ex:
+        traceback.print_exc(20, stdout)
+        target_drive=None
     
         
 
