@@ -26,7 +26,7 @@ def main():
     syslog.openlog('inv-rebuild-mirror', 0, syslog.LOG_LOCAL5)
     
     # if not a raided root device, return
-    if not is_root_device_raid(): return 0
+    if not is_root_device_raid(): return 1
 
 if __name__ == "__main__":
     # sanitize PATH
