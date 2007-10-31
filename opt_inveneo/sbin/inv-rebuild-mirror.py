@@ -16,6 +16,7 @@ from sys import stdout, stderr
 MDADM_CONF='/etc/mdadm/mdadm.conf'
 MDADM_STAT='/proc/mdstat'
 PARTITIONS='/proc/partitions'
+MOUNTS='/proc/mounts'
 
 part_stripper=re.compile('^(.+)[0-9]+$')
 def strip_partition(drive):
@@ -81,6 +82,31 @@ def disk_size_mb(drive):
     out = sp.Popen(['parted',drive,'unit','MB','print'],stdout=sp.PIPE).communicate()[0]
     size = int(disk_size_matcher.search(out).groups()[0])
     return size
+    
+def drive_in_use(raw_drive):
+    """True if drive is mounted (in /proc/mounts) or in an array (appears in /proc/mdstat)"""
+    
+    # check mounts
+    try:
+       with open(MOUNTS) as f:
+           pat=re.compile(r'^.+'+raw_drive+r'[0-9]*\s')
+           for line in f:
+               if pat.match(line): return True
+    except Exception, ex:
+        traceback.print_exc(20, stdout)
+        pass
+    
+    # check arrays
+    try:
+       with open(MDADM_STAT) as f:
+           pat=re.compile(r'\s'+raw_drive+r'[0-9]*\[')
+           for line in f:
+               if pat.match(line): return True
+    except Exception, ex:
+        traceback.print_exc(20, stdout)
+        pass    
+        
+    return False
 
 def main():
     syslog.openlog('inv-rebuild-mirror', 0, syslog.LOG_LOCAL5)
@@ -137,12 +163,14 @@ def main():
                 # - drive isn't our known good drive that the array is running on
                 # - drive is on actual scsi (or sata) bus, not usb
                 # - drive is as big or bigger than good drive
+                # - drive not 'in use', meaning not mounted or in an array
                 if len(dev)==4 and \
                     dev[0] =='8' and \
                     (int(dev[1]) % 16) == 0 and \
                     dev[3]!=good_drive and \
                     is_scsi(dev[3]) and \
-                    disk_size_mb(dev[3])>=good_drive_size: 
+                    disk_size_mb(dev[3])>=good_drive_size and \
+                    not drive_in_use(dev[3]): 
                     target_drives.append(dev[3]) 
 
 
@@ -150,7 +178,11 @@ def main():
         traceback.print_exc(20, stdout)
         target_drives=[]
     
-    print str(target_drives)
+    if len(target_drives)<1:
+        stderr.write("No valid drives found to use in mirror.")
+        return 0
+        
+    
 
 if __name__ == "__main__":
     # sanitize PATH
