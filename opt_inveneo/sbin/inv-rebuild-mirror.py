@@ -27,7 +27,7 @@ def main():
     
     # if not a raided root device, return
     if not is_root_device_raid(): 
-        stderr.write("Root device is not a RAID array")
+        stderr.write("Root device is not a RAID array\n")
         return 1
 
 if __name__ == "__main__":
