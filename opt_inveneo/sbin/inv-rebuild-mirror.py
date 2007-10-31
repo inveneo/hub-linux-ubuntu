@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 
+from __future__ import with_statement
+
 import os
 import sys
 import syslog
@@ -10,8 +12,6 @@ import subprocess as sp
 import re
 from os import path
 from sys import stdout, stderr
-
-from __future__ import with_statement
 
 MDADM_CONF='/etc/mdadm/mdadm.conf'
 
