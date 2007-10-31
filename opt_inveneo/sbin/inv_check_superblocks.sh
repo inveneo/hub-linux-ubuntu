@@ -14,7 +14,8 @@ part_exists() {
 # args are: array-device device1 device2
 # e.g. check_raid /dev/md0 /dev/sdb1 /dev/sdb2
 check_raid() { 
-    if mdadm --detail --brief --test $1
+    mdadm --detail --brief --test $1
+    if [ $? -lt 2 ]
 	then
 	echo "RAID array at $1 already active"
 	return
