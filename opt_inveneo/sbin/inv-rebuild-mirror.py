@@ -66,6 +66,14 @@ def get_phys_drives_for_array(array_dev):
     
     return result
 
+udev_id_bus_matcher=re.compile(r'^ID_BUS=(.+)$',re.M)
+def is_scsi(dev):
+    """is the device really scsi or is it USB hiding as scsi?"""
+    udev_out=sp.Popen(['udevinfo','--query=env','--name='+dev],stdout=sp.PIPE).communicate()[0]
+    
+    match=udev_id_bus_matcher.search(udev_out)
+    return match and match.groups()[0]=='scsi'
+
 def main():
     syslog.openlog('inv-rebuild-mirror', 0, syslog.LOG_LOCAL5)
     
@@ -121,13 +129,15 @@ def main():
                 if len(dev)==0 or \
                     dev[0] !='8' or \
                     (int(dev[1]) % 16) != 0 or \
-                    dev[3]==good_drive: 
+                    dev[3]==good_drive or \
+                    not is_scsi(dev[3]): 
                     continue 
                 
                 # if we got here, we have a candidate and now need to check bus,
                 # sizes, and writability
                 target_drive=dev[3]
-                stdout.write("Target drive: "+target_drive+"\n\n\n")
+                
+                # 
 
     except Exception, ex:
         traceback.print_exc(20, stdout)
