@@ -25,7 +25,7 @@ def usage():
     stderr.write("Usage: inv-user-create.py [-u <uid>] [-c <real name>] [-p <passwd>] [--no-share] username\n")
 
 def main():
-    syslog.openlog('inv-create-user.py', 0, syslog.LOG_LOCAL5)
+    syslog.openlog('inv-create-user', 0, syslog.LOG_LOCAL5)
     
     opts=None
     args=None
