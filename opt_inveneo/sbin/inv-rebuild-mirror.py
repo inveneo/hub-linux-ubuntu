@@ -18,7 +18,11 @@ MDADM_STAT='/proc/mdstat'
 PARTITIONS='/proc/partitions'
 MOUNTS='/proc/mounts'
 
-part_stripper=re.compile('^(.+)[0-9]+$')
+def device_to_drive(device):
+    """converts stuff of form /dev/sda1 to sda"""
+    return strip_partition(device.split('/')[-1])
+
+part_stripper=re.compile('^(.+)[0-9]*$')
 def strip_partition(drive):
     return part_stripper.match(drive).groups()[0]
 
@@ -150,38 +154,69 @@ def main():
         
     # Ok, now we think we can do something, but we have to see 
     # if there is a drive we can extend the arrays onto
-    good_drive_size=disk_size_mb(good_drive)
-    target_drives=[]
-    try:
-        with open(PARTITIONS) as f:
-            for line in f:
-                dev=line.split()
-                # checks for validity are:
-                # - line has data (not blank)
-                # - major number is '8' (scsi)
-                # - minor number modulus 16 is 0 (whole drive, not part)
-                # - drive isn't our known good drive that the array is running on
-                # - drive is on actual scsi (or sata) bus, not usb
-                # - drive is as big or bigger than good drive
-                # - drive not 'in use', meaning not mounted or in an array
-                if len(dev)==4 and \
-                    dev[0] =='8' and \
-                    (int(dev[1]) % 16) == 0 and \
-                    dev[3]!=good_drive and \
-                    is_scsi(dev[3]) and \
-                    disk_size_mb(dev[3])>=good_drive_size and \
-                    not drive_in_use(dev[3]): 
-                    target_drives.append(dev[3]) 
-
-
-    except Exception, ex:
-        traceback.print_exc(20, stdout)
-        target_drives=[]
+    good_device='/dev/'+good_drive
+    target_device=None
     
-    if len(target_drives)<1:
-        stderr.write("No valid drives found to use in mirror.")
-        return 0
+    # we _assume_ that we are a two disk system, so we look for a valid drive
+    # where mdadm.conf expects it, we just have to look at an array entry
+    # and pick the drive that _isn't_ currently in use
+    for dev in arrays[arrays.keys()[0]]:
+        if dev != good_device:
+            target_device = strip_partition(dev)
+            break
+    
+    if target_device == None:
+        stderr.write('Could not find second device for mirror in mdadm.conf.\nDoing nothing.\n')
+        return 2
         
+    target_drive=device_to_drive(target_device)
+    
+    print "Good drive: "+good_drive
+    print "Good device: "+good_device
+    print "Target drive "+target_drive
+    print "Target device "+target_device
+    
+    # now see if we have the drive and if it matches our criteria
+    good_drive_size=disk_size_mb(good_drive)
+    if not ( \
+        is_scsi(target_drive) and \
+        disk_size_mb(target_drive)>=good_drive_size and \
+        not drive_in_use(target_drive) \
+        ): 
+        stderr.write("Drive: "+target_drive+" not found or not usable")
+        return 2
+
+    # first trash any superblocks that might confuse mdadm
+    with open(PARTITIONS) as f:
+        for l in f:
+            dev=line.split()
+            if len(dev)==4 and \
+                dev[3].startswith(target_drive):
+                sp.call(['mdadm','--zero-superblock','/dev/'+dev[3]])
+    
+    # now copy over the partition table from the good drive
+    dump = sp.Popen(['sfdisk','-d','/dev/'+good_device], stdout=sp.PIPE)
+    sp.Popen(['sfdisk', target_device], stdin=dump.stdout, stdout=sp.PIPE).communicate()
+    
+    # verify tables are the same now
+    orig = sp.Popen(['sfdisk','-d',good_device],stdout=sp.PIPE).communicate()[0].split('\n\n')[1]
+    new = sp.Popen(['sfdisk','-d',target_device],stdout=sp.PIPE).communicate()[0].split('\n\n')[1]
+    if new != orig:
+        stderr.write("Oops. Just wrote partition table on: "+target+\
+        " and it doesn't match original table so I can't use the drive")
+        return 2
+        
+    # now the MBR
+    sp.call(['dd','if='+good_device,'of='+target_device,'bs=512','count=1'])
+    
+    # now add the drives to the array
+    for array in arrays.keys():
+        for part in arrays[array]:
+            if not part.startswith(good_device):
+                sp.call(['mdadm','--add',array,part]):
+                break
+
+    
     
 
 if __name__ == "__main__":
