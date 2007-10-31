@@ -15,7 +15,7 @@ from sys import stdout, stderr
 
 def is_root_device_raid():
     try:
-        root_dev = sp.Popen(["rdev"], stdout=PIPE).communicate()[0].split()[0]
+        root_dev = sp.Popen(["rdev"], stdout=sp.PIPE).communicate()[0].split()[0]
         sp.check_call(['mdadm','-D','--brief',root_dev]) # will throw exception if not a RAID device
     except Exception, ex:
         traceback.print_exc(20, sys.stdout)
