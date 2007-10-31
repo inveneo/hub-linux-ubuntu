@@ -22,7 +22,7 @@ def device_to_drive(device):
     """converts stuff of form /dev/sda1 to sda"""
     return strip_partition(device.split('/')[-1])
 
-part_stripper=re.compile('^(.+)[0-9]*$')
+part_stripper=re.compile('^(.+?)[0-9]*$')
 def strip_partition(drive):
     return part_stripper.match(drive).groups()[0]
 
@@ -161,7 +161,7 @@ def main():
     # where mdadm.conf expects it, we just have to look at an array entry
     # and pick the drive that _isn't_ currently in use
     for dev in arrays[arrays.keys()[0]]:
-        if dev != good_device:
+        if not dev.startswith(good_device):
             target_device = strip_partition(dev)
             break
     
@@ -171,11 +171,6 @@ def main():
         
     target_drive=device_to_drive(target_device)
     
-    print "Good drive: "+good_drive
-    print "Good device: "+good_device
-    print "Target drive "+target_drive
-    print "Target device "+target_device
-    
     # now see if we have the drive and if it matches our criteria
     good_drive_size=disk_size_mb(good_drive)
     if not ( \
@@ -183,37 +178,43 @@ def main():
         disk_size_mb(target_drive)>=good_drive_size and \
         not drive_in_use(target_drive) \
         ): 
-        stderr.write("Drive: "+target_drive+" not found or not usable")
+        stderr.write("Drive: "+target_drive+" not found or not usable\n")
         return 2
 
+    stdout.write("Will add '"+target_drive+"' to mirror\n")
     # first trash any superblocks that might confuse mdadm
     with open(PARTITIONS) as f:
         for l in f:
-            dev=line.split()
+            dev=l.split()
             if len(dev)==4 and \
                 dev[3].startswith(target_drive):
+                stdout.write("Zeroing any superblock on: "+dev[3]+"\n")
                 sp.call(['mdadm','--zero-superblock','/dev/'+dev[3]])
     
     # now copy over the partition table from the good drive
-    dump = sp.Popen(['sfdisk','-d','/dev/'+good_device], stdout=sp.PIPE)
+    stdout.write("Copying partition table to: "+target_device+"\n")
+    dump = sp.Popen(['sfdisk','-d',good_device], stdout=sp.PIPE)
     sp.Popen(['sfdisk', target_device], stdin=dump.stdout, stdout=sp.PIPE).communicate()
     
     # verify tables are the same now
-    orig = sp.Popen(['sfdisk','-d',good_device],stdout=sp.PIPE).communicate()[0].split('\n\n')[1]
-    new = sp.Popen(['sfdisk','-d',target_device],stdout=sp.PIPE).communicate()[0].split('\n\n')[1]
+    orig = sp.Popen(['sfdisk','-d',good_device],stdout=sp.PIPE).communicate()[0].split('\n\n')[1].replace(good_device, '/dev/block')
+    new = sp.Popen(['sfdisk','-d',target_device],stdout=sp.PIPE).communicate()[0].split('\n\n')[1].replace(target_device,'/dev/block')
+
     if new != orig:
-        stderr.write("Oops. Just wrote partition table on: "+target+\
-        " and it doesn't match original table so I can't use the drive")
+        stderr.write("Oops. Just wrote partition table on: "+target_device+\
+        " and it doesn't match original table so I can't use the drive\n")
         return 2
         
     # now the MBR
+    stdout.write("Copying MBR\n")
     sp.call(['dd','if='+good_device,'of='+target_device,'bs=512','count=1'])
     
     # now add the drives to the array
     for array in arrays.keys():
         for part in arrays[array]:
             if not part.startswith(good_device):
-                sp.call(['mdadm','--add',array,part]):
+                stdout.write("Adding '"+part+"' to array '"+array+"'\n")
+                sp.call(['mdadm','--add',array,part])
                 break
 
     
