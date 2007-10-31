@@ -14,6 +14,7 @@ from os import path
 from sys import stdout, stderr
 
 MDADM_CONF='/etc/mdadm/mdadm.conf'
+MDADM_STAT='/proc/mdstats'
 
 def is_root_device_raid():
     try:
@@ -40,6 +41,24 @@ def parse_mdadm_conf(conf):
         result={}
     
     return result
+ 
+def get_phys_drives_for_array(array_dev):
+    result=[]
+    array=array_dev.split('/')[-1] # convert /dev/mdX to mdX 
+    drives=[]
+    try:
+        with open(MDADM_STAT) as f:
+            for line in f:
+                if line.startswith(array):
+                    drives=line[len(array)+3:].split()[2:]
+                    break
+    except Exception, ex:
+        drives=[]
+        
+    for d in drives:
+        result.append(d[:d.index('['))
+    
+    return result
 
 def main():
     syslog.openlog('inv-rebuild-mirror', 0, syslog.LOG_LOCAL5)
@@ -51,7 +70,39 @@ def main():
         
     # parse mdadm.conf
     arrays=parse_mdadm_conf(MDADM_CONF)
-    stdout.write(str(arrays))
+    if len(arrays) == 0: 
+        stderr.write("No arrays found in "+MDADM_CONF+"\n")
+        return 2
+    
+    # see if _all_ are degraded and running on same physical disk
+    # if _some_ are running on two disks, or any are running on
+    # different disks, we do nothing
+    all_degraded=True # assume degraded unless otherwise
+    good_drive=None # set to physical drive that all arrays are using if all on the same
+    for array in arrays.keys():
+        if sp.call['mdadm','-D','--brief','--test',array] != 1:
+            all_degraded=False
+            break
+        new_drive = get_phys_drives_for_array(array)[0]
+        stdout.write('Drive: '+good_drive)
+        if good_drive != None and ( good_drive != new_drive ):
+            # mismatched drives!
+            good_drive = None
+            break
+        else:
+            good_drive = new_drive # in case first drive and good_drive is None
+    
+    if not all_degraded:
+        stderr.write("Not all arrays degraded, doing nothing")
+        return 0
+        
+    if good_drive == None:
+        stderr.write("Arrays have physical drive mismatch--they are degraded but running on different drives. Doing nothing.\n")
+        return 0
+        
+    # Ok, now we think we can do something, but we have to see if there is a drive we
+    # can extend the arrays onto
+        
 
 if __name__ == "__main__":
     # sanitize PATH
