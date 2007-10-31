@@ -101,7 +101,7 @@ def drive_in_use(raw_drive):
        with open(MDADM_STAT) as f:
            pat=re.compile(r'\s'+raw_drive+r'[0-9]*\[')
            for line in f:
-               if pat.match(line): return True
+               if pat.search(line): return True
     except Exception, ex:
         traceback.print_exc(20, stdout)
         pass    
