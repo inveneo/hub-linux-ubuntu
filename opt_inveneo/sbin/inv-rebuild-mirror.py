@@ -18,7 +18,6 @@ def is_root_device_raid():
         root_dev = sp.Popen(["rdev"], stdout=sp.PIPE).communicate()[0].split()[0]
         sp.check_call(['mdadm','-D','--brief',root_dev]) # will throw exception if not a RAID device
     except Exception, ex:
-        traceback.print_exc(20, sys.stdout)
         return False
     
     return True
@@ -27,7 +26,9 @@ def main():
     syslog.openlog('inv-rebuild-mirror', 0, syslog.LOG_LOCAL5)
     
     # if not a raided root device, return
-    if not is_root_device_raid(): return 1
+    if not is_root_device_raid(): 
+        stderr.write("Root device is not a RAID array")
+        return 1
 
 if __name__ == "__main__":
     # sanitize PATH
