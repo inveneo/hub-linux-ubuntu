@@ -14,7 +14,7 @@ from os import path
 from sys import stdout, stderr
 
 MDADM_CONF='/etc/mdadm/mdadm.conf'
-MDADM_STAT='/proc/mdstats'
+MDADM_STAT='/proc/mdstat'
 
 def is_root_device_raid():
     try:
@@ -53,10 +53,11 @@ def get_phys_drives_for_array(array_dev):
                     drives=line[len(array)+3:].split()[2:]
                     break
     except Exception, ex:
+        traceback.print_exc(20, stdout)
         drives=[]
         
     for d in drives:
-        result.append(d[:d.index('['))
+        result.append(d[:d.index('[')])
     
     return result
 
@@ -80,11 +81,12 @@ def main():
     all_degraded=True # assume degraded unless otherwise
     good_drive=None # set to physical drive that all arrays are using if all on the same
     for array in arrays.keys():
-        if sp.call['mdadm','-D','--brief','--test',array] != 1:
+        if sp.call(['mdadm','-D','--brief','--test',array]) != 1:
             all_degraded=False
             break
+
         new_drive = get_phys_drives_for_array(array)[0]
-        stdout.write('Drive: '+good_drive)
+        stdout.write('Drive: '+new_drive+"\n\n\n")
         if good_drive != None and ( good_drive != new_drive ):
             # mismatched drives!
             good_drive = None
@@ -93,7 +95,7 @@ def main():
             good_drive = new_drive # in case first drive and good_drive is None
     
     if not all_degraded:
-        stderr.write("Not all arrays degraded, doing nothing")
+        stderr.write("Not all arrays degraded, doing nothing\n")
         return 0
         
     if good_drive == None:
