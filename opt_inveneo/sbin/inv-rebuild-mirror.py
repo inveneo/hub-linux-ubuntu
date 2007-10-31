@@ -74,6 +74,14 @@ def is_scsi(dev):
     match=udev_id_bus_matcher.search(udev_out)
     return match and match.groups()[0]=='scsi'
 
+fdisk_size_matcher=re.compile(r'^Disk.+:\s([0-9]+)mB$')
+def disk_size_mb(drive):
+    # TODO: can I just read /sys/block/<dev>/size and assume always in 512 units?
+    out = sp.Popen(['parted',dev,'unit','mB','print'],stdout=sp.PIPE).communicate()[0]
+    size = int(fdisk_size_matcher.match(out).groups()[0])
+    print "Drive: "+drive+" size: "+size
+    return size
+
 def main():
     syslog.openlog('inv-rebuild-mirror', 0, syslog.LOG_LOCAL5)
     
@@ -116,7 +124,8 @@ def main():
         
     # Ok, now we think we can do something, but we have to see 
     # if there is a drive we can extend the arrays onto
-    target_drive=None
+    good_drive_size=disk_size_mb(good_drive)
+    target_drives=[]
     try:
         with open(PARTITIONS) as f:
             for line in f:
@@ -126,24 +135,22 @@ def main():
                 # - major number is '8' (scsi)
                 # - minor number modulus 16 is 0 (whole drive, not part)
                 # - drive isn't our known good drive that the array is running on
-                if len(dev)==0 or \
-                    dev[0] !='8' or \
-                    (int(dev[1]) % 16) != 0 or \
-                    dev[3]==good_drive or \
-                    not is_scsi(dev[3]): 
-                    continue 
-                
-                # if we got here, we have a candidate and now need to check bus,
-                # sizes, and writability
-                target_drive=dev[3]
-                
-                # 
+                # - drive is on actual scsi (or sata) bus, not usb
+                # - drive is as big or bigger than good drive
+                if len(dev)==4 and \
+                    dev[0] =='8' and \
+                    (int(dev[1]) % 16) == 0 and \
+                    dev[3]!=good_drive and \
+                    is_scsi(dev[3]) and \
+                    disk_size_mb(dev[3])>=good_drive_size: 
+                    target_drives.append(dev[3]) 
+
 
     except Exception, ex:
         traceback.print_exc(20, stdout)
-        target_drive=None
+        target_drives=[]
     
-        
+    print str(target_drives)
 
 if __name__ == "__main__":
     # sanitize PATH
