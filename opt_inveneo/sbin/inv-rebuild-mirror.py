@@ -74,12 +74,12 @@ def is_scsi(dev):
     match=udev_id_bus_matcher.search(udev_out)
     return match and match.groups()[0]=='scsi'
 
-fdisk_size_matcher=re.compile(r'^Disk.+:\s([0-9]+)mB$')
+disk_size_matcher=re.compile(r'^Disk.+:\s([0-9]+)MB$',re.M)
 def disk_size_mb(drive):
     # TODO: can I just read /sys/block/<dev>/size and assume always in 512 units?
-    out = sp.Popen(['parted',dev,'unit','mB','print'],stdout=sp.PIPE).communicate()[0]
-    size = int(fdisk_size_matcher.match(out).groups()[0])
-    print "Drive: "+drive+" size: "+size
+    drive='/dev/'+drive
+    out = sp.Popen(['parted',drive,'unit','MB','print'],stdout=sp.PIPE).communicate()[0]
+    size = int(disk_size_matcher.search(out).groups()[0])
     return size
 
 def main():
