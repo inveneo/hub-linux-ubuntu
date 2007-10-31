@@ -11,7 +11,7 @@ import re
 from os import path
 from sys import stdout, stderr
 
-
+from __future__ import with_statement
 
 def is_root_device_raid():
     try:
@@ -20,7 +20,20 @@ def is_root_device_raid():
     except Exception, ex:
         return False
     
+    # if we get here, it was a RAID array
     return True
+    
+conf_line_matcher=re.compile(r'^ARRAY\s(.+?)\s.*devices=(.+)[\s$]')
+def parse_mdadm_conf(conf):
+    result = {}
+    with open(conf) as f:
+        for line in f:
+            match=conf_line_matcher.match(line)
+            if match:
+                array, devices = match.groups()
+                result[array] = devices.split(',')
+    
+    return result
 
 def main():
     syslog.openlog('inv-rebuild-mirror', 0, syslog.LOG_LOCAL5)
@@ -29,6 +42,8 @@ def main():
     if not is_root_device_raid(): 
         stderr.write("Root device is not a RAID array\n")
         return 1
+        
+    
 
 if __name__ == "__main__":
     # sanitize PATH
