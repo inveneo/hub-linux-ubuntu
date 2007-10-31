@@ -15,6 +15,7 @@ from sys import stdout, stderr
 
 MDADM_CONF='/etc/mdadm/mdadm.conf'
 MDADM_STAT='/proc/mdstat'
+PARTITIONS='/proc/partitions'
 
 def is_root_device_raid():
     try:
@@ -102,8 +103,33 @@ def main():
         stderr.write("Arrays have physical drive mismatch--they are degraded but running on different drives. Doing nothing.\n")
         return 0
         
-    # Ok, now we think we can do something, but we have to see if there is a drive we
-    # can extend the arrays onto
+    # Ok, now we think we can do something, but we have to see 
+    # if there is a drive we can extend the arrays onto
+    target_drive=None
+    try:
+        with open(PARTITIONS) as f:
+            for line in f:
+                dev=l.split
+                # checks for validity are:
+                # - line has data (not blank)
+                # - major number is '8' (scsi)
+                # - minor number modulus 16 is 0 (whole drive, not part)
+                # - drive isn't our known good drive that the array is running on
+                if len(dev)==0 or \
+                    dev[0] !='8' or \
+                    (int(dev[1]) % 16) != 0 or \
+                    dev[3]==good_drive: 
+                    continue 
+                
+                # if we got here, we have a candidate and now need to check bus,
+                # sizes, and writability
+                target_drive=dev[3]
+                stdout.write("Target drive: "+target_drive+"\n\n\n")
+
+        except Exception, ex:
+           traceback.print_exc(20, stdout)
+           target_drive=None
+    
         
 
 if __name__ == "__main__":
