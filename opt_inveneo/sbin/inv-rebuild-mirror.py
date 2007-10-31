@@ -17,6 +17,10 @@ MDADM_CONF='/etc/mdadm/mdadm.conf'
 MDADM_STAT='/proc/mdstat'
 PARTITIONS='/proc/partitions'
 
+part_stripper=re.compile('^(.+)[0-9]+$')
+def strip_partition(drive):
+    return part_stripper.match(drive).groups()[0]
+
 def is_root_device_raid():
     try:
         root_dev = sp.Popen(["rdev"], stdout=sp.PIPE).communicate()[0].split()[0]
@@ -86,7 +90,7 @@ def main():
             all_degraded=False
             break
 
-        new_drive = get_phys_drives_for_array(array)[0]
+        new_drive = strip_partition(get_phys_drives_for_array(array)[0])
         stdout.write('Drive: '+new_drive+"\n\n\n")
         if good_drive != None and ( good_drive != new_drive ):
             # mismatched drives!
