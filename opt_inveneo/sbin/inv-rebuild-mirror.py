@@ -203,7 +203,9 @@ def main():
     dump = sp.Popen(['sfdisk','-d',good_device], stdout=sp.PIPE)
     sp.Popen(['sfdisk', target_device], stdin=dump.stdout, stdout=sp.PIPE).communicate()
     
-    # verify tables are the same now
+    # verify tables are the same now--get dump of sfdisk for each, split output into
+    # header and part table body (on double-new line), replace device specifics, eg /dev/sda
+    # with /dev/block, and do string compare
     orig = sp.Popen(['sfdisk','-d',good_device],stdout=sp.PIPE).communicate()[0].\
         split('\n\n')[1].replace(good_device, '/dev/block')
         
