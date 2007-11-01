@@ -111,20 +111,26 @@ def drive_in_use(raw_drive):
         pass    
         
     return False
+    
+def write_msg(msg, console=stdout):
+    syslog.syslog(msg)
+    console.write(msg+"\n")
 
 def main():
     syslog.openlog('inv-rebuild-mirror', 0, syslog.LOG_LOCAL5)
     
+    write_msg('Starting check of RAID1 mirror devices')
+    
     # if not a raided root device, return
     if not is_root_device_raid(): 
-        stderr.write("Root device is not a RAID array\n")
-        return 1
+        write_msg("Nothing to do: Root device is not a RAID array.")
+        return 0
         
     # parse mdadm.conf
     arrays=parse_mdadm_conf(MDADM_CONF)
     if len(arrays) == 0: 
-        stderr.write("No arrays found in "+MDADM_CONF+"\n")
-        return 2
+        write_msg("Nothing to do: No arrays found in "+MDADM_CONF)
+        return 0
     
     # see if _all_ are degraded and running on same physical disk
     # if _some_ are running on two disks, or any are running on
@@ -145,11 +151,11 @@ def main():
             good_drive = new_drive # in case first drive and good_drive is None
     
     if not all_degraded:
-        stderr.write("Not all arrays degraded, doing nothing\n")
+        write_msg("Stopping: Not all arrays degraded.")
         return 0
         
     if good_drive == None:
-        stderr.write("Arrays have physical drive mismatch--they are degraded but running on different drives. Doing nothing.\n")
+        write_msg("Stopping: Different arrays are running on different physical drives.")
         return 0
         
     # Ok, now we think we can do something, but we have to see 
@@ -166,10 +172,11 @@ def main():
             break
     
     if target_device == None:
-        stderr.write('Could not find second device for mirror in mdadm.conf.\nDoing nothing.\n')
+        write_msg("Stopping: Could not find second device for mirror in mdadm.conf.")
         return 2
         
     target_drive=device_to_drive(target_device)
+    write_msg("Found potential target drive: "+target_drive)
     
     # now see if we have the drive and if it matches our criteria
     good_drive_size=disk_size_mb(good_drive)
@@ -178,48 +185,51 @@ def main():
         disk_size_mb(target_drive)>=good_drive_size and \
         not drive_in_use(target_drive) \
         ): 
-        stderr.write("Drive: "+target_drive+" not found or not usable\n")
+        write_msg("Stopping: Drive '"+target_drive+"' not found or not usable")
         return 2
 
-    stdout.write("Will add '"+target_drive+"' to mirror\n")
+    write_msg("Will attempt to add '"+target_drive+"' to mirror")
     # first trash any superblocks that might confuse mdadm
     with open(PARTITIONS) as f:
         for l in f:
             dev=l.split()
             if len(dev)==4 and \
                 dev[3].startswith(target_drive):
-                stdout.write("Zeroing any superblock on: "+dev[3]+"\n")
+                write_msg("Zeroing any superblock on: "+dev[3])
                 sp.call(['mdadm','--zero-superblock','/dev/'+dev[3]])
     
     # now copy over the partition table from the good drive
-    stdout.write("Copying partition table to: "+target_device+"\n")
+    write_msg("Copying partition table to: "+target_device)
     dump = sp.Popen(['sfdisk','-d',good_device], stdout=sp.PIPE)
     sp.Popen(['sfdisk', target_device], stdin=dump.stdout, stdout=sp.PIPE).communicate()
     
     # verify tables are the same now
-    orig = sp.Popen(['sfdisk','-d',good_device],stdout=sp.PIPE).communicate()[0].split('\n\n')[1].replace(good_device, '/dev/block')
-    new = sp.Popen(['sfdisk','-d',target_device],stdout=sp.PIPE).communicate()[0].split('\n\n')[1].replace(target_device,'/dev/block')
+    orig = sp.Popen(['sfdisk','-d',good_device],stdout=sp.PIPE).communicate()[0].\
+        split('\n\n')[1].replace(good_device, '/dev/block')
+        
+    new = sp.Popen(['sfdisk','-d',target_device],stdout=sp.PIPE).communicate()[0].\
+        split('\n\n')[1].replace(target_device,'/dev/block')
 
     if new != orig:
-        stderr.write("Oops. Just wrote partition table on: "+target_device+\
-        " and it doesn't match original table so I can't use the drive\n")
+        write_msg("Oops. Just wrote partition table on '"+target_device+\
+        "' and it doesn't match original table so I can't use the drive")
         return 2
         
     # now the MBR
-    stdout.write("Copying MBR\n")
+    write_msg("Copying MBR from '"+good_device+"' to '"+target_device+"'")
     sp.call(['dd','if='+good_device,'of='+target_device,'bs=512','count=1'])
     
     # now add the drives to the array
     for array in arrays.keys():
         for part in arrays[array]:
             if not part.startswith(good_device):
-                stdout.write("Adding '"+part+"' to array '"+array+"'\n")
+                write_msg("Adding '"+part+"' to array '"+array+"'")
                 sp.call(['mdadm','--add',array,part])
                 break
 
+    write_msg("New device added to array. Please allow resync to finish before rebooting!")
+    return 0
     
-    
-
 if __name__ == "__main__":
     # sanitize PATH
     os.environ['PATH'] = '/bin:/sbin:/usr/bin:/usr/sbin:/opt/inveneo/bin:/opt/inveneo/sbin'
