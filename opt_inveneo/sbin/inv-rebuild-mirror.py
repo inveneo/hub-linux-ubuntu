@@ -197,6 +197,10 @@ def main():
                 dev[3].startswith(target_drive):
                 write_msg("Zeroing any superblock on: "+dev[3])
                 sp.call(['mdadm','--zero-superblock','/dev/'+dev[3]])
+                
+    # now the MBR
+    write_msg("Copying MBR from '"+good_device+"' to '"+target_device+"'")
+    sp.call(['dd','if='+good_device,'of='+target_device,'bs=512','count=1'])
     
     # now copy over the partition table from the good drive
     write_msg("Copying partition table to: "+target_device)
@@ -216,10 +220,6 @@ def main():
         write_msg("Oops. Just wrote partition table on '"+target_device+\
         "' and it doesn't match original table so I can't use the drive")
         return 2
-        
-    # now the MBR
-    write_msg("Copying MBR from '"+good_device+"' to '"+target_device+"'")
-    sp.call(['dd','if='+good_device,'of='+target_device,'bs=512','count=1'])
     
     # now add the drives to the array
     for array in arrays.keys():
