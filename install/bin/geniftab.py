@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
 
 from __future__ import with_statement
 
@@ -34,8 +34,8 @@ def main():
         traceback.print_exc(20,sys.stderr)
         return 1
 
-    stdout.write(HEADER+"# wan0\nwan0 mac "+wan_mac+" arp 1\n\n")
-    stdout.write("# lan0\nlan0 mac "+lan_mac+" arp 1\n")
+    stdout.write(HEADER+"# eth0\neth0 mac "+wan_mac+" arp 1\n\n")
+    stdout.write("# eth1\neth1 mac "+lan_mac+" arp 1\n")
     
     return 0
         

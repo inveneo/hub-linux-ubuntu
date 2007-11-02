@@ -81,13 +81,10 @@ apt-get -y --force-yes dist-upgrade
 apt-get autoremove
 apt-get clean
 
-echo "generating network device rules"
-/opt/install/bin/gennetrules.py > /etc/udev/rules.d/70-persistent-net.rules
-
 echo "installing /etc/network/interfaces"
 cp -a /opt/install/overlay/etc/network/interfaces /etc/network/interfaces
 
-echo "Restart required. Hit enter/return to do reboot"
+echo "Restart required (really, you gotta). Hit enter/return to do reboot"
 read -n 1 char
 reboot
 exit 0 

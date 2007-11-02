@@ -5,14 +5,15 @@
 auto lo
 iface lo inet loopback
 
-# The primary network interface
-auto lan0 
-iface lan0 inet static
-	address 192.168.100.1
-	netmask	255.255.255.0
-
-auto wan0
-iface wan0 inet dhcp
+# WAN interface
+auto eth0
+iface eth0 inet dhcp
 	pre-up iptables -t nat -A POSTROUTING -o $IFACE -j MASQUERADE
 	post-down iptables -t nat -D POSTROUTING -o $IFACE -j MASQUERADE
+
+# LAN interface (runs DHCP server on this)
+auto eth1 
+iface eth1 inet static
+	address 192.168.100.1
+	netmask	255.255.255.0
 
