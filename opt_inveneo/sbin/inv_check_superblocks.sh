@@ -33,13 +33,13 @@ check_raid() {
     if  part_exists $3 
     then
         DRIVE2=$3
-        else
+    else
         echo "$3 not found, marking as 'missing'"
         DRIVE2="missing"
     fi
     
     # if all drives missing, nothing to do
-    if [ $DRIVE1 -eq "missing" ] && [ $DRIVE2 -eq "missing" ]
+    if [ $DRIVE1 = "missing" ] && [ $DRIVE2 = "missing" ]
     then
         echo "Neither $2 nor $3 found, nothing to do for array $1"
         return
@@ -47,14 +47,14 @@ check_raid() {
     
     # try to examine superblocks
     DRIVE1_SUPERBLOCK_OK=0
-    if [ "$DRIVE1" -ne "missing" ]
+    if [ "$DRIVE1" != "missing" ]
     then
         mdadm -E $DRIVE1 2> /dev/null
         DRIVE1_SUPERBLOCK_OK=$?
     fi
 
     DRIVE2_SUPERBLOCK_OK=0
-    if [ "$DRIVE2" -ne "missing" ]
+    if [ "$DRIVE2" != "missing" ]
     then
         mdadm -E $DRIVE2 2> /dev/null
         DRIVE2_SUPERBLOCK_OK=$?
