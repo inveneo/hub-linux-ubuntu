@@ -184,9 +184,14 @@ def main():
     
     # now see if we have the drive and if it matches our criteria
     good_drive_size=disk_size_mb(good_drive)
+    target_drive_size=disk_size_mb(target_drive)
+    if good_drive_size==0 or target_drive_size==0:
+        write_msg('Stopping: Cannot size drives. Cannot continue')
+        return 2
+    
     if not ( \
         is_scsi(target_drive) and \
-        disk_size_mb(target_drive)>=good_drive_size and \
+        target_drive_size>=good_drive_size and \
         not drive_in_use(target_drive) \
         ): 
         write_msg("Stopping: Drive '"+target_drive+"' not found or not usable")
