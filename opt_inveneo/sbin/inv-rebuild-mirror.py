@@ -80,12 +80,16 @@ def is_scsi(dev):
     return match and match.groups()[0]=='scsi'
 
 disk_size_matcher=re.compile(r'^Disk.+:\s([0-9]+)MB$',re.M)
-def disk_size_mb(drive):
-    # TODO: can I just read /sys/block/<dev>/size and assume always in 512 units?
-    drive='/dev/'+drive
-    out = sp.Popen(['parted',drive,'unit','MB','print'],stdout=sp.PIPE).communicate()[0]
-    size = int(disk_size_matcher.search(out).groups()[0])
-    return size
+def disk_size_mb(raw_drive):
+    # TODO: is /sys/block/<dev>/size always same units for all drives?
+    size_str="0"
+    try:
+        with open('/sys/block/'+raw_drive+'/size') as f:
+            size_str=f.read().strip()
+    except Exception, ex:
+        size_str='0'
+
+    return int(size_str)
     
 def drive_in_use(raw_drive):
     """True if drive is mounted (in /proc/mounts) or in an array (appears in /proc/mdstat)"""
