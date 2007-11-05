@@ -24,9 +24,6 @@ hpijs-ppds install
 foo2zjs install
 openprinting-ppds install
 
-# for Rails
-sqlite3 install 
-
 # For Jeff's sanity
 emacs-nox   install
 python-mode install
@@ -60,6 +57,18 @@ slapd	install
 libnss-ldap	install
 phpldapadmin install
 libnet-ldap-perl install
+
+# sqlite3
+sqlite3		 install 
+libsqlite3-0	 install
+
+# python
+python-pylons	 install
+python-sqlite2 	 install
+python-sqlalchemy install
+libapache2-mod-python install
+python-mysqldb	      install
+
 
 
 # dev, not needed in production but not a bad idea to have...
