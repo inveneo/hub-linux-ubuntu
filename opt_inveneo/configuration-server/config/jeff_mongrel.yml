@@ -1,9 +1,0 @@
---- 
-user: jwishnie
-cwd: /home/jwishnie/configuration-server
-log_file: log/mongrel.log
-port: "8070"
-environment: development
-group: admin
-pid_file: tmp/pids/mongrel.pid
-servers: 1
