@@ -1,0 +1,9 @@
+--- 
+user: www-data
+cwd: /opt/inveneo/configuration-server
+log_file: log/mongrel.log
+port: "8008"
+environment: production
+group: www-data
+pid_file: tmp/pids/mongrel.pid
+servers: 1

@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+
+require 'pathname'
+
+port= ARGV[0].nil? ? 8090 : ARGV[0]
+path=Pathname(__FILE__).dirname.expand_path.parent
+%x{mongrel_rails start -p #{port} -c #{path}}

@@ -1,0 +1,9 @@
+<h1>Editing initial_config</h1>
+
+<% form_tag :action => 'update', :id => @initial_config do %>
+  <%= render :partial => 'form' %>
+  <%= submit_tag 'Edit' %>
+<% end %>
+
+<%= link_to 'Show', :action => 'show', :id => @initial_config %> |
+<%= link_to 'Back', :action => 'list' %>
