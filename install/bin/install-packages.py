@@ -107,7 +107,6 @@ def main(dir_or_file):
         
     # set-up gpg keys
     stdout.write("\nUpdating GPG keys...\n")
-    os.system("wget http://medibuntu.sos-sts.com/repo/medibuntu-key.gpg -O- | apt-key add - ")
     os.system("wget http://community.inveneo.org/apt/inveneo.gpg -O- | apt-key add - ")
     
     stdout.write("\nUpdating apt-cache...\n")
