@@ -64,7 +64,7 @@ libsqlite3-0	 install
 
 # python
 python-pylons	 install
-python-sqlite2 	 install
+python-pysqlite2 	 install
 python-sqlalchemy install
 libapache2-mod-python install
 python-mysqldb	      install
