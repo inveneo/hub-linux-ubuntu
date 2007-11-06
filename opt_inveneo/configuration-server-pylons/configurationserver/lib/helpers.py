@@ -5,6 +5,9 @@ available to Controllers. This module is available to both as 'h'.
 """
 from webhelpers import *
 
+import shutil
+import fcntl
+import os
 import logging
 
 def tmp_file_name(log = logging.getLogger(__name__)):
@@ -32,13 +35,10 @@ def does_file_exist(file_path, log = logging.getLogger(__name__)):
         return True
         
 def copy_to_temp_file(source_file_path, log = logging.getLogger(__name__)):
-    import shutil
-    import fcntl
-    import os
     tmp_file = tmp_file_name()         
     try:
-        log.info('Aquiring lock on semaphore file')
         lock_file_path = source_file_path + '.lock'
+        log.info('Aquiring lock on semaphore file:' + lock_file_path)
         lock_file = open(lock_file_path, 'a+')
         fcntl.lockf(lock_file, fcntl.LOCK_EX)
         log.info('Copying file')
@@ -50,6 +50,20 @@ def copy_to_temp_file(source_file_path, log = logging.getLogger(__name__)):
         os.remove(lock_file_path)
         return tmp_file
 
+def copy_from_temp_file(dest_file_path, tmp_file_path, log = logging.getLogger(__name__)):
+    try:
+        lock_file_path = dest_file_path + '.lock'
+        log.info('Aquiring lock on semaphore file:' + lock_file_path)
+        lock_file = open(lock_file_path, 'a+')
+        fcntl.lockf(lock_file, fcntl.LOCK_EX)
+        log.info('Copying file')
+        shutil.copyfile(tmp_file_path, dest_file_path)
+    finally:
+        log.info('Cleaning up -- removing lock file')
+        fcntl.lockf(lock_file, fcntl.LOCK_UN)
+        lock_file.close()
+        os.remove(lock_file_path)
+
 def is_checkbox_set(request, name, log = logging.getLogger(__name__)):
     if not name in request.params.keys():
         log.info('Checkbox is not set: ' + name)
@@ -57,3 +71,6 @@ def is_checkbox_set(request, name, log = logging.getLogger(__name__)):
     else:
         log.info('Checkbox is set: ' + name)
         return True;
+
+def escape_quotes(string):
+    return str(string).replace(r'"', r'\"')
