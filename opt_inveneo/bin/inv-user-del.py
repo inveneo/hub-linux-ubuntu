@@ -29,7 +29,7 @@ def main():
     try:
         sp.check_call(['smbldap-userdel',user_name])
     except Exception, ex:
-        stderr.write('Could not remove user: '+user_name)
+        stderr.write('Could not remove user: '+user_name+"\n")
         return 2
     
     # remove conf
