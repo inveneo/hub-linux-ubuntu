@@ -29,7 +29,7 @@ check_raid() {
     if [ $? -lt 2 ]
     then
         echo "RAID array at $1 already active"
-        return
+        return 0
     fi
 
     # see if partitions are present and are of type 'fd' (RAID)
@@ -65,7 +65,7 @@ check_raid() {
     if [ $DRIVE1 = "missing" ] && [ $DRIVE2 = "missing" ]
     then
         echo "Neither $2 nor $3 found, nothing to do for array $1"
-        return
+        return 0
     fi
     
     # try to examine superblocks
@@ -86,7 +86,7 @@ check_raid() {
     if  [ $DRIVE1_SUPERBLOCK_OK -eq 0 ] ||  [ $DRIVE2_SUPERBLOCK_OK -eq 0 ]
     then 
         echo "RAID array at $1 has superblocks on at least one drive. Leaving along"
-        return
+        return 0
     fi
     
     # Ok, if we got here we have at _least_ one drive present and no superblock

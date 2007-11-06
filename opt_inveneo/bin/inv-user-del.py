@@ -26,7 +26,11 @@ def main():
     user_name=sys.argv[1]
         
     # remove user
-    sp.check_call(['smbldap-userdel',user_name])
+    try:
+        sp.check_call(['smbldap-userdel',user_name])
+    except Exception, ex:
+        stderr.write('Could not remove user: '+username)
+        return 2
     
     # remove conf
     conf=path.join(USER_SHARE_DIR,user_name+'_docs.conf')
