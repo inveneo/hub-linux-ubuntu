@@ -3,11 +3,22 @@
 # set a reasonable path
 PATH=/bin:/sbin:/usr/bin:/usr/sbin
 
-part_exists() {
-    part=${1##/*/}
-    drive=`expr "${part}" : '\([a-z]*\)'`
-    
-    [ -e /sys/block/$drive/$part ]
+part_is_raid() {
+    local part=${1##/*/}
+    local drive=`expr "${part}" : '\([a-z]*\)'`
+
+    if [ ! -e "/sys/block/${drive}/${part}" ] 
+    then
+	return 1 # partition doesn't exist
+    else
+	sfdisk -d "/dev/${drive}" | grep "/dev/${part}" | grep Id=fd >/dev/null
+        if [ ! $? -eq 0 ]
+	then
+	    return 2 # not a raid partition
+	fi
+    fi
+
+    return 0
 }
 
 
@@ -21,21 +32,33 @@ check_raid() {
         return
     fi
 
-    # see if partitions are present
-    if  part_exists $2 
+    # see if partitions are present and are of type 'fd' (RAID)
+    part_is_raid $2 
+    is_raid=$?
+    if [ $is_raid -eq 2 ]
     then
-        DRIVE1=$2
-    else
+        echo "$2 is not a RAID partition, marking as missing"
+	DRIVE1="missing"
+    elif [ $is_raid -eq 1 ]
+    then
         echo "$2 not found, marking as 'missing'"
         DRIVE1="missing"
-    fi
-    
-    if  part_exists $3 
-    then
-        DRIVE2=$3
     else
+	DRIVE1=$2
+    fi
+
+    part_is_raid $3
+    is_raid=$?
+    if [ $is_raid -eq 2 ]
+    then
+        echo "$3 is not a RAID partition, marking as missing"
+	DRIVE2="missing"
+    elif [ $is_raid -eq 1 ]
+    then
         echo "$3 not found, marking as 'missing'"
         DRIVE2="missing"
+    else
+	DRIVE2=$3
     fi
     
     # if all drives missing, nothing to do
