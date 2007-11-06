@@ -14,7 +14,7 @@ $usercreatecmd="/opt/inveneo/bin/inv-user-create.py";
 
 	print &ui_form_start("changepwuser2.cgi");
 	print "<b>Set new password for $username</b>\n";
-	print &ui_textbox("upasswd", undef, 32),"\n";
+	print &ui_password("upasswd", undef, 32),"\n";
 	print &ui_hidden("uname", $username),"\n";
 	print &ui_submit("Submit"),"\n";
 	print &ui_form_end();

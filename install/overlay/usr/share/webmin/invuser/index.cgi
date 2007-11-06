@@ -48,7 +48,7 @@ else {
 	print "<b>Username</b>\n";
 	print &ui_textbox("uname", undef, 32),"\n";
 	print "<b>Password</b>\n";
-	print &ui_textbox("upasswd", undef, 32),"\n";
+	print &ui_password("upasswd", undef, 32),"\n";
 	print &ui_submit("Create"),"\n";
 	print &ui_form_end();
 	&ui_print_footer("/", $text{'index'});
