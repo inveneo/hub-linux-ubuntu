@@ -3,13 +3,11 @@
 # set a reasonable path
 PATH=/bin:/sbin:/usr/bin:/usr/sbin
 
-part_is_raid() {
-    local part=${1##/*/}
-    local drive= `expr "$1" : '\([a-z]*\)'`
+part_exists() {
+    part=${1##/*/}
+    drive=`expr "${part}" : '\([a-z]*\)'`
     
-    sfdisk -d $drive | grep $part | grep Id=fd
-    
-    return [ $? -eq 0 ] && [ -e /sys/block/$drive/$part ] 
+    [ -e /sys/block/$drive/$part ]
 }
 
 
@@ -23,8 +21,8 @@ check_raid() {
         return
     fi
 
-    # see if partitions are present and are of type 'fd' (RAID)
-    if  part_is_raid $2 
+    # see if partitions are present
+    if  part_exists $2 
     then
         DRIVE1=$2
     else
@@ -32,7 +30,7 @@ check_raid() {
         DRIVE1="missing"
     fi
     
-    if  part_is_raid $3 
+    if  part_exists $3 
     then
         DRIVE2=$3
     else
