@@ -39,7 +39,7 @@ def main():
     sp.check_call(['inv-user-create.py','--no-share','-u','1500','-c','Default User','-p','1nvene0','default'])
     
     # restart samba
-    sp.check_call(['/etc/init.d/samba','reload'])
+    sp.check_call(['/etc/init.d/samba','restart'])
         
     return 0
     
