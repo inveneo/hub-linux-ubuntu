@@ -19,9 +19,9 @@ import subprocess as sp
 from os import path
 from sys import stderr,stdout
 
-def svn_update(path):
+def svn_update(to_update):
     """docstring for svn_update"""
-    sp.check_call(['svn','update',path])
+    sp.check_call(['svn','update',to_update])
     
 def main():
     syslog.openlog('update-hub-overlay', 0, syslog.LOG_LOCAL5)
@@ -29,17 +29,16 @@ def main():
     # get useful paths
     install_root=path.dirname(path.dirname(path.abspath(sys.argv[0])))
     opt_root=path.dirname(install_root)
-    overlay_root=path.join(install_root, "overlay")
-    overlay_dest='/'
+    opt_inveneo=path.join(opt_root,'inveneo')
     
     stdout.write('\nUpdating: '+install_root+'...\n')
     svn_update(install_root)
     
-    stdout.write('\nUpdating: '+opt_root+'...\n')
-    svn_update(opt_root)
+    stdout.write('\nUpdating: '+opt_inveneo+'...\n')
+    svn_update(opt_inveneo)
     
     stdout.write('\nReinstalling overlay...\n')
-    sp.call([path.join(install_root,'bin','install-hub-overlay.py'])
+    sp.call([path.join(install_root,'bin','install-hub-overlay.py')])
     
     return 0
 
