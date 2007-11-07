@@ -119,7 +119,7 @@ def make_links(dest):
     fstab='fstab.no-raid'
     if is_raid:
         fstab='fstab.raid'
-    stdout.write("using: "+fstab+"for /etc/fstab\n") 
+    stdout.write("using: "+fstab+" for /etc/fstab\n") 
     os.symlink(path.join(dest,'etc',fstab), path.join(dest,'etc','fstab'))
     pass
 
