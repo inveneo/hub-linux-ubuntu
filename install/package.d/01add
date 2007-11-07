@@ -6,10 +6,13 @@ php5-ldap	install
 php5-mysql	install
 phpmyadmin	install
 sysv-rc-conf install
-screen install
 ntp install
 network-manager install
 mdadm install
+
+# useful utilities
+screen install
+lynx install
 
 # python libraries
 python-pexpect 	install

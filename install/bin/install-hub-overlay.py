@@ -106,6 +106,15 @@ def transfer_overlay(src,dest):
 
 def make_links(dest):
     """docstring for make_links"""
+    
+    # find out if we are RAID or not
+    is_raid = sp.call(['rdev']).communicate()[0].find('/md') != -1
+    
+    fstab='fstab.no-raid'
+    if is_raid:
+        fstab='fstab.raid'
+    stdout.write("using: "+fstab+"for /etc/fstab") 
+    os.symlink(path.join(dest,'etc',fstab), path.join(dest,'etc','fstab'))
     pass
 
 
