@@ -141,14 +141,10 @@ def main():
     # different disks, we do nothing
     all_degraded=True # assume degraded unless otherwise
     good_drive=None # set to physical drive that all arrays are using if all on the same
-    
-    # add degraded info
     for array in arrays.keys():
-        state={}
-        state['degarded'] = sp.call(['mdadm','-D','--brief','--test',array]) == 1
-        
-        if state['degraded']:
-            
+        if sp.call(['mdadm','-D','--brief','--test',array]) != 1:
+            all_degraded=False
+            break
 
         new_drive = strip_partition(get_phys_drives_for_array(array)[0])
         if good_drive != None and ( good_drive != new_drive ):
