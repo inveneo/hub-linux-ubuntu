@@ -78,6 +78,12 @@ def pre_overlay_transfer(overlay_root, dest):
         os.remove("/etc/rc2.d/S12hal")
     except OSError, ex:
         pass # silent, must not have been there
+
+    # get rid of fstab so we can link later
+    try:
+        os.remove("/etc/fstab")
+    except OSError, ex:
+        pass # must not have been there
     
 def post_overlay_transfer(overlay_root, dest):
     # HACK: Fix Squid perms 
@@ -108,12 +114,12 @@ def make_links(dest):
     """docstring for make_links"""
     
     # find out if we are RAID or not
-    is_raid = sp.call(['rdev']).communicate()[0].find('/md') != -1
+    is_raid = sp.Popen(['rdev'], stdout=sp.PIPE).communicate()[0].find('/md') != -1
     
     fstab='fstab.no-raid'
     if is_raid:
         fstab='fstab.raid'
-    stdout.write("using: "+fstab+"for /etc/fstab") 
+    stdout.write("using: "+fstab+"for /etc/fstab\n") 
     os.symlink(path.join(dest,'etc',fstab), path.join(dest,'etc','fstab'))
     pass
 

@@ -32,7 +32,9 @@ def main():
     
     # Add default samba user
     try:
-        sp.check_call(['inv-user-del.py','default']) 
+        stdout.write("Attempting to delete the 'default' user.\n")
+        sp.Popen(['inv-user-del.py','default'],stderr=sp.PIPE).communicate()
+        stdout.write("Success")
     except Exception, ex:
         pass # don't care if user not there
 
