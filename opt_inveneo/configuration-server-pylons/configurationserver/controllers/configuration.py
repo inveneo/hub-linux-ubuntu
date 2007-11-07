@@ -186,6 +186,8 @@ class ConfigurationController(BaseController):
         return self.save_config_file(request, id, 'station')
 
     def save_station_initial_config(self, id):
+        mac_address = str(id)
+
         log.debug('save station initial config')
 
         if not h.does_parameter_exist(request, 'config_file', log):
@@ -200,17 +202,15 @@ class ConfigurationController(BaseController):
             while 1:
                 line = config_file.file.readline()
                 items = line.split("=")
-                log.info(items)
-                if items.count == 2:
-                    map[items[0]] = items[1]
-                                
-                log.info(line)
+                log.info('Items.count = ' + str(len(items)))
+                if len(items) == 2:
+                    log.info('Adding ITEMS: ' + str(items[0] + ' - ' + str(items[1])))
+                    map[str(items[0])] = str(items[1])
                 if not line: break
         
         log.info("looking up record " + str(id))
-        newconfig_q = model.sac.query(model.Config).get(id)
+        newconfig_q = model.sac.query(model.Config).get_by(mac = mac_address)
 
-        #newconfig_q.mac = str(id)
         newconfig_q.timezone = map['INV_TIME_ZONE']
         newconfig_q.ntp_on = map['INV_NTP_ON']
         newconfig_q.ntp_servers = map['INV_NTP_SERVERS']
