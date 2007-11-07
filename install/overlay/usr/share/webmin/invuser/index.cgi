@@ -45,11 +45,14 @@ else {
 	print "<br>\n";
 	print "<h2>Add new user</h2>\n";
 	print &ui_form_start("createuser.cgi");
-	print "<b>Username</b>\n";
-	print &ui_textbox("uname", undef, 32),"\n";
-	print "<b>Password</b>\n";
-	print &ui_password("upasswd", undef, 32),"\n";
-	print &ui_submit("Create"),"\n";
+	print "<table>";
+	print "<tr><td valign='top'><b>Username</b></td>\n";
+	print "<td valign='top'>",&ui_textbox("uname", undef, 32),"</td></tr>\n";
+	print "<tr><td valign='top'><b>Password</b></td>\n";
+	print "<td valign='top'>",&ui_password("upasswd", undef, 32),"</td></tr>\n";
+	print "<tr><td valign='top'><b>Password (again)</b></td>\n";
+	print "<td valign='top'>",&ui_password("upasswd2", undef, 32),"</td></tr>\n";
+	print "<tr><td valign='top'>",&ui_submit("Create"),"</td></tr></table>\n";
 	print &ui_form_end();
 	&ui_print_footer("/", $text{'index'});
 	}

@@ -6,15 +6,42 @@ require './invuser-lib.pl';
 
 $username=$in{'uname'};
 $upasswd=$in{'upasswd'};
+$upasswd2=$in{'upasswd2'};
 $realname="Inveneo User";
 $usercreatecmd="/opt/inveneo/bin/inv-user-create.py";
 
-# Ask for Username and password
+	sub is_valid_username {
+		my $val = shift;
+		return !( $val =~ /\W+/ ) && !( $val =~ /^\s*$/ ); 
+	}
+	
+	# validate input fields
+	&error_setup('Failed to create user.');
+	$valid_input = true;
+	if ( !is_valid_username($username) ) {
+		&error('The username must contain only alpha-numeric characters and an underscore.');
+		$valid_input = false;
+	}
+
+	if ( $upasswd =~ /^\s*$/ ) {
+		&error('The password cannot be blank.');
+		$valid_input = false;
+	}
+ 
+	if ( ! ( $upasswd eq $upasswd2 ) ) {
+		&error('The passwords do not match.');
+		$valid_input = false;
+	}
+		
 	&ui_print_header(undef, "User creation", "", undef, 1, 1);
-	print "Creating user: " . $in{'uname'} ." with password " . $in{'upasswd'} . "....";
+	if ( $valid_input == true ) {
 
-	system "$usercreatecmd -p $upasswd -c \"$realname\"  $username ";
-
-	print "done<br>";
+		print "Creating user: " . $in{'uname'} ." with password " . $in{'upasswd'} . "....";
+	
+		system "$usercreatecmd -p $upasswd -c \"$realname\"  $username ";
+		
+		print "done<br>";
+	
+	} 
 	&ui_print_footer("/", $text{'index'});
 
