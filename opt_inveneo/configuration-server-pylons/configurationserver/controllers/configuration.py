@@ -204,12 +204,13 @@ class ConfigurationController(BaseController):
                 items = line.split("=")
                 log.info('Items.count = ' + str(len(items)))
                 if len(items) == 2:
-                    log.info('Adding ITEMS: ' + str(items[0] + ' - ' + str(items[1])))
                     map[str(items[0])] = str(items[1])
                 if not line: break
         
-        log.info("looking up record " + str(id))
         newconfig_q = model.sac.query(model.Config).get_by(mac = mac_address)
+
+        if str(type(newconfig_q)) == NONE_TYPE: # this code stinks
+            return 
 
         newconfig_q.timezone = map['INV_TIME_ZONE']
         newconfig_q.ntp_on = map['INV_NTP_ON']
@@ -228,6 +229,4 @@ class ConfigurationController(BaseController):
         newconfig_q.single_user_login = map['INV_SINGLE_USER_LOGIN']
         model.sac.session.flush()
 
-
-        
-        return 'save station initial config'
+        return
