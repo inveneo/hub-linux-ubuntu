@@ -38,7 +38,7 @@ $usercreatecmd="/opt/inveneo/bin/inv-user-create.py";
 
 		print "Creating user: " . $in{'uname'} ." with password " . $in{'upasswd'} . "....";
 	
-		system "$usercreatecmd -p $upasswd -c \"$realname\"  $username ";
+		system "$usercreatecmd -p " . quote_path($upasswd) . " -c \"" . quote_path($realname) . "\" " . quote_path($username);
 		
 		print "done<br>";
 	
