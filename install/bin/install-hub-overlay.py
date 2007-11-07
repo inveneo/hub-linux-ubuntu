@@ -58,6 +58,12 @@ def fix_owners(opt_root):
          folder_visitor, \
          lambda f: os.chown(f, uinfo[2],uinfo[3]))
 
+    # fix inveneo home ownership
+    uinfo=pwd.getpwnam('inveneo')
+    path.walk(path.join(opt_root,'install','overlay','home','inveneo'), \
+         folder_visitor, \
+         lambda f: os.chown(f, uinfo[2],uinfo[3]))
+
     os.chown(path.join(opt_root,'install','overlay','etc','zaptel.conf'), \
              uinfo[2],uinfo[3])
     
