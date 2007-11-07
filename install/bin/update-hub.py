@@ -37,6 +37,9 @@ def main():
     stdout.write('\nUpdating: '+opt_inveneo+'...\n')
     svn_update(opt_inveneo)
     
+    stdout.write("\nInstalling any new packages...\n")
+    sp.call([path.join(install_root,'bin','install-packages.py'),path.join(install_root,'package.d')])
+    
     stdout.write('\nReinstalling overlay...\n')
     sp.call([path.join(install_root,'bin','install-hub-overlay.py')])
     
