@@ -20,9 +20,7 @@ class AdminController(BaseController):
         if key == NONE: 
             q = model.Config()            
         else:
-            log.info("len of key " + str(len(key)))
             if len(key) == 12:
-                log.info('using mac')
                 q = model.sac.query(model.Config).get_by(mac = key)
             else:
                 q = model.sac.query(model.Config).get(key)
@@ -52,7 +50,6 @@ class AdminController(BaseController):
         return render('/admin/config_edit.mako')
 
     def config_edit_process(self, id):
-
         newconfig_q = self.get_config_entry_by_id_or_mac_or_create(id)
 
         newconfig_q.mac = cgi.escape(request.POST['mac'])

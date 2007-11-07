@@ -204,7 +204,7 @@ class ConfigurationController(BaseController):
                 items = line.split("=")
                 log.info('Items.count = ' + str(len(items)))
                 if len(items) == 2:
-                    map[str(items[0])] = str(items[1])
+                    map[str(items[0])] = str(items[1]).strip('" \t\n')
                 if not line: break
         
         newconfig_q = model.sac.query(model.Config).get_by(mac = mac_address)
