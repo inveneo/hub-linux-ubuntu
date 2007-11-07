@@ -5,10 +5,12 @@ available to Controllers. This module is available to both as 'h'.
 """
 from webhelpers import *
 
+import logging
 import shutil
 import fcntl
 import os
-import logging
+import formencode
+from formencode import validators
 
 def tmp_file_name(log = logging.getLogger(__name__)):
     import tempfile
@@ -74,3 +76,22 @@ def is_checkbox_set(request, name, log = logging.getLogger(__name__)):
 
 def escape_quotes(string):
     return str(string).replace(r'"', r'\"')
+
+def validate_with_regexp(regexp, value, not_empty = False, log = logging.getLogger(__name__)):
+    log.debug('regexp validation: ' + str(regexp) + ' ~= ' + str(value))
+    
+    ret_value = True
+
+    if (not_empty) and (len(str(value)) == 0):
+        ret_value = False
+
+    re = validators.Regex(regex = regexp)
+    try:
+        re.to_python(value)
+    except:
+        ret_value = False
+        
+    log.debug(str(ret_value))
+    
+    return ret_value
+            

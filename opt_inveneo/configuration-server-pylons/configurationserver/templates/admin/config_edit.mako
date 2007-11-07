@@ -65,6 +65,9 @@ ${h.form(h.url(controller='admin', action='config_edit_process', id=c.Config.id)
 <tr>
 <td>Locale:</td>
 <td>${h.text_field('locale', value=c.Config.locale)}</td>
+% if c.Error and c.Error.has_key('locale'):
+     <td><b>${c.Error['locale']}<b></td>
+% endif
 </tr>
 <tr>
 <td>Single User Login:</td>

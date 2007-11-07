@@ -1,13 +1,13 @@
 import logging
 import cgi
-import formencode
-from formencode import validators
 
 from configurationserver.lib.base import *
 
 log = logging.getLogger(__name__)
 NONE = 'None'
 NONE_TYPE = "<type 'NoneType'>"
+MAC_REGEXP = '^[0-9a-f]{12,12}$'
+LOCALE_REGEXP = '^[a-z][a-z](_[A-Z][A-Z](.[uU][tT][fF]-8)?)?$'
 
 class AdminController(BaseController):
 
@@ -32,6 +32,17 @@ class AdminController(BaseController):
 
         return q
        
+    def validate_configuration(self, config):
+        log.debug('config validation')
+        error = {}
+
+        if not h.validate_with_regexp(MAC_REGEXP, config.mac, True, log):
+            error['mac'] = 'MAC address must be 12 hex lower case values, no separator' 
+        if not h.validate_with_regexp(LOCALE_REGEXP, config.locale, True, log):
+            error['locale'] = 'Must be a valid locale string. E.g. en_UK.utf-8'
+
+        return error
+
 
     ###########################
     # controller methods
@@ -81,18 +92,6 @@ class AdminController(BaseController):
             return render('/admin/config_edit.mako')
 
         return redirect_to('/admin/config_edit_done')
-
-    def validate_configuration(self, config):
-        log.debug('config validation')
-        error = {}
-        plain = validators.Regex(regex = '............')
-
-        try:
-            plain.to_python(config.mac)
-        except formencode.Invalid, e:
-            log.debug('violation found')
-            error['mac'] = 'Wrong MAC Address'
-        return error
 
     def config_edit_done(self):
         return redirect_to('/admin/list')
