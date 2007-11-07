@@ -5,18 +5,46 @@ from configurationserver.lib.base import *
 
 log = logging.getLogger(__name__)
 NONE = 'None'
+NONE_TYPE = "<type 'NoneType'>"
 
 class AdminController(BaseController):
+
+    ###########################
+    # instance  helper methods
+    ###########################    
+    def get_config_entry_by_id_or_mac_or_create(self, key):
+        key = str(key)
+
+        log.debug('Key: ' + key)
+
+        if key == NONE: 
+            q = model.Config()            
+        else:
+            log.info("len of key " + str(len(key)))
+            if len(key) == 12:
+                log.info('using mac')
+                q = model.sac.query(model.Config).get_by(mac = key)
+            else:
+                q = model.sac.query(model.Config).get(key)
+
+        if str(type(q)) == NONE_TYPE: # this code stinks
+            q = model.Config()
+
+        return q
+       
 
     ###########################
     # controller methods
     ###########################    
 
     def index(self):
-        return redirect_to('/admin/list')
+        return redirect_to('/admin/dashboard')
+
+    def dashboard(self):
+        return render('/admin/dashboard.mako')
 
     def edit(self, id):
-        c.Config = model.sac.query(model.Config).get(id)
+        c.Config = self.get_config_entry_by_id_or_mac_or_create(id)
         return render('/admin/config_edit.mako')
 
     def config_add(self):
@@ -24,10 +52,8 @@ class AdminController(BaseController):
         return render('/admin/config_edit.mako')
 
     def config_edit_process(self, id):
-        if str(id) == NONE: 
-            newconfig_q = model.Config()            
-        else:
-            newconfig_q = model.sac.query(model.Config).get(id)
+
+        newconfig_q = self.get_config_entry_by_id_or_mac_or_create(id)
 
         newconfig_q.mac = cgi.escape(request.POST['mac'])
         newconfig_q.timezone = cgi.escape(request.POST['timezone'])
