@@ -12,7 +12,7 @@ $userpwresetcmd="/opt/inveneo/bin/inv-passwd.py";
 	&ui_print_header(undef, "Password Reset", "", undef, 1, 1);
 	print "Setting password for $username....";
 
-	system "$userpwresetcmd -u $username -p $upasswd";
+	system "$userpwresetcmd -u " . quote_path($username) . " -p " . quote_path($upasswd);
 
 	print "done<br>";
 	&ui_print_footer("/", $text{'index'});
