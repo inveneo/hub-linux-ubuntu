@@ -1,35 +1,38 @@
 # core system
 openssh-server	install
 openssh-client	install
-php5	install
+php5	        install
 php5-ldap	install
 php5-mysql	install
 phpmyadmin	install
-sysv-rc-conf install
+sysv-rc-conf    install
 ntp install
 network-manager install
-mdadm install
+mdadm           install
 
 # useful utilities
-screen install
-lynx install
+screen  install
+lynx    install
 
 # python libraries
 python-pexpect 	install
 python-ldap	install
 
 # printing
-cupsys install
-cupsys-client install
-hplip install
-hpijs install
-hpijs-ppds install
-foo2zjs install
+cupsys          install
+cupsys-client   install
+hplip           install
+hpijs           install
+hpijs-ppds      install
+foo2zjs         install
 openprinting-ppds install
 
 # For Jeff's sanity
 emacs-nox   install
 python-mode install
+
+# And for Jim's
+vim             install
 
 # services
 #dnsmasq	install
@@ -37,14 +40,14 @@ bind9		install
 dhcp3-server	install
 dhcp3-client 	install
 apache2 	install
-squid3	install
+squid3	        install
 squid-cgi	install
 libnss-mdns	install
-samba	install
-smbclient install
+samba           install
+smbclient       install
 avahi-utils	install
-mysql-server-5.0   	install
-webmin		install
+mysql-server-5.0 install
+webmin	        install
 asterisk	install
 zaptel		install
 zaptel-modules-2.6.22-14-generic	install
@@ -79,5 +82,3 @@ subversion	install
 build-essential install
 patch	install
 
-
- 
