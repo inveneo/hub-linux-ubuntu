@@ -1,12 +1,15 @@
 <span class="h3">Configuration </span>
 </p>
-${h.form(h.url(controller='admin', action='config_edit_process', config_id=c.Config.id), method='post')}
+${h.form(h.url(controller='admin', action='config_edit_process', id=c.Config.id), method='post')}
 <!-- ${h.start_form('/admin/config_edit_process')} -->
 
 <table>
 <tr>
 <td>MAC:</td>
 <td>${h.text_field('mac', value=c.Config.mac)}</td>
+% if c.Error and c.Error.has_key('mac'):
+     <td><b>${c.Error['mac']}<b></td>
+% endif
 </tr>
 <tr>
 <td>TimeZone:</td>

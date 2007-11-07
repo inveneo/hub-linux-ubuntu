@@ -1,5 +1,7 @@
 import logging
 import cgi
+import formencode
+from formencode import validators
 
 from configurationserver.lib.base import *
 
@@ -68,9 +70,29 @@ class AdminController(BaseController):
         newconfig_q.phone_home_checkin = cgi.escape(request.POST['phone_home_checkin']) 
         newconfig_q.locale = cgi.escape(request.POST['locale']) 
         newconfig_q.single_user_login = h.is_checkbox_set(request, 'single_user_login', log)
-        model.sac.session.flush()
         
+        error = self.validate_configuration(newconfig_q)
+
+        if len(error) == 0:
+            model.sac.session.flush()
+        else:
+            c.Error = error
+            c.Config = newconfig_q
+            return render('/admin/config_edit.mako')
+
         return redirect_to('/admin/config_edit_done')
+
+    def validate_configuration(self, config):
+        log.debug('config validation')
+        error = {}
+        plain = validators.Regex(regex = '............')
+
+        try:
+            plain.to_python(config.mac)
+        except formencode.Invalid, e:
+            log.debug('violation found')
+            error['mac'] = 'Wrong MAC Address'
+        return error
 
     def config_edit_done(self):
         return redirect_to('/admin/list')
