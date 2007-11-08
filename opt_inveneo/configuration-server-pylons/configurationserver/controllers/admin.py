@@ -26,10 +26,8 @@ class AdminController(BaseController):
             except:
                 q = model.Config()
                 q.mac = 'deaddeadbeaf'
-#                q = model.sac.query(model.Config).get_by(mac = key)
         else:
             q = o_q.get(key)
-#                q = model.sac.query(model.Config).get(key)
                 
         if str(type(q)) == NONE_TYPE: # this code stinks
             q = model.Config()
@@ -57,6 +55,9 @@ class AdminController(BaseController):
 
     def dashboard(self):
         return render('/admin/dashboard.mako')
+
+    def reset_client_config(self, id):
+        return 'Needs to be implemented for MAC: ' + str(id)
 
     def edit(self, id):
         c.Config = self.get_config_entry_by_id_or_mac_or_create(id)
@@ -91,7 +92,6 @@ class AdminController(BaseController):
         if len(error) == 0:
             model.Session.save(newconfig_q)
             model.Session.commit()
-#            model.sac.session.flush()
         else:
             c.Error = error
             c.Config = newconfig_q
@@ -103,7 +103,6 @@ class AdminController(BaseController):
         return redirect_to('/admin/list')
         
     def list(self):
-#        config_q = model.sac.query(model.Config)
         config_q = model.Session.query(model.Config)
         c.Configs = config_q.all()
         return render('/admin/list.mako')

@@ -165,8 +165,6 @@ class ConfigurationController(BaseController):
             return
 
         map = self.create_dyn_config_map(mac_address)
-
-#        initialconfig_q = model.sac.query(model.Config).get_by(mac = mac_address)
         initialconfig_q = model.Session.query(model.Config).filter(model.Config.mac == mac_address).one()
 
         log.info('type : ' + str(type(initialconfig_q)))
@@ -209,7 +207,6 @@ class ConfigurationController(BaseController):
                 if not line: break
         
         newconfig_q = model.Session.query(model.Config).filter(model.Config.mac == mac_address).one()
-#        newconfig_q = model.sac.query(model.Config).get_by(mac = mac_address)
 
         if str(type(newconfig_q)) == NONE_TYPE: # this code stinks
             return 
@@ -232,6 +229,5 @@ class ConfigurationController(BaseController):
  
         model.Session.save(newconfig_q)
         model.Session.commit()
-#        model.sac.session.flush()
 
         return
