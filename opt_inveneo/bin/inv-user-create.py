@@ -13,7 +13,7 @@ from sys import stdout, stderr
 OTHER_GROUPS='adm,dialout,fax,voice,cdrom,floppy,audio,dip,video,plugdev,games,lpadmin,scanner,fuse'
 DEFAULT_GROUP='Domain\\ Users'
 SKELETON_DIR='/opt/inveneo/skeleton/samba/user-share-dir'
-HOME_DIR_BASE='/srv/samba/user_docs'
+HOME_DIR_BASE='/srv/samba/user_shares'
 ADD_CMD_BASE="smbldap-useradd -a -n -m -g "+DEFAULT_GROUP+" -G "+OTHER_GROUPS+" -d "+HOME_DIR_BASE+"/%(user_name)s -k "+SKELETON_DIR
 
 SMB_SHARE_TEMPLATE="/opt/inveneo/skeleton/samba/user.conf"
