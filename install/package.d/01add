@@ -6,7 +6,7 @@ php5-ldap	install
 php5-mysql	install
 phpmyadmin	install
 sysv-rc-conf    install
-ntp install
+ntp             install
 network-manager install
 mdadm           install
 
@@ -33,6 +33,7 @@ python-mode install
 
 # And for Jim's
 vim             install
+nmap            install
 
 # services
 #dnsmasq	install
