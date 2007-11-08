@@ -19,7 +19,7 @@ import subprocess as sp
 from os import path
 from sys import stderr,stdout
 
-
+# services to stop, in order. Will be started after in reverse order
 SERVICES=('asterisk','samba','samba-shares.sh','slapd','squid3','dhcp3-server', \
           'apache2','avahi-daemon','cupsys','mysql','webmin')
 
@@ -39,7 +39,7 @@ def folder_visitor(func, dirname, fnames):
 def fix_perms(opt_root):
     """docstring for fix_perms"""
     # fix samba shared docs
-    os.chmod(path.join(opt_root,"install","overlay","srv","samba","shared_docs"),0777)
+    os.chmod(path.join(opt_root,"install","overlay","srv","samba","public_shares","shared_docs"),0777)
 
     # fix /etc/ldap.secret
     os.chmod(path.join(opt_root,"install","overlay","etc","ldap.secret"),0600)
