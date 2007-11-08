@@ -14,7 +14,8 @@ OTHER_GROUPS='adm,dialout,fax,voice,cdrom,floppy,audio,dip,video,plugdev,games,l
 DEFAULT_GROUP='Domain\\ Users'
 SKELETON_DIR='/opt/inveneo/skeleton/samba/user-share-dir'
 HOME_DIR_BASE='/srv/samba/user_shares'
-ADD_CMD_BASE="smbldap-useradd -a -n -m -g "+DEFAULT_GROUP+" -G "+OTHER_GROUPS+" -d "+HOME_DIR_BASE+"/%(user_name)s -k "+SKELETON_DIR
+ADD_CMD_BASE="smbldap-useradd -a -n -g "+DEFAULT_GROUP+" -G "+OTHER_GROUPS+" -d "+HOME_DIR_BASE+"/%(user_name)s"
+ADD_HOME_DIR=" -m -k "+SKELETON_DIR
 
 SMB_SHARE_TEMPLATE="/opt/inveneo/skeleton/samba/user.conf"
 USER_SHARE_DIR="/etc/inveneo/samba/shares.d"
@@ -60,6 +61,7 @@ def main():
 
     if uid: user_add_cmd += " -u %d" % uid
     if real_name: user_add_cmd += ' -c "%s"' % real_name
+    if not no_share: user_add_cmd += ADD_HOME_DIR
     user_add_cmd += " %(user_name)s"
     cmd = user_add_cmd % {'user_name':user_name}
     syslog.syslog("issuing cmd: "+cmd)
