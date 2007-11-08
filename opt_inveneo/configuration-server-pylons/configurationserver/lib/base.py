@@ -16,13 +16,20 @@ import configurationserver.model as model
 class BaseController(WSGIController):
 
     def __call__(self, environ, start_response):
-        model.sac.session.clear()
-        del model.sac.session_context.current
-        """Invoke the Controller"""
-        # WSGIController.__call__ dispatches to the Controller method
-        # the request is routed to. This routing information is
-        # available in environ['pylons.routes_dict']
-        return WSGIController.__call__(self, environ, start_response)
+        try:
+            return WSGIController.__call__(self, environ, start_response)
+        finally:
+            model.Session.remove()
+
+# 0.3.1
+#     def __call__(self, environ, start_response):
+#         model.sac.session.clear()
+#         del model.sac.session_context.current
+#         """Invoke the Controller"""
+#         # WSGIController.__call__ dispatches to the Controller method
+#         # the request is routed to. This routing information is
+#         # available in environ['pylons.routes_dict']
+#         return WSGIController.__call__(self, environ, start_response)
 
 # Include the '_' function in the public names
 __all__ = [__name for __name in locals().keys() if not __name.startswith('_') \

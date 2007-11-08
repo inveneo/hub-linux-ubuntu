@@ -1,7 +1,7 @@
 """Pylons environment configuration"""
-import os
-
+from sqlalchemy import engine_from_config
 from pylons import config
+import os
 
 import configurationserver.lib.app_globals as app_globals
 import configurationserver.lib.helpers
@@ -23,8 +23,10 @@ def load_environment(global_conf, app_conf):
                     template_engine='mako', paths=paths)
 
     config['routes.map'] = make_map()
-    config['pylons.g'] = app_globals.Globals()
     config['pylons.h'] = configurationserver.lib.helpers
+    config['pylons.g'] = app_globals.Globals()
+    # SQLAlchemy 0.4
+    config['pylons.g'].sa_engine = engine_from_config(config, 'sqlalchemy.')
 
     # Customize templating options via this variable
     tmpl_options = config['buffet.template_options']

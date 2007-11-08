@@ -19,14 +19,18 @@ class AdminController(BaseController):
 
         log.debug('Key: ' + key)
 
-        if key == NONE: 
-            q = model.Config()            
+        o_q = model.Session.query(model.Config)
+        if len(key) == 12:
+            try:
+                q = o_q.filter(model.Config.mac == key).one()
+            except:
+                q = model.Config()
+                q.mac = 'deaddeadbeaf'
+#                q = model.sac.query(model.Config).get_by(mac = key)
         else:
-            if len(key) == 12:
-                q = model.sac.query(model.Config).get_by(mac = key)
-            else:
-                q = model.sac.query(model.Config).get(key)
-
+            q = o_q.get(key)
+#                q = model.sac.query(model.Config).get(key)
+                
         if str(type(q)) == NONE_TYPE: # this code stinks
             q = model.Config()
 
@@ -85,7 +89,9 @@ class AdminController(BaseController):
         error = self.validate_configuration(newconfig_q)
 
         if len(error) == 0:
-            model.sac.session.flush()
+            model.Session.save(newconfig_q)
+            model.Session.commit()
+#            model.sac.session.flush()
         else:
             c.Error = error
             c.Config = newconfig_q
@@ -97,6 +103,7 @@ class AdminController(BaseController):
         return redirect_to('/admin/list')
         
     def list(self):
-        config_q = model.sac.query(model.Config)
+#        config_q = model.sac.query(model.Config)
+        config_q = model.Session.query(model.Config)
         c.Configs = config_q.all()
         return render('/admin/list.mako')
