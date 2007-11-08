@@ -60,8 +60,8 @@ if [ ! $DEVICES_FOUND -eq 0 ]
 fi
 
 # run check
-log_warning_msg "Running: /sbin/inv_check_superblocks.sh $MDADM_CONF"
-/sbin/inv_check_superblocks.sh $MDADM_CONF
+log_warning_msg "Running: /sbin/inv-check-superblocks.sh $MDADM_CONF"
+/sbin/inv-check-superblocks.sh $MDADM_CONF
 log_warning_msg "Completed check"
 
 # run mdadm assemble 
