@@ -157,7 +157,7 @@ def add_drive_to_mirror(arrays_hash):
             write_msg("No active drives in array %s. Can't continue" % key)
             return 10
         elif num_drives>1:
-            write_msg("Stopping: All drives should be degraded but array %s has multiple active drives: %s" %\
+            write_msg("Stopping: All drives should be degraded but array %s has multiple active drives: %s, perhaps it's rebuilding" %\
                       (key, str(array[PARTITIONS_IN_USE])))
             return 20
 
