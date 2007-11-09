@@ -4,10 +4,33 @@ import cgi
 from configurationserver.lib.base import *
 
 log = logging.getLogger(__name__)
-NONE = 'None'
-NONE_TYPE = "<type 'NoneType'>"
-MAC_REGEXP = '^[0-9a-f]{12,12}$'
-LOCALE_REGEXP = '^[a-z][a-z](_[A-Z][A-Z](.[uU][tT][fF]-8)?)?$'
+
+# create default init config for 'deaddeadbeef' if not existing
+try:
+    model.Session.query(model.Config).filter(model.Config.mac == 'deaddeadbeef').one()
+except:
+    newconfig_q = model.Config()
+    
+    newconfig_q.mac = 'deaddeadbeef'
+    newconfig_q.timezone = DEFAULT_DB_ATTRS['INV_TIME_ZONE']
+    newconfig_q.ntp_on = DEFAULT_DB_ATTRS['INV_NTP_ON']
+    newconfig_q.ntp_servers = DEFAULT_DB_ATTRS['INV_NTP_SERVERS']
+    newconfig_q.proxy_on = DEFAULT_DB_ATTRS['INV_PROXY_ON']
+    newconfig_q.http_proxy = DEFAULT_DB_ATTRS['INV_HTTP_PROXY']
+    newconfig_q.http_proxy_port = DEFAULT_DB_ATTRS['INV_HTTP_PROXY_PORT']
+    newconfig_q.https_proxy = DEFAULT_DB_ATTRS['INV_HTTPS_PROXY']
+    newconfig_q.https_proxy_port = DEFAULT_DB_ATTRS['INV_HTTPS_PROXY_PORT']
+    newconfig_q.ftp_proxy = DEFAULT_DB_ATTRS['INV_FTP_PROXY']
+    newconfig_q.ftp_proxy_port = DEFAULT_DB_ATTRS['INV_FTP_PROXY_PORT']
+    newconfig_q.phone_home_on = DEFAULT_DB_ATTRS['INV_PHONE_HOME_ON']
+    newconfig_q.phone_home_reg = DEFAULT_DB_ATTRS['INV_PHONE_HOME_REG']
+    newconfig_q.phone_home_checkin = DEFAULT_DB_ATTRS['INV_PHONE_HOME_CHECKIN']
+    newconfig_q.locale = DEFAULT_DB_ATTRS['INV_LOCALE']
+    newconfig_q.single_user_login = DEFAULT_DB_ATTRS['INV_SINGLE_USER_LOGIN']
+    
+    model.Session.save(newconfig_q)
+    model.Session.commit()
+
 
 class AdminController(BaseController):
 
@@ -70,6 +93,9 @@ class AdminController(BaseController):
 
     def reset_client_config(self, id):
         return 'Needs to be implemented for MAC: ' + str(id)
+
+    def set_initial_config(self):
+        return self.edit(DEADDEADBEEF)
 
     def edit(self, id):
         c.Config = self.get_config_entry_by_id_or_mac_or_create(id)

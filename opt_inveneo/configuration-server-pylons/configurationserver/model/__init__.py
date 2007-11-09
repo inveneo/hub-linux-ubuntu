@@ -38,5 +38,3 @@ class Config(object):
         return self.title
     
 mapper(Config, configs_table)
-
-

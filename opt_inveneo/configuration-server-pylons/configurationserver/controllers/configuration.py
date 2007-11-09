@@ -5,32 +5,6 @@ import socket
 from configurationserver.lib.base import *
 
 log = logging.getLogger(__name__)
-NONE = 'None'
-NOT_FOUND = 'not found'
-NONE_TYPE = "<type 'NoneType'>"
-DEFAULT_DYN_ATTRS={
-    'INV_CONFIG_HOST': 'set me',
-    'INV_CONFIG_HOST_TYPE': 'set me',
-    'INV_HOSTNAME': 'set me',
-    }
-DEFAULT_DB_ATTRS={
-    'INV_TIME_ZONE': "America/Los_Angeles",
-    'INV_NTP_ON': True,
-    'INV_NTP_SERVERS': "hub.local:pool.ntp.org",
-    'INV_PROXY_ON': False,
-    'INV_HTTP_PROXY': "hub.local",
-    'INV_HTTP_PROXY_PORT': 8080,
-    'INV_HTTPS_PROXY': "",
-    'INV_HTTPS_PROXY_PORT': 8080,
-    'INV_FTP_PROXY': "hub.local",
-    'INV_FTP_PROXY_PORT': 8080,
-    'INV_PHONE_HOME_ON': True,
-    'INV_PHONE_HOME_REG': "http://community.inveneo.org/phonehome/reg",
-    'INV_PHONE_HOME_CHECKIN': "http://community.inveneo.org/phonehome/checkin",
-    'INV_LOCALE': "en_US.UTF-8",
-    'INV_SINGLE_USER_LOGIN': True
-    }
-BUFF_SIZE=1024
 
 class ConfigurationController(BaseController):
 
