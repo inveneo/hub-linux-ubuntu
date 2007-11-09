@@ -4,7 +4,7 @@ import unittest
 class TestConfigurationServer(unittest.TestCase):
     def setUp(self):
         self.selenium = selenium("localhost", \
-            4444, "*firefox", "http://localhost:5000")
+            4444, "*firefox", "http://localhost:8008")
         self.selenium.start()
         self.selenium.open("/admin/config_remove/000000000000")
         
