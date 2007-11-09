@@ -33,6 +33,9 @@ ${h.form(h.url(controller='admin', action='config_edit_process', id=c.Config.id)
 <tr>
 <td>HTTP Proxy Port:</td>
 <td>${h.text_field('http_proxy_port', value=c.Config.http_proxy_port)}</td>
+% if c.Error and c.Error.has_key('http_proxy_port'):
+     <td><b>${c.Error['http_proxy_port']}<b></td>
+% endif
 </tr>
 <tr>
 <td>HTTPS Proxy:</td>
@@ -41,6 +44,9 @@ ${h.form(h.url(controller='admin', action='config_edit_process', id=c.Config.id)
 <tr>
 <td>HTTPS Proxy Port:</td>
 <td>${h.text_field('https_proxy_port', value=c.Config.https_proxy_port)}</td>
+% if c.Error and c.Error.has_key('https_proxy_port'):
+     <td><b>${c.Error['https_proxy_port']}<b></td>
+% endif
 </tr>
 <tr>
 <td>FTP Proxy:</td>
@@ -49,6 +55,9 @@ ${h.form(h.url(controller='admin', action='config_edit_process', id=c.Config.id)
 <tr>
 <td>FTP Proxy Port:</td>
 <td>${h.text_field('ftp_proxy_port', value=c.Config.ftp_proxy_port)}</td>
+% if c.Error and c.Error.has_key('ftp_proxy_port'):
+     <td><b>${c.Error['ftp_proxy_port']}<b></td>
+% endif
 </tr>
 <tr>
 <td>Phone Home On:</td>

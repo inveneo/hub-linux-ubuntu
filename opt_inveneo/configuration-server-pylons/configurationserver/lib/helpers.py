@@ -19,6 +19,15 @@ def tmp_file_name(log = logging.getLogger(__name__)):
     tmp.close()
     return tmp_file
 
+def get_config_dir_station():
+    return get_config_dir_for('station')
+
+def get_config_dir_user():
+    return get_config_dir_for('user')
+
+def get_config_dir_for(category):
+    return 'saved-configuration/' + category + '/'
+
 def does_parameter_exist(request, name, log = logging.getLogger(__name__)):
     if not name in request.params.keys():
         log.error('Parameter is not set: ' + name)
@@ -78,11 +87,13 @@ def escape_quotes(string):
     return str(string).replace(r'"', r'\"')
 
 def validate_with_regexp(regexp, value, not_empty = False, log = logging.getLogger(__name__)):
-    log.debug('regexp validation: ' + str(regexp) + ' ~= ' + str(value))
+    value = str(value)
+
+    log.debug('regexp validation: ' + str(regexp) + ' ~= ' + value)
     
     ret_value = True
 
-    if (not_empty) and (len(str(value)) == 0):
+    if (not_empty) and (len(value) == 0):
         ret_value = False
 
     re = validators.Regex(regex = regexp)
@@ -95,3 +106,25 @@ def validate_with_regexp(regexp, value, not_empty = False, log = logging.getLogg
     
     return ret_value
             
+def validate_number(min, max, value, log = logging.getLogger(__name__)):
+
+    ret_value = True
+
+    try:
+        value = int(value)
+        min = int(min)
+        max = int(max)
+    except:
+        ret_value = False
+
+    log.debug('number validation: ' + str(value) + ' min: ' + str(min) + ' max: ' + str(max))
+
+    if ret_value and value >= min and value <= max:
+        ret_value = True
+    else:
+        ret_value = False
+
+    log.debug(str(ret_value))
+
+    return ret_value
+        

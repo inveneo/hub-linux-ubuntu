@@ -48,6 +48,12 @@ class AdminController(BaseController):
             error['mac'] = 'MAC address must be 12 hex lower case values, no separator' 
         if not h.validate_with_regexp(LOCALE_REGEXP, config.locale, True, log):
             error['locale'] = 'Must be a valid locale string. E.g. en_UK.utf-8'
+        if not h.validate_number(0, 65535, config.http_proxy_port, log):
+            error['http_proxy_port'] = 'Must be valid port number: 0 to 65535'
+        if not h.validate_number(0, 65535, config.https_proxy_port, log):
+            error['https_proxy_port'] = 'Must be valid port number: 0 to 65535'
+        if not h.validate_number(0, 65535, config.ftp_proxy_port, log):
+            error['ftp_proxy_port'] = 'Must be valid port number: 0 to 65535'
 
         return error
 

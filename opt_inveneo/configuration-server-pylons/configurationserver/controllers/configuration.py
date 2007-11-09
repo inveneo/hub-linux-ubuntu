@@ -40,7 +40,7 @@ class ConfigurationController(BaseController):
     def get_tmp_config_file_path(self, id, category):
         log.debug('get tmp config file for id: ' + id + ' and category ' + category )
 
-        local_station_file = 'saved-configuration/' + category + '/' + id + '.tar.gz'
+        local_station_file = h.get_config_dir_for(category) + id + '.tar.gz'
 
         if not h.does_file_exist(local_station_file, log):
             log.warning('config file not found')
@@ -92,7 +92,7 @@ class ConfigurationController(BaseController):
                 out.write(byte)
             out.close()
 
-        h.copy_from_temp_file('saved-configuration/' + category + '/' + name + '.tar.gz',
+        h.copy_from_temp_file(h.get_config_dir_for(category) + name + '.tar.gz',
                               tmp_dest_file)
                 
 
