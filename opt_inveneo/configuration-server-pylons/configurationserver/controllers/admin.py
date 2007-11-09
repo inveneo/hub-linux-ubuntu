@@ -25,7 +25,7 @@ class AdminController(BaseController):
                 q = o_q.filter(model.Config.mac == key).one()
             except:
                 q = model.Config()
-                q.mac = 'deaddeadbeaf'
+                q.mac = 'deaddeadbeef'
         else:
             q = o_q.get(key)
                 
@@ -37,6 +37,12 @@ class AdminController(BaseController):
     def validate_configuration(self, config):
         log.debug('config validation')
         error = {}
+
+        try:
+            model.Session.query(model.Config).filter(model.Config.mac == config.mac).one()
+            error['mac'] = 'MAC is already being used'
+        except:
+            pass
 
         if not h.validate_with_regexp(MAC_REGEXP, config.mac, True, log):
             error['mac'] = 'MAC address must be 12 hex lower case values, no separator' 
@@ -62,6 +68,22 @@ class AdminController(BaseController):
     def edit(self, id):
         c.Config = self.get_config_entry_by_id_or_mac_or_create(id)
         return render('/admin/config_edit.mako')
+
+    def config_remove(self, id):
+        mac = str(id)
+
+        if mac == NONE:
+            log.error('Need a valid unique mac identifier')
+            return
+
+        try:
+            q = model.Session.query(model.Config).filter(model.Config.mac == mac).one()
+            model.Session.delete(q)
+            model.Session.commit()
+        except:
+            return
+
+        return redirect_to('/admin/list')
 
     def config_add(self):
         c.Config = model.Config()

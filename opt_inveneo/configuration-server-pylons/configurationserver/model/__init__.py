@@ -15,7 +15,7 @@ metadata = MetaData()
 # configuration table
 configs_table = Table('configs', metadata,
     Column('id', types.Integer, primary_key=True),
-    Column('mac', types.String(255)),
+    Column('mac', types.String(255), unique=True),
     Column('timezone', types.String(255)),
     Column('ntp_on', types.Boolean),
     Column('ntp_servers', types.String(255)),
