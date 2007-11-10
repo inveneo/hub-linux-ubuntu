@@ -1,9 +1,9 @@
 <span class="h3">Dashboard</span>
-${h.form(h.url(controller='admin', action='set_initial_config'), method='post')}
+${h.form(h.url(controller='admin', action='set_initial_config'), method='get')}
 	<p><input type="submit" value="Set Initial Config" class="button" /></p>
 ${h.end_form()}
 </p>
-${h.form(h.url(controller='admin', action='list'), method='post')}
+${h.form(h.url(controller='admin', action='list'), method='get')}
 	<p><input type="submit" value="List Configurations" class="button" /></p>
 ${h.end_form()}
 </p>

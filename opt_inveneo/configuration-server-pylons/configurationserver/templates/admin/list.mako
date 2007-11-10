@@ -1,5 +1,8 @@
 <span class="h3">Existing Configurations</span>
-${h.form(h.url(controller='admin', action='config_add'), method='post')}
+${h.form(h.url(controller='admin', action='dashboard'), method='get')}
+	<p><input type="submit" value="Dashboard" class="button" /></p>
+${h.end_form()}
+${h.form(h.url(controller='admin', action='config_add'), method='get')}
 	<p><input type="submit" value="Create New" class="button" /></p>
 ${h.end_form()}
 </p>
