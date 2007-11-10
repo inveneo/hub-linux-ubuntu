@@ -171,7 +171,7 @@ class AdminController(BaseController):
             model.Session.commit()
         else:
             c.Error = error
-            c.Edit = False
+            c.Edit = is_edit
             c.Config = newconfig_q
             return render('/admin/config_edit.mako')
 
