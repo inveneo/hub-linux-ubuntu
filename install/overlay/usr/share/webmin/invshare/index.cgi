@@ -27,10 +27,17 @@ if ($config{'url'}) {
 	print "<h2>Add a new network share</h2>\n";
 	print &ui_form_start("createshare.cgi");
 	print "<table>";
-        input_box_row("sharename","Share Name"); 
-        print_row_title("Public",&ui_yesno_radio("public", 1));
-        print_row_title("- Or -"); 
-        input_box_row("owner","Owner"); 
+        input_box_row("sharename","Share Name");
+        print_row_title("Public",&ui_yesno_radio("public", ""));
+        print_row_title("- Or -");
+
+        $users_list = get_users_list();
+        @sel_list = ();
+        foreach $user ( @{ $users_list } ) {
+                push @sel_list, [ @{ $user }[1], @{ $user }[1] ];
+        }
+
+        print_row_title("Owner",&ui_select("owner", "", \@sel_list));
 	print "<tr><td valign='top'>",&ui_submit("Create"),"</td></tr></table>\n";
 	print &ui_form_end();
 	&ui_print_footer("/", $text{'index'});
