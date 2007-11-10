@@ -40,7 +40,6 @@ sub is_valid_share_name {
 
 sub convert_to_share_dir_name { 
    my $name = lc(shift); 
-   $name =~ s/ /\^/g;
    return $name;
 }
 
@@ -52,6 +51,54 @@ sub share_exists {
    } else {
       return 0;
    } 
+}
+
+sub get_users_list { 
+    
+    $cmd = "ldapsearch -x  -LLL \"(objectClass=sambaSamAccount)\" uidNumber uid | grep \"^uid\" |  tr -d \":\""; 
+    open(IN, "$cmd |") or die "Error executing $cmd";
+
+    my $uidCnt = 0; 
+    my $uidNumCnt = 0;
+    my @uid = ();
+    my @uidNum = ();
+
+    while ($line = <IN>) {
+       chomp $line;
+       ($attr,$val) = split(/ /,$line);
+       if ( $attr eq 'uid' ) {
+           $uid[$uidCnt++] = $val;
+       } elsif ( $attr eq 'uidNumber' ) {
+           $uidNum[$uidNumCnt++] = $val;
+       }
+    }
+        
+    my @retList = (); 
+    my $cnt = 0; 
+    while ( $cnt < $uidCnt ) {
+        if ( $uidNum[$cnt] > 10000 ) {
+           my @userInfo = ( $uidNum[$cnt], $uid[$cnt] );
+           push @retList, \@userInfo;
+        }
+        $cnt++;
+    } 
+
+    return \@retList;
+
+}
+
+sub reload_samba_settings { 
+    
+    local( $/ ) ;
+
+    system("/etc/init.d/samba-shares.sh start");
+
+    open (<FH>,"/etc/init.d/samba reload |");
+    $result = <FH>;
+    if ( $result =~ m/No process in pidfile/ ) {
+       # stopeed here  
+    }
+     
 }
 
 1;
