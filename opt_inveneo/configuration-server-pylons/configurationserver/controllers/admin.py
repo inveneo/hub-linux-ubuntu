@@ -1,38 +1,39 @@
 import logging
 import cgi
+import os
+import shutil
 
 from configurationserver.lib.base import *
 
 log = logging.getLogger(__name__)
 
-# create default init config for 'deaddeadbeef' if not existing
-try:
-    model.Session.query(model.Config).filter(model.Config.mac == 'deaddeadbeef').one()
-except:
-    newconfig_q = model.Config()
-    
-    newconfig_q.mac = 'deaddeadbeef'
-    newconfig_q.timezone = DEFAULT_DB_ATTRS['INV_TIME_ZONE']
-    newconfig_q.ntp_on = DEFAULT_DB_ATTRS['INV_NTP_ON']
-    newconfig_q.ntp_servers = DEFAULT_DB_ATTRS['INV_NTP_SERVERS']
-    newconfig_q.proxy_on = DEFAULT_DB_ATTRS['INV_PROXY_ON']
-    newconfig_q.http_proxy = DEFAULT_DB_ATTRS['INV_HTTP_PROXY']
-    newconfig_q.http_proxy_port = DEFAULT_DB_ATTRS['INV_HTTP_PROXY_PORT']
-    newconfig_q.https_proxy = DEFAULT_DB_ATTRS['INV_HTTPS_PROXY']
-    newconfig_q.https_proxy_port = DEFAULT_DB_ATTRS['INV_HTTPS_PROXY_PORT']
-    newconfig_q.ftp_proxy = DEFAULT_DB_ATTRS['INV_FTP_PROXY']
-    newconfig_q.ftp_proxy_port = DEFAULT_DB_ATTRS['INV_FTP_PROXY_PORT']
-    newconfig_q.phone_home_on = DEFAULT_DB_ATTRS['INV_PHONE_HOME_ON']
-    newconfig_q.phone_home_reg = DEFAULT_DB_ATTRS['INV_PHONE_HOME_REG']
-    newconfig_q.phone_home_checkin = DEFAULT_DB_ATTRS['INV_PHONE_HOME_CHECKIN']
-    newconfig_q.locale = DEFAULT_DB_ATTRS['INV_LOCALE']
-    newconfig_q.single_user_login = DEFAULT_DB_ATTRS['INV_SINGLE_USER_LOGIN']
-    
-    model.Session.save(newconfig_q)
-    model.Session.commit()
-
-
 class AdminController(BaseController):
+
+    ###########################
+    # helper methods
+    ###########################
+    def Get_initial_config(config = model.Config()):
+        config.mac = 'deaddeadbeef'
+        config.timezone = DEFAULT_DB_ATTRS['INV_TIME_ZONE']
+        config.ntp_on = DEFAULT_DB_ATTRS['INV_NTP_ON']
+        config.ntp_servers = DEFAULT_DB_ATTRS['INV_NTP_SERVERS']
+        config.proxy_on = DEFAULT_DB_ATTRS['INV_PROXY_ON']
+        config.http_proxy = DEFAULT_DB_ATTRS['INV_HTTP_PROXY']
+        config.http_proxy_port = DEFAULT_DB_ATTRS['INV_HTTP_PROXY_PORT']
+        config.https_proxy = DEFAULT_DB_ATTRS['INV_HTTPS_PROXY']
+        config.https_proxy_port = DEFAULT_DB_ATTRS['INV_HTTPS_PROXY_PORT']
+        config.ftp_proxy = DEFAULT_DB_ATTRS['INV_FTP_PROXY']
+        config.ftp_proxy_port = DEFAULT_DB_ATTRS['INV_FTP_PROXY_PORT']
+        config.phone_home_on = DEFAULT_DB_ATTRS['INV_PHONE_HOME_ON']
+        config.phone_home_reg = DEFAULT_DB_ATTRS['INV_PHONE_HOME_REG']
+        config.phone_home_checkin = DEFAULT_DB_ATTRS['INV_PHONE_HOME_CHECKIN']
+        config.locale = DEFAULT_DB_ATTRS['INV_LOCALE']
+        config.single_user_login = DEFAULT_DB_ATTRS['INV_SINGLE_USER_LOGIN']
+
+        return config
+
+    Get_initial_config = staticmethod(Get_initial_config)
+    
 
     ###########################
     # instance  helper methods
@@ -57,15 +58,16 @@ class AdminController(BaseController):
 
         return q
        
-    def validate_configuration(self, config):
+    def validate_configuration(self, config, is_edit):
         log.debug('config validation')
         error = {}
 
-        try:
-            model.Session.query(model.Config).filter(model.Config.mac == config.mac).one()
-            error['mac'] = 'MAC is already being used'
-        except:
-            pass
+        if not is_edit:
+            try:
+                model.Session.query(model.Config).filter(model.Config.mac == config.mac).one()
+                error['mac'] = 'MAC is already being used'
+            except:
+                pass
 
         if not h.validate_with_regexp(MAC_REGEXP, config.mac, True, log):
             error['mac'] = 'MAC address must be 12 hex lower case values, no separator' 
@@ -80,6 +82,12 @@ class AdminController(BaseController):
 
         return error
 
+    def copy_reset_config(self, dir):
+        for f in os.listdir(dir):
+            if str(f).endswith('.tar.gz'):
+                log.debug(dir + '../blank.tar.gz' + ' overwrites  ' + f)
+                shutil.copyfile(dir + '../blank.tar.gz', dir + '/' + f)
+
 
     ###########################
     # controller methods
@@ -92,13 +100,23 @@ class AdminController(BaseController):
         return render('/admin/dashboard.mako')
 
     def reset_client_config(self, id):
-        return 'Needs to be implemented for MAC: ' + str(id)
+        q = self.get_config_entry_by_id_or_mac_or_create(id)
+        q = self.Get_initial_config(q)
+
+        model.Session.update(q)
+        model.Session.commit()
+
+        self.copy_reset_config(h.get_config_dir_station())
+        self.copy_reset_config(h.get_config_dir_user())
+
+        return redirect_to('/admin/dashboard')
 
     def set_initial_config(self):
         return self.edit(DEADDEADBEEF)
 
     def edit(self, id):
         c.Config = self.get_config_entry_by_id_or_mac_or_create(id)
+        c.Edit = True
         return render('/admin/config_edit.mako')
 
     def config_remove(self, id):
@@ -119,12 +137,17 @@ class AdminController(BaseController):
 
     def config_add(self):
         c.Config = model.Config()
-        return render('/admin/config_edit.mako')
-
+        c.Edit = False
+        return render('/admin/config_edit.mako'
+)
     def config_edit_process(self, id):
         newconfig_q = self.get_config_entry_by_id_or_mac_or_create(id)
+        is_edit = False
 
-        newconfig_q.mac = cgi.escape(request.POST['mac'])
+        try:
+            newconfig_q.mac = cgi.escape(request.POST['mac'])
+        except:
+            is_edit = True
         newconfig_q.timezone = cgi.escape(request.POST['timezone'])
         newconfig_q.ntp_on = h.is_checkbox_set(request, 'ntp_on', log)
         newconfig_q.ntp_servers = cgi.escape(request.POST['ntp_servers']) 
@@ -141,13 +164,14 @@ class AdminController(BaseController):
         newconfig_q.locale = cgi.escape(request.POST['locale']) 
         newconfig_q.single_user_login = h.is_checkbox_set(request, 'single_user_login', log)
         
-        error = self.validate_configuration(newconfig_q)
+        error = self.validate_configuration(newconfig_q, is_edit)
 
         if len(error) == 0:
             model.Session.save(newconfig_q)
             model.Session.commit()
         else:
             c.Error = error
+            c.Edit = False
             c.Config = newconfig_q
             return render('/admin/config_edit.mako')
 
@@ -160,3 +184,13 @@ class AdminController(BaseController):
         config_q = model.Session.query(model.Config)
         c.Configs = config_q.all()
         return render('/admin/list.mako')
+
+
+
+try:
+    model.Session.query(model.Config).filter(model.Config.mac == 'deaddeadbeef').one()
+except:
+    newconfig_q = AdminController.Get_initial_config()
+        
+    model.Session.save(newconfig_q)
+    model.Session.commit()

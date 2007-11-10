@@ -6,9 +6,14 @@ ${h.form(h.url(controller='admin', action='config_edit_process', id=c.Config.id)
 <table>
 <tr>
 <td>MAC:</td>
-<td>${h.text_field('mac', value=c.Config.mac)}</td>
-% if c.Error and c.Error.has_key('mac'):
-     <td><b>${c.Error['mac']}<b></td>
+<!-- the next line checks if mac is not set -- there must be a better way -->
+%if not c.Edit:
+     <td>${h.text_field('mac', value=c.Config.mac)}</td>
+     % if c.Error and c.Error.has_key('mac'):
+       <td><b>${c.Error['mac']}<b></td>
+     % endif
+% else:
+<td>${c.Config.mac}</td>
 % endif
 </tr>
 <tr>

@@ -31,13 +31,13 @@ class ConfigurationController(BaseController):
 
         if name == NONE:
             log.error('Need a valid user name')
-            return
+            return abort(404)
 
         tmp_config_file = self.get_tmp_config_file_path(name, category)
 
         if tmp_config_file == NOT_FOUND:
             log.error('No config file found')
-            return
+            return abort(404)
 
         fapp = paste.fileapp.FileApp(tmp_config_file)
         return fapp(request.environ, self.start_response)
@@ -50,7 +50,7 @@ class ConfigurationController(BaseController):
         
         if not h.does_parameter_exist(request, 'config_file', log):
             log.error('No config file found')
-            return
+            return abort(400)
 
         config_file = request.POST['config_file']
         tmp_dest_file = h.tmp_file_name(log)
@@ -136,7 +136,7 @@ class ConfigurationController(BaseController):
 
         if mac_address == NONE:
             log.error('Need a valid station MAC address')
-            return
+            return abort(404)
 
         map = self.create_dyn_config_map(mac_address)
         initialconfig_q = model.Session.query(model.Config).filter(model.Config.mac == mac_address).one()
@@ -165,7 +165,7 @@ class ConfigurationController(BaseController):
 
         if not h.does_parameter_exist(request, 'config_file', log):
             log.error('No config file found')
-            return
+            return abort(400)
 
         config_file = request.POST['config_file']
         
@@ -183,7 +183,7 @@ class ConfigurationController(BaseController):
         newconfig_q = model.Session.query(model.Config).filter(model.Config.mac == mac_address).one()
 
         if str(type(newconfig_q)) == NONE_TYPE: # this code stinks
-            return 
+            return abort(400)
 
         newconfig_q.timezone = map['INV_TIME_ZONE']
         newconfig_q.ntp_on = map['INV_NTP_ON']
