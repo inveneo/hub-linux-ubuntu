@@ -42,21 +42,21 @@ $owner=$in{'owner'};
               if ( $res != 0 ) {
                   &error("Error $res while creating share.");
               } else {
-                  system("/etc/init.d/samba reload");
+                  reload_samba_settings();
               }
             } else {
               $data_file = SHARE_TEMPLATE_DIR . "private.conf";
               #print "data file = $data_file<br>";
               #print "share conf = $share_conf<br>";
               $cmd = "sed \"s/\%SHARENAME\%/$sharename/g;s/\%USERNAME\%/$owner/g\" \"$data_file\" > \"$share_conf\"";
-              print "command is '$cmd'<br>";
+              #print "command is '$cmd'<br>";
               mkdir(SHARE_STORAGE_PRI_DIR . convert_to_share_dir_name($sharename));
               system($cmd);
               $res = $? >> 8;
               if ( $res != 0 ) {
                   &error("Error $res while creating share.");
               } else {
-                  system("/etc/init.d/samba reload");
+                  reload_samba_settings();
               }
             }
 	} else {
