@@ -87,18 +87,18 @@ sub get_users_list {
 
 }
 
-sub reload_samba_settings { 
-    
-    local( $/ ) ;
-
-    system("/etc/init.d/samba-shares.sh start");
-
-    open (<FH>,"/etc/init.d/samba reload |");
-    $result = <FH>;
-    if ( $result =~ m/No process in pidfile/ ) {
-       # stopeed here  
-    }
-     
-}
+#sub reload_samba_settings { 
+#    
+#    local( $/ ) ;
+#
+#    system("/etc/init.d/samba-shares.sh start");
+#
+#    open (<FH>,"/etc/init.d/samba reload |");
+#    $result = <FH>;
+#    if ( $result =~ m/No process in pidfile/ ) {
+#       # stopeed here  
+#    }
+#     
+#}
 
 1;
