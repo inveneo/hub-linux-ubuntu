@@ -87,16 +87,22 @@ def pre_overlay_transfer(overlay_root, dest):
 
     # remove /etc/rc2.d/S12hal which needs to be moved to S13hal
     try:
-        os.remove("/etc/rc2.d/S12hal")
+        os.remove(path.join(dest,"etc","rc2.d","S12hal"))
     except OSError, ex:
         pass # silent, must not have been there
 
     # get rid of fstab so we can link later
     try:
-        os.remove("/etc/fstab")
+        os.remove(path.join(dest,"etc","fstab"))
     except OSError, ex:
         pass # must not have been there
     
+    # blow away webmin modules info cache so that new modules are found
+    try:
+        os.remove(path.join(dest,"etc","webmin","module.infos.cache"))
+    except OSError, ex:
+        pass # must not have been there
+          
 def post_overlay_transfer(overlay_root, dest):
     # HACK: Fix Squid perms 
     uinfo=pwd.getpwnam('proxy')
