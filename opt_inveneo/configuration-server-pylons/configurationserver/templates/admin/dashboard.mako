@@ -16,8 +16,12 @@ ${h.form(h.url(controller='admin', action='set_initial_config'), method='get')}
 	<p><input type="submit" value="Set Initial Config" class="button" /></p>
 ${h.end_form()}
 </p>
-${h.form(h.url(controller='admin', action='list'), method='get')}
-	<p><input type="submit" value="List Configurations" class="button" /></p>
+${h.form(h.url(controller='admin', action='list_initial_configurations'), method='get')}
+	<p><input type="submit" value="List Initial Configurations" class="button" /></p>
+${h.end_form()}
+</p>
+${h.form(h.url(controller='admin', action='list_station_configurations'), method='get')}
+	<p><input type="submit" value="List Station Configurations" class="button" /></p>
 ${h.end_form()}
 </p>
 ${h.form(h.url(controller='admin', action='reset_client_config', id='deaddeadbeef'), method='post')}

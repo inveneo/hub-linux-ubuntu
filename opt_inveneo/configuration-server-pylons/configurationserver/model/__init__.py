@@ -51,3 +51,16 @@ class Server(object):
         return self.title
     
 mapper(Server, servers_table)
+
+# servers table
+stations_table = Table('stations', metadata,
+    Column('id', types.Integer, primary_key=True),
+    Column('mac', types.String(255), default="Inveneon"),
+    Column('station_on', types.Boolean, default=True),
+)
+
+class Station(object):
+    def __str__(self):
+        return self.title
+    
+mapper(Station, stations_table)

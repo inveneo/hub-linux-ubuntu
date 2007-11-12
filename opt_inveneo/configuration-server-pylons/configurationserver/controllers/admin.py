@@ -49,6 +49,7 @@ class AdminController(BaseController):
                 q = o_q.filter(model.Config.mac == key).one()
             except:
                 q = model.Config()
+
                 q.mac = 'deaddeadbeef'
         else:
             q = o_q.get(key)
@@ -94,7 +95,6 @@ class AdminController(BaseController):
     ###########################
     # controller methods
     ###########################    
-
     def index(self):
         return redirect_to('/admin/dashboard')
 
@@ -146,7 +146,7 @@ class AdminController(BaseController):
         except:
             return
 
-        return redirect_to('/admin/list')
+        return redirect_to('/admin/list_initial_configurations')
 
     def config_add(self):
         c.Config = model.Config()
@@ -191,16 +191,21 @@ class AdminController(BaseController):
         return redirect_to('/admin/config_edit_done')
 
     def config_edit_done(self):
-        return redirect_to('/admin/list')
+        return redirect_to('/admin/list_initial_configurations')
         
-    def list(self):
+    def list_initial_configurations(self):
         config_q = model.Session.query(model.Config)
         c.Configs = config_q.all()
-        return render('/admin/list.mako')
+        return render('/admin/list_initial_configurations.mako')
+
+    def list_station_configurations(self):
+        config_q = model.Session.query(model.Station)
+        c.Stations = config_q.all()
+        return render('/admin/list_station_configurations.mako')
 
 
 
-# Create mandatory DEADDEADBEEF station entry -- Only if not already existing
+# Create mandatory 'DEADDEADBEEF' station entry -- Only if not already existing
 try:
     model.Session.query(model.Config).filter(model.Config.mac == 'deaddeadbeef').one()
 except:
@@ -209,7 +214,7 @@ except:
     model.Session.save(newconfig_q)
     model.Session.commit()
 
-# Create mandatory Inveneon server entry -- Only if not already existing
+# Create mandatory 'Inveneon' server entry -- Only if not already existing
 try:
     model.Session.query(model.Server).filter(model.Server.name == 'Inveneon').one()
 except:

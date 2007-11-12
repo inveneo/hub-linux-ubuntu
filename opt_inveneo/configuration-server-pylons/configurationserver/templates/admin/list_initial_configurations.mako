@@ -1,4 +1,4 @@
-<span class="h3">Existing Configurations</span>
+<span class="h3">Existing Initial Configurations</span>
 ${h.form(h.url(controller='admin', action='dashboard'), method='get')}
 	<p><input type="submit" value="Dashboard" class="button" /></p>
 ${h.end_form()}

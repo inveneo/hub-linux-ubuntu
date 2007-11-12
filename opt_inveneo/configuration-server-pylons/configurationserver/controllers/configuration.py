@@ -56,7 +56,7 @@ class ConfigurationController(BaseController):
         tmp_dest_file = h.tmp_file_name(log)
 
         # curl --fail -s -w %{size_upload} -F config_file=@<file> \
-        # http://localhost:5000/configuration/save_user_config/<name> -v
+        # http://localhost:8008/configuration/save_user_config/<name> -v
 
         if config_file.file:
             out = open(tmp_dest_file, "w+")
@@ -120,6 +120,15 @@ class ConfigurationController(BaseController):
         log.debug('Checking if configuration-server is on: ' + str(q.server_on))
         return q.server_on
 
+    def add_station_mac_to_list_if_new(self, mac):
+        try:
+            q = model.Session.query(model.Station).filter(model.Station.mac == mac).one()
+        except:            
+            newstation_q = model.Station()
+            newstation_q.mac = mac
+            model.Session.save(newstation_q)
+            model.Session.commit()
+
     ###########################
     # controller methods
     ###########################    
@@ -174,8 +183,8 @@ class ConfigurationController(BaseController):
     def save_station_config(self, id):
         if not self.is_server_on():
             return abort(404)
-
         log.debug('save station config for: ' + str(id))
+        self.add_station_mac_to_list_if_new(id)
         return self.save_config_file(request, id, 'station')
 
     def save_station_initial_config(self, id):
@@ -228,3 +237,14 @@ class ConfigurationController(BaseController):
         model.Session.commit()
 
         return
+
+    def set_station_on(self, id):
+        mac = str(id)
+
+        q = model.Session.query(model.Station).filter(model.Station.mac == mac).one()
+        q.station_on = not q.station_on
+
+        model.Session.update(q)
+        model.Session.commit()
+
+        return redirect_to('/admin/list_station_configurations')
