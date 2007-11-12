@@ -113,8 +113,13 @@ class ConfigurationController(BaseController):
 
         fapp = paste.fileapp.FileApp(tmp_file_path)
         return fapp(request.environ, self.start_response)
-
  
+    def is_server_on(self):
+        q = model.Session.query(model.Server).filter(model.Server.name == 'Inveneon').one()
+        
+        log.debug('Checking if configuration-server is on: ' + str(q.server_on))
+        return q.server_on
+
     ###########################
     # controller methods
     ###########################    
@@ -122,14 +127,23 @@ class ConfigurationController(BaseController):
         return
 
     def get_user_config(self, id):
+        if not self.is_server_on():
+            return abort(501)
+
         log.debug('get user config for: ' + str(id))
         return self.return_config_file(id, 'user')
 
     def get_station_config(self, id):
+        if not self.is_server_on():
+            return abort(501)
+
         log.debug('get station config for: ' + str(id))
         return self.return_config_file(id, 'station')
 
     def get_station_initial_config(self, id):
+        if not self.is_server_on():
+            return abort(501)
+
         mac_address = str(id)
 
         log.debug('get station initial config for mac: ' + mac_address)
@@ -151,14 +165,23 @@ class ConfigurationController(BaseController):
         return self.return_initial_config_file(map)
 
     def save_user_config(self, id):
+        if not self.is_server_on():
+            return abort(404)
+
         log.debug('save user config for: ' + str(id))
         return self.save_config_file(request, id, 'user')
 
     def save_station_config(self, id):
+        if not self.is_server_on():
+            return abort(404)
+
         log.debug('save station config for: ' + str(id))
         return self.save_config_file(request, id, 'station')
 
     def save_station_initial_config(self, id):
+        if not self.is_server_on():
+            return abort(404)
+
         mac_address = str(id)
 
         log.debug('save station initial config')
