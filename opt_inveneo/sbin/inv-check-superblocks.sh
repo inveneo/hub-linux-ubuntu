@@ -69,14 +69,14 @@ check_raid() {
     fi
     
     # try to examine superblocks
-    DRIVE1_SUPERBLOCK_OK=0
+    DRIVE1_SUPERBLOCK_OK=1 #assume bad
     if [ "$DRIVE1" != "missing" ]
     then
         mdadm -E $DRIVE1 2> /dev/null
         DRIVE1_SUPERBLOCK_OK=$?
     fi
 
-    DRIVE2_SUPERBLOCK_OK=0
+    DRIVE2_SUPERBLOCK_OK=1 #assume bad
     if [ "$DRIVE2" != "missing" ]
     then
         mdadm -E $DRIVE2 2> /dev/null
