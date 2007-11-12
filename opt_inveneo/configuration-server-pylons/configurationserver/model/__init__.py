@@ -38,3 +38,16 @@ class Config(object):
         return self.title
     
 mapper(Config, configs_table)
+
+# servers table
+servers_table = Table('servers', metadata,
+    Column('id', types.Integer, primary_key=True),
+    Column('name', types.String(255), default="Inveneon"),
+    Column('server_on', types.Boolean, default=True),
+)
+
+class Server(object):
+    def __str__(self):
+        return self.title
+    
+mapper(Server, servers_table)

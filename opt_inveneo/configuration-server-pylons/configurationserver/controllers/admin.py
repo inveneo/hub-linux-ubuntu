@@ -88,6 +88,8 @@ class AdminController(BaseController):
                 log.debug(dir + '../blank.tar.gz' + ' overwrites  ' + f)
                 shutil.copyfile(dir + '../blank.tar.gz', dir + '/' + f)
 
+    def get_inveneon_server(self):
+        return model.Session.query(model.Server).filter(model.Server.name == 'Inveneon').one()
 
     ###########################
     # controller methods
@@ -97,7 +99,18 @@ class AdminController(BaseController):
         return redirect_to('/admin/dashboard')
 
     def dashboard(self):
+        c.Server = self.get_inveneon_server()
+
         return render('/admin/dashboard.mako')
+
+    def set_server_on(self, id):
+        q = self.get_inveneon_server()
+        q.server_on = not q.server_on
+
+        model.Session.update(q)
+        model.Session.commit()
+
+        return redirect_to('/admin/dashboard')
 
     def reset_client_config(self, id):
         q = self.get_config_entry_by_id_or_mac_or_create(id)
@@ -138,8 +151,8 @@ class AdminController(BaseController):
     def config_add(self):
         c.Config = model.Config()
         c.Edit = False
-        return render('/admin/config_edit.mako'
-)
+        return render('/admin/config_edit.mako')
+
     def config_edit_process(self, id):
         newconfig_q = self.get_config_entry_by_id_or_mac_or_create(id)
         is_edit = False
@@ -187,6 +200,7 @@ class AdminController(BaseController):
 
 
 
+# Create mandatory DEADDEADBEEF station entry -- Only if not already existing
 try:
     model.Session.query(model.Config).filter(model.Config.mac == 'deaddeadbeef').one()
 except:
@@ -194,3 +208,11 @@ except:
         
     model.Session.save(newconfig_q)
     model.Session.commit()
+
+# Create mandatory Inveneon server entry -- Only if not already existing
+try:
+    model.Session.query(model.Server).filter(model.Server.name == 'Inveneon').one()
+except:
+    model.Session.save(model.Server())
+    model.Session.commit()
+
