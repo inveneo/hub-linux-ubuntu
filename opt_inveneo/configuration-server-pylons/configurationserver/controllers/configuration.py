@@ -120,6 +120,17 @@ class ConfigurationController(BaseController):
         log.debug('Checking if configuration-server is on: ' + str(q.server_on))
         return q.server_on
 
+    def is_station_on(self, mac):
+        ret_value = False
+        try:
+            q = model.Session.query(model.Station).filter(model.Station.mac == mac).one()
+            ret_value = q.station_on
+        except:
+            pass
+     
+        log.debug('Checking if station is on: ' + str(ret_value))
+        return ret_value
+
     def add_station_mac_to_list_if_new(self, mac):
         try:
             q = model.Session.query(model.Station).filter(model.Station.mac == mac).one()
@@ -145,6 +156,8 @@ class ConfigurationController(BaseController):
     def get_station_config(self, id):
         if not self.is_server_on():
             return abort(501)
+        if not self.is_station_on(id):
+            return abort(404)
 
         log.debug('get station config for: ' + str(id))
         return self.return_config_file(id, 'station')
@@ -152,6 +165,8 @@ class ConfigurationController(BaseController):
     def get_station_initial_config(self, id):
         if not self.is_server_on():
             return abort(501)
+        if not self.is_station_on(id):
+            return abort(404)
 
         mac_address = str(id)
 
@@ -183,6 +198,9 @@ class ConfigurationController(BaseController):
     def save_station_config(self, id):
         if not self.is_server_on():
             return abort(404)
+        if not self.is_station_on(id):
+            return abort(501)
+
         log.debug('save station config for: ' + str(id))
         self.add_station_mac_to_list_if_new(id)
         return self.save_config_file(request, id, 'station')
@@ -190,6 +208,8 @@ class ConfigurationController(BaseController):
     def save_station_initial_config(self, id):
         if not self.is_server_on():
             return abort(404)
+        if not self.is_station_on(id):
+            return abort(501)
 
         mac_address = str(id)
 
@@ -241,10 +261,34 @@ class ConfigurationController(BaseController):
     def set_station_on(self, id):
         mac = str(id)
 
+        log.debug('setting on/off status on station ' + mac)
+
         q = model.Session.query(model.Station).filter(model.Station.mac == mac).one()
         q.station_on = not q.station_on
 
         model.Session.update(q)
         model.Session.commit()
 
+        log.debug('station ' + mac + ' is now on: ' + str(q.station_on))
+
         return redirect_to('/admin/list_station_configurations')
+
+    def set_all_stations_on(self):
+        on_off = request.params['all_on']
+        q = model.Session.query(model.Station)
+
+        log.debug('setting on/off status for all stations to ' + str(on_off))
+
+        for s in q.all():
+            s_q = model.Session.query(model.Station).filter(model.Station.mac == s.mac).one()
+            # this is weird -- the short version does not work -- rjocham
+            if on_off == 'True':
+                s_q.station_on = True
+            else:
+                s_q.station_on = False
+            model.Session.update(s_q)
+            model.Session.commit()
+
+        return redirect_to('/admin/list_station_configurations')
+
+        
