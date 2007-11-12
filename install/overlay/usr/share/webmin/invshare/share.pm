@@ -5,6 +5,16 @@ require "./util.pl";
 
 use constant SHARE_CONF_DIR => "/etc/inveneo/samba/shares.d";
 
+
+sub slurp_contents {
+    local( $/ );
+    my $fn = shift;    
+    open (FH,$fn);
+    $contents = <FH>;
+    close(FH);
+    return $contents; 
+}
+
 sub get_share_names {
     my $share_dir = shift; 
 
@@ -30,7 +40,23 @@ sub get_share_names {
 }
 
 sub get_share_owner { 
-        return "Public";   
+    local( $/ );
+    my $name = shift;
+
+    if ( -e get_share_conf_filename($name . "_docs") ) {
+      #use the users' personal share
+      $fn = get_share_conf_filename($name . "_docs");     
+    } else {
+      $fn = get_share_conf_filename($name);
+    }
+    
+    $contents = slurp_contents($fn);    
+
+    if ( $contents =~ m/valid users\s*=(.+)/ ) {
+        return trim($1);
+    } else {        
+        return "Public";
+    }
 }
 
 sub is_valid_share_name { 
@@ -39,15 +65,16 @@ sub is_valid_share_name {
 }
 
 sub convert_to_share_dir_name { 
-   my $name = lc(shift); 
+   my $name = trim(lc(shift)); 
    return $name;
 }
 
-sub share_exists { 
+sub share_exists {    
    my $name = shift; 
    if ( is_valid_share_name($name) ) { 
-      $conf_fn = SHARE_CONF_DIR . "/" . convert_to_share_dir_name($name) . ".conf";
-      ( -e $conf_fn ) ? 1 : 0; 
+      $conf_fn = get_share_conf_filename($name);    
+      $conf_fn2 = get_share_conf_filename($name . "_docs");
+      return (( -e "$conf_fn" ) || ( -e "$conf_fn2")) ? 1 : 0; 
    } else {
       return 0;
    } 
@@ -76,7 +103,7 @@ sub get_users_list {
     my @retList = (); 
     my $cnt = 0; 
     while ( $cnt < $uidCnt ) {
-        if ( $uidNum[$cnt] > 10000 ) {
+        if ( $uidNum[$cnt] >= 10000 ) {
            my @userInfo = ( $uidNum[$cnt], $uid[$cnt] );
            push @retList, \@userInfo;
         }
@@ -89,7 +116,7 @@ sub get_users_list {
 
 sub reload_samba_settings { 
     
-    local( $/ ) ;
+    local( $/ );
 
     system("/etc/init.d/samba-shares.sh start");
 
@@ -98,7 +125,26 @@ sub reload_samba_settings {
     if ( $result =~ m/No process in pidfile/ ) {
        system("/etc/init.d/samba start");
     } 
+    close(FH);
      
+}
+
+sub get_share_conf_filename {
+    my $name = shift;
+    $conf_fn = SHARE_CONF_DIR . "/" . convert_to_share_dir_name($name) . ".conf";
+    return $conf_fn;
+}
+
+
+
+sub delete_share {
+    my $sharename = shift;
+    if ( is_valid_share_name($sharename) ) {
+        $conf_fn = get_share_conf_filename($sharename);
+        return unlink(get_share_conf_filename($sharename));
+    } else {
+	return 0;
+    }
 }
 
 1;

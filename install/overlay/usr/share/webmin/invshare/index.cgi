@@ -3,11 +3,19 @@
 require './invshare-lib.pl';
 use form;
 use share;
+&ReadParse();
+
+$msg = $in{'msg'};
 
 if ($config{'url'}) {
 	&redirect("link.cgi/$config{'url'}");
 } else {
-	&ui_print_header(undef, $module_info{'desc'}, "", undef, 1, 1);
+	&ui_print_header(undef, $module_info{'desc'}, "", undef, 1, 1);     
+
+	if ( $msg ) {
+		print "<h4>" . un_urlize($msg) . "</h4><br>";
+	}
+	
 
 	@userlisttable = ("Share Name", "Owner", "Delete");
 	print "<h2>Network Shares</h2>\n";
