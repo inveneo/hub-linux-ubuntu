@@ -176,7 +176,7 @@ class AdminController(BaseController):
         newconfig_q.phone_home_checkin = cgi.escape(request.POST['phone_home_checkin']) 
         newconfig_q.locale = cgi.escape(request.POST['locale']) 
         newconfig_q.single_user_login = h.is_checkbox_set(request, 'single_user_login', log)
-        
+
         error = self.validate_configuration(newconfig_q, is_edit)
 
         if len(error) == 0:

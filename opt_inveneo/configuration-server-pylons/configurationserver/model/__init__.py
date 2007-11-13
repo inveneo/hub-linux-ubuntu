@@ -64,3 +64,12 @@ class Station(object):
         return self.title
     
 mapper(Station, stations_table)
+
+# timezones table
+timezones_table = Table('timezones', metadata,
+    Column('id', types.Integer, primary_key=True),
+    Column('name', types.String(255), default='GMT'),
+    Column('gmt_offset', types.Integer, default='0'),
+)
+
+

@@ -17,8 +17,10 @@ ${h.form(h.url(controller='admin', action='config_edit_process', id=c.Config.id)
 % endif
 </tr>
 <tr>
-<td>TimeZone:</td>
-<td>${h.text_field('timezone', value=c.Config.timezone)}</td>
+<td>Time Zone:</td>
+<td>
+${ h.select('timezone', h.options_for_select(h.get_timezones_as_string_list(), c.Config.timezone)) }
+</td>
 </tr>
 <td>NTP On:</td>
 <td>${h.check_box('ntp_on', checked=c.Config.ntp_on)}</td>
@@ -82,6 +84,13 @@ ${h.form(h.url(controller='admin', action='config_edit_process', id=c.Config.id)
 % if c.Error and c.Error.has_key('locale'):
      <td><b>${c.Error['locale']}<b></td>
 % endif
+</tr>
+<tr>
+<td>foo</td>
+<td>
+${ h.tag('select', open=True, name_='time_frame', id='time_frame') }
+${ h.options_for_select(['', '1-3 months', '3-6 months', '6-9 months', '10+ months']) }
+</td>
 </tr>
 <tr>
 <td>Single User Login:</td>
