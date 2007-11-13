@@ -1,11 +1,8 @@
-<span class="h3">Existing Initial Configurations</span>
-${h.form(h.url(controller='admin', action='dashboard'), method='get')}
-	<p><input type="submit" value="Dashboard" class="button" /></p>
-${h.end_form()}
+<%include file="../header.html"/>
+<h3>Existing Initial Configurations</h3>
 ${h.form(h.url(controller='admin', action='config_add'), method='get')}
 	<p><input type="submit" value="Create New" class="button" /></p>
 ${h.end_form()}
-</p>
 % for config in c.Configs:
 <div class="content">
         <span class="line"><b>MAC:</b> ${config.mac} </span>

@@ -1,4 +1,5 @@
-<span class="h2">Dashboard for ${c.Server.name} Server</span>
+<%include file="../header.html"/>
+<h2>Dashboard for ${c.Server.name} Server</h2>
 </p>
 Server On:
 <b>
@@ -9,7 +10,7 @@ NO
 % endif
 </b>
 ${h.form(h.url(controller='admin', action='set_server_on', id=c.Server.id), method='post')}
-	<input type="submit" value="Toggle" class="button" />
+<input type="submit" value="Toggle" class="button" />
 ${h.end_form()}
 </p>
 ${h.form(h.url(controller='admin', action='set_initial_config'), method='get')}
