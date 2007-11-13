@@ -5,7 +5,7 @@ import string
 class TestConfigurationServer(unittest.TestCase):
     def setUp(self):
         self.selenium = selenium("localhost", \
-            4444, "*firefox", "http://192.168.15.198:8008")
+            4444, "*firefox", "http://192.168.1.104:8008")
         self.selenium.start()
         self.selenium.open("/admin/config_remove/000000000000")
         
@@ -13,17 +13,18 @@ class TestConfigurationServer(unittest.TestCase):
         sel = self.selenium
         sel.open("/")  
         sel.wait_for_page_to_load(2500)
+        print sel.get_location()
         self.assertTrue(sel.get_location().endswith("/admin/dashboard"))
         
     def test_click_list_configurations_shows_list_site(self):
     	sel = self.selenium
         sel.open("/admin/dashboard")
-        sel.click("//input[@value='List Configurations']")
+        sel.click("//input[@value='List Initial Configurations']")
         sel.wait_for_page_to_load("30000")
     	
     def test_should_create_new_configuration(self):
     	sel = self.selenium
-        sel.open("/admin/list")
+        sel.open("/admin/list_initial_configurations")
  	sel.click("//input[@value='Create New']")
         sel.wait_for_page_to_load("30000")
         sel.type("mac", "000000000000")
@@ -89,12 +90,40 @@ class TestConfigurationServer(unittest.TestCase):
         text = sel.get_body_text()
         self.assertTrue(string.find(text,"Must be a valid locale string. E.g. en_UK.utf-8") > 0) 
 
+    def test_switch_server_on_off(self):
+    	sel = self.selenium
+        sel.open("/admin/dashboard")
+        sel.wait_for_page_to_load("2500")
+        text = sel.get_body_text()
+        if (string.find(text, "YES") > 0):
+            expected = "NO"
+        else:
+            expected = "YES"
+	sel.click("//input[@value='Toggle']")
+        sel.wait_for_page_to_load("30000")
+        text = sel.get_body_text()
+	self.assertTrue(string.find(text,expected) > 0)     
+	
+    def test_swich_all_stations_on_off(self):
+    	sel = self.selenium
+        sel.open("/admin/dashboard?")
+        sel.click("//input[@value='List Station Configurations']")
+        sel.click("//input[@value='All On']")
+        text = sel.get_body_text()
+	self.assertTrue(string.find(text,"NO") == -1)      
+        sel.wait_for_page_to_load("30000")
+        sel.click("//input[@value='All Off']")
+        sel.wait_for_page_to_load("30000")
+        text = sel.get_body_text()
+	self.assertTrue(string.find(text,"YES") == -1)      
+	        
     def test_should_proof_that_there_is_always_a_deaddeadbeef_mac(self):
     	sel = self.selenium
         sel.open("/admin/edit/deaddeadbeef")
         sel.wait_for_page_to_load("2500")
         text = sel.get_body_text()
 	self.assertTrue(string.find(text,"deaddeadbeef") > 0)     
+    
     def tearDown(self):
         self.selenium.stop()
 
