@@ -23,7 +23,9 @@ ${h.end_form()}
         <span class="line"><b>FTP Proxy Port:</b> ${config.ftp_proxy_port} </span>
         </br>
         <span class="line"><b>Phone Home On:</b> ${config.phone_home_on} </span>
+	</br>
         <span class="line"><b>Phone Home Reg:</b> ${config.phone_home_reg} </span>
+	</br>
         <span class="line"><b>Phone Home Checkin:</b> ${config.phone_home_checkin} </span>
         </br>
         <span class="line"><b>Locale:</b> ${config.locale} </span>

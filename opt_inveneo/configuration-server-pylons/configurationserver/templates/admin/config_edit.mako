@@ -86,13 +86,6 @@ ${ h.select('timezone', h.options_for_select(h.get_timezones_as_string_list(), c
 % endif
 </tr>
 <tr>
-<td>foo</td>
-<td>
-${ h.tag('select', open=True, name_='time_frame', id='time_frame') }
-${ h.options_for_select(['', '1-3 months', '3-6 months', '6-9 months', '10+ months']) }
-</td>
-</tr>
-<tr>
 <td>Single User Login:</td>
 <td>${h.check_box('single_user_login', checked=c.Config.single_user_login)}</td>
 </tr>

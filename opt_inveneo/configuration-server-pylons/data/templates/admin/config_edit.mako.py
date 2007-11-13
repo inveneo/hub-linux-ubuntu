@@ -1,7 +1,7 @@
 from mako import runtime, filters, cache
 UNDEFINED = runtime.UNDEFINED
 _magic_number = 2
-_modified_time = 1194993370.2331059
+_modified_time = 1194993881.329119
 _template_filename='/home/rjocham/pylons/opt_inveneo/configuration-server-pylons/configurationserver/templates/admin/config_edit.mako'
 _template_uri='/admin/config_edit.mako'
 _template_cache=cache.Cache(__name__, _modified_time)
@@ -117,20 +117,14 @@ def render_body(context,**pageargs):
             context.write(unicode(c.Error['locale']))
             context.write(u'<b></td>\n')
         # SOURCE LINE 87
-        context.write(u'</tr>\n<tr>\n<td>foo</td>\n<td>\n')
-        # SOURCE LINE 91
-        context.write(unicode( h.tag('select', open=True, name_='time_frame', id='time_frame') ))
-        context.write(u'\n')
-        # SOURCE LINE 92
-        context.write(unicode( h.options_for_select(['', '1-3 months', '3-6 months', '6-9 months', '10+ months']) ))
-        context.write(u'\n</td>\n</tr>\n<tr>\n<td>Single User Login:</td>\n<td>')
-        # SOURCE LINE 97
+        context.write(u'</tr>\n<tr>\n<td>Single User Login:</td>\n<td>')
+        # SOURCE LINE 90
         context.write(unicode(h.check_box('single_user_login', checked=c.Config.single_user_login)))
         context.write(u'</td>\n</tr>\n</table>\n</p>\n')
-        # SOURCE LINE 101
+        # SOURCE LINE 94
         context.write(unicode(h.submit('Persist')))
         context.write(u'\n')
-        # SOURCE LINE 102
+        # SOURCE LINE 95
         context.write(unicode(h.end_form))
         context.write(u'\n')
         return ''
