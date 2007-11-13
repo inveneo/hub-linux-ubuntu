@@ -13,7 +13,7 @@ use constant SHARE_STORAGE_PRI_DIR => "/srv/samba/user_shares/";
 $sharename=$in{'sharename'};
 
 	# validate input fields
-	&error_setup('Failed to create user');
+	&error_setup('Failed to delete the share');
 	$valid_input = 1;
         @errors = ();
 
