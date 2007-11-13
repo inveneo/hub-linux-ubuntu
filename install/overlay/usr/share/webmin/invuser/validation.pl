@@ -5,7 +5,7 @@ sub is_blank {
 
 sub is_valid_username {
    my $val = shift;
-   return !( $val =~ /\W+/ ) && !( $val =~ /^\s*$/ );
+   return !( $val =~ /\W+/ ) && !( $val =~ /^\s*$/ ) && !( $val =~ /^_/ ) && length($val) >= 3;
 }
 
 sub generate_error_list {

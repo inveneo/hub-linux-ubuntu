@@ -21,7 +21,7 @@ use constant RET_USER_EXISTS => 9;
 
 	if ( !is_valid_username($username) ) {
 		$valid_input = 0;
-		push @errors,'The username must contain only alpha-numeric characters and an underscore.';
+		push @errors,'The username must start with a letter or number and be greater than 2 characters. The body of the user name must contain only alphanumeric characters or an underscore.';
 	}
 
 	if ( $upasswd =~ /^\s*$/ ) {
@@ -34,19 +34,25 @@ use constant RET_USER_EXISTS => 9;
 		push @errors,'The passwords do not match.';
 	}
 		
-	&ui_print_header(undef, "User creation", "", undef, 1, 1);
+	
 	if ( $valid_input ) {
 		system "$usercreatecmd -p " . quote_path($upasswd) . " -c \"" . quote_path($realname) . "\" " . quote_path($username);
                 $ret_code = $? >> 8;
 		if ( $ret_code == RET_USER_EXISTS ) {
+			&ui_print_header(undef, "User creation", "", undef, 1, 1);
 			&error("The user $username already exists.");	
+			&ui_print_footer("/", $text{'index'});
 		} elsif ( $ret_code != 0 ) {
+			&ui_print_header(undef, "User creation", "", undef, 1, 1);
                         &error('The external process has failed with code ' . $ret);
+			&ui_print_footer("/", $text{'index'});
                 } else {
-			print "The new user '$username' was created.<br>";
+			&redirect("index.cgi?msg=" . urlize("The new user '$username' was created.<br>"));
 		}
 	} else {
-               &error(generate_error_list(@errors)); 
+               &ui_print_header(undef, "User creation", "", undef, 1, 1);
+               &error(generate_error_list(@errors));
+	       &ui_print_footer("/", $text{'index'}); 
         }
-	&ui_print_footer("/", $text{'index'});
+	
 

@@ -2,12 +2,20 @@
 # Either redirects to link.cgi, if a URL has been set, or asks for a URL
 
 require './invuser-lib.pl';
+
+&ReadParse();
+
 if ($config{'url'}) {
 	&redirect("link.cgi/$config{'url'}");
 	}
 else {
 	# Ask for Username and password
 	&ui_print_header(undef, $module_info{'desc'}, "", undef, 1, 1);
+	
+	$msg = $in{'msg'};
+	if ( $msg ) {
+		print "<h4>" . un_urlize($msg) . "</h4><br>";
+	}
 
 	# List existing users
 	$cmd = "ldapsearch -x  -LLL \"(objectClass=sambaSamAccount)\" uidNumber uid | grep \"^uid\" |  tr -d \":\"";
