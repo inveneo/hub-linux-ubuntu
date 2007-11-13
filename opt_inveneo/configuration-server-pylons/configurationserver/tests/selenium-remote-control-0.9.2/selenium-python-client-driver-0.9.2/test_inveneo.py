@@ -1,19 +1,51 @@
 from selenium import selenium
 import unittest
 import string
+import httplib
+
+PROTOCOL = "http"
+URL = "192.168.15.198"
+PORT = "8008"
 
 class TestConfigurationServer(unittest.TestCase):
     def setUp(self):
         self.selenium = selenium("localhost", \
-            4444, "*firefox", "http://192.168.1.104:8008")
+            4444, "*firefox", PROTOCOL + "://" + URL + ":" + PORT)
         self.selenium.start()
         self.selenium.open("/admin/config_remove/000000000000")
+        
+    def test_get_501_when_server_is_off(self):   	
+       	sel = self.selenium
+	sel.open("/admin/dashboard")
+	sel.wait_for_page_to_load("2500")
+	text = sel.get_body_text()
+	if (string.find(text, "YES") > 0):
+	    sel.click("//input[@value='Toggle']")
+	    sel.wait_for_page_to_load("30000")
+    	conn = httplib.HTTPConnection(URL + ":" + PORT)
+    	conn.request("GET", "/configuration/get_user_config/any_name_will_do")
+    	req = conn.getresponse()
+    	conn.close()
+    	self.assertTrue(501, req.status)
+    	conn.request("GET", "/configuration/get_station_config/any_name_will_do")
+	req = conn.getresponse()
+	conn.close()
+	self.assertTrue(501, req.status)
+    	conn.request("GET", "/configuration/get_station_initial_config/any_name_will_do")
+	req = conn.getresponse()
+	conn.close()
+	self.assertTrue(501, req.status)
+	
+	sel.open("/admin/dashboard")
+	sel.wait_for_page_to_load("2500")
+	text = sel.get_body_text()
+	if (string.find(text, "NO") > 0):
+	    sel.click("//input[@value='Toggle']")
         
     def test_index_should_redirect_to_admin_dashboard(self):
         sel = self.selenium
         sel.open("/")  
-        sel.wait_for_page_to_load(2500)
-        print sel.get_location()
+        sel.wait_for_page_to_load(30000)
         self.assertTrue(sel.get_location().endswith("/admin/dashboard"))
         
     def test_click_list_configurations_shows_list_site(self):
@@ -108,10 +140,11 @@ class TestConfigurationServer(unittest.TestCase):
     	sel = self.selenium
         sel.open("/admin/dashboard?")
         sel.click("//input[@value='List Station Configurations']")
+        sel.wait_for_page_to_load("30000")
         sel.click("//input[@value='All On']")
+        sel.wait_for_page_to_load("30000")
         text = sel.get_body_text()
 	self.assertTrue(string.find(text,"NO") == -1)      
-        sel.wait_for_page_to_load("30000")
         sel.click("//input[@value='All Off']")
         sel.wait_for_page_to_load("30000")
         text = sel.get_body_text()
