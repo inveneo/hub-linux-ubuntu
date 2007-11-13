@@ -223,3 +223,62 @@ def get_timezones_as_string_list():
     return list
 
         
+LOCALES_LIST = [
+'ar_DZ.UTF-8',
+'ar_SA.UTF-8',
+'bg_BG.UTF-8',
+'zh_CN.UTF-8',
+'zh_HK.UTF-8',
+'zh_TW.UTF-8',
+'cs_CZ.UTF-8',
+'da_DK.UTF-8',
+'nl_NL.UTF-8',
+'en_GB.UTF-8',
+'en_US.UTF-8',
+'fi_FI.UTF-8',
+'fr_CA.UTF-8',
+'fr_FR.UTF-8',
+'de_DE.UTF-8',
+'el_GR.UTF-8',
+'iw_IL.UTF-8',
+'hu_HU.UTF-8',
+'is_IS.UTF-8',
+'it_IT.UTF-8',
+'ja_JP.UTF-8',
+'ko_KR.UTF-8',
+'no_NO.UTF-8',
+'pl_PL.UTF-8',
+'pt_BR.UTF-8',
+'pt_PT.UTF-8',
+'ro_RO.UTF-8',
+'ru_RU.UTF-8',
+'hr_HR.UTF-8',
+'sk_SK.UTF-8',
+'sl_SI.UTF-8',
+'es_AR.UTF-8',
+'es_BO.UTF-8',
+'es_CL.UTF-8',
+'es_CO.UTF-8',
+'es_CR.UTF-8',
+'es_EC.UTF-8',
+'es_SV.UTF-8',
+'es_GT.UTF-8',
+'es_MX.UTF-8',
+'es_NI.UTF-8',
+'es_PA.UTF-8',
+'es_PY.UTF-8',
+'es_PE.UTF-8',
+'es_PR.UTF-8',
+'es_ES.UTF-8',
+'es_UY.UTF-8',
+'es_VE.UTF-8',
+'sv_SE.UTF-8',
+'tr_TR.UTF-8'
+]
+
+def get_locales_as_list():
+    list = []
+    for l in LOCALES_LIST:
+        list.append(l)
+    return list
+

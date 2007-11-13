@@ -1,7 +1,7 @@
 from mako import runtime, filters, cache
 UNDEFINED = runtime.UNDEFINED
 _magic_number = 2
-_modified_time = 1194993881.329119
+_modified_time = 1194995285.3718009
 _template_filename='/home/rjocham/pylons/opt_inveneo/configuration-server-pylons/configurationserver/templates/admin/config_edit.mako'
 _template_uri='/admin/config_edit.mako'
 _template_cache=cache.Cache(__name__, _modified_time)
@@ -106,25 +106,25 @@ def render_body(context,**pageargs):
         context.write(u'</td>\n</tr>\n<tr>\n<td>Phone Home Checkin:</td>\n<td>')
         # SOURCE LINE 79
         context.write(unicode(h.text_field('phone_home_checkin', value=c.Config.phone_home_checkin)))
-        context.write(u'</td>\n</tr>\n<tr>\n<td>Locale:</td>\n<td>')
-        # SOURCE LINE 83
-        context.write(unicode(h.text_field('locale', value=c.Config.locale)))
-        context.write(u'</td>\n')
+        context.write(u'</td>\n</tr>\n<tr>\n<td>Locale:</td>\n<td>\n')
         # SOURCE LINE 84
+        context.write(unicode( h.select('locale', h.options_for_select(h.get_locales_as_list(), c.Config.locale)) ))
+        context.write(u'\n</td>\n')
+        # SOURCE LINE 86
         if c.Error and c.Error.has_key('locale'):
-            # SOURCE LINE 85
+            # SOURCE LINE 87
             context.write(u'     <td><b>')
             context.write(unicode(c.Error['locale']))
             context.write(u'<b></td>\n')
-        # SOURCE LINE 87
+        # SOURCE LINE 89
         context.write(u'</tr>\n<tr>\n<td>Single User Login:</td>\n<td>')
-        # SOURCE LINE 90
+        # SOURCE LINE 92
         context.write(unicode(h.check_box('single_user_login', checked=c.Config.single_user_login)))
         context.write(u'</td>\n</tr>\n</table>\n</p>\n')
-        # SOURCE LINE 94
+        # SOURCE LINE 96
         context.write(unicode(h.submit('Persist')))
         context.write(u'\n')
-        # SOURCE LINE 95
+        # SOURCE LINE 97
         context.write(unicode(h.end_form))
         context.write(u'\n')
         return ''

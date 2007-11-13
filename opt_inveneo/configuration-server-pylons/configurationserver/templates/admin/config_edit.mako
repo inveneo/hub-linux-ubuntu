@@ -80,7 +80,9 @@ ${ h.select('timezone', h.options_for_select(h.get_timezones_as_string_list(), c
 </tr>
 <tr>
 <td>Locale:</td>
-<td>${h.text_field('locale', value=c.Config.locale)}</td>
+<td>
+${ h.select('locale', h.options_for_select(h.get_locales_as_list(), c.Config.locale)) }
+</td>
 % if c.Error and c.Error.has_key('locale'):
      <td><b>${c.Error['locale']}<b></td>
 % endif
