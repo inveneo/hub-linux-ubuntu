@@ -72,8 +72,8 @@ sub convert_to_share_dir_name {
 sub share_exists {    
    my $name = shift; 
    if ( is_valid_share_name($name) ) { 
-      $conf_fn = get_share_conf_filename($name);    
-      $conf_fn2 = get_share_conf_filename($name . "_docs");
+      my $conf_fn = get_share_conf_filename($name);    
+      my $conf_fn2 = get_share_conf_filename($name . "_docs");
       return (( -e "$conf_fn" ) || ( -e "$conf_fn2")) ? 1 : 0; 
    } else {
       return 0;
