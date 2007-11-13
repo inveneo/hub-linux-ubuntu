@@ -14,7 +14,7 @@ class TestConfigurationServer(unittest.TestCase):
         self.selenium.start()
         self.selenium.open("/admin/config_remove/000000000000")
         
-    def test_get_501_when_server_is_off(self):   	
+    def test_get_501_on_get_config_when_server_is_off(self):   	
        	sel = self.selenium
 	sel.open("/admin/dashboard")
 	sel.wait_for_page_to_load("2500")
@@ -27,11 +27,11 @@ class TestConfigurationServer(unittest.TestCase):
     	req = conn.getresponse()
     	conn.close()
     	self.assertTrue(501, req.status)
-    	conn.request("GET", "/configuration/get_station_config/any_name_will_do")
+    	conn.request("GET", "/configuration/get_station_config/any_mac_will_do")
 	req = conn.getresponse()
 	conn.close()
 	self.assertTrue(501, req.status)
-    	conn.request("GET", "/configuration/get_station_initial_config/any_name_will_do")
+    	conn.request("GET", "/configuration/get_station_initial_config/any_mac_will_do")
 	req = conn.getresponse()
 	conn.close()
 	self.assertTrue(501, req.status)
@@ -42,11 +42,39 @@ class TestConfigurationServer(unittest.TestCase):
 	if (string.find(text, "NO") > 0):
 	    sel.click("//input[@value='Toggle']")
         
+    def test_get_404_on_save_config_when_server_is_off(self):   	
+       	sel = self.selenium
+	sel.open("/admin/dashboard")
+	sel.wait_for_page_to_load("2500")
+	text = sel.get_body_text()
+	if (string.find(text, "YES") > 0):
+	    sel.click("//input[@value='Toggle']")
+	    sel.wait_for_page_to_load("30000")
+    	conn = httplib.HTTPConnection(URL + ":" + PORT)
+    	conn.request("GET", "/configuration/save_user_config/any_name_will_do")
+    	req = conn.getresponse()
+    	conn.close()
+    	self.assertTrue(501, req.status)
+    	conn.request("GET", "/configuration/save_station_config/any_mac_will_do")
+	req = conn.getresponse()
+	conn.close()
+	self.assertTrue(501, req.status)
+    	conn.request("GET", "/configuration/save_station_initial_config/any_mac_will_do")
+	req = conn.getresponse()
+	conn.close()
+	self.assertTrue(501, req.status)
+	
+	sel.open("/admin/dashboard")
+	sel.wait_for_page_to_load("2500")
+	text = sel.get_body_text()
+	if (string.find(text, "NO") > 0):
+	    sel.click("//input[@value='Toggle']")
+
     def test_index_should_redirect_to_admin_dashboard(self):
         sel = self.selenium
         sel.open("/")  
         sel.wait_for_page_to_load(30000)
-        self.assertTrue(sel.get_location().endswith("/admin/dashboard"))
+        self.assertTrue(string.find(sel.get_location(), "/admin/dashboard") >= 0)
         
     def test_click_list_configurations_shows_list_site(self):
     	sel = self.selenium
