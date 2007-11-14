@@ -12,7 +12,22 @@ class TestConfigurationServer(unittest.TestCase):
         self.selenium = selenium("localhost", \
             4444, "*firefox", PROTOCOL + "://" + URL + ":" + PORT)
         self.selenium.start()
-        self.selenium.open("/admin/config_remove/000000000000")
+        self.selenium.open("/signin/signin")
+	self.selenium.type("username", "abc")
+	self.selenium.type("password", "abc")
+	self.selenium.click("commit")
+        self.selenium.wait_for_page_to_load("30000")
+        self.selenium.open("/admin/config_remove/000000000000")        	        
+        
+    def test_signout_should_redirect_to_signin_and_stay(self):
+       	sel = self.selenium
+	sel.open("/admin/dashboard")
+        sel.click("link=Signout")
+        sel.wait_for_page_to_load("30000")
+        self.assertTrue(string.find(sel.get_location(), "/signin/signout") >= 0)
+	sel.open("/admin/dashboard")
+        sel.wait_for_page_to_load("30000")
+        self.assertTrue(string.find(sel.get_location(), "/signin/signin") >= 0)
         
     def test_get_501_on_get_config_when_server_is_off(self):   	
        	sel = self.selenium
@@ -141,14 +156,16 @@ class TestConfigurationServer(unittest.TestCase):
         text = sel.get_body_text()
         self.assertTrue(string.find(text,"MAC address must be 12 hex lower case values, no separator") > 0) 
 
-    def test_should_proof_that_locale_complies_to_standard(self):
-    	sel = self.selenium
-        sel.open("/admin/config_add")
-        sel.type("locale", "Here")
-        sel.click("commit")
-        sel.wait_for_page_to_load("30000")
-        text = sel.get_body_text()
-        self.assertTrue(string.find(text,"Must be a valid locale string. E.g. en_UK.utf-8") > 0) 
+# right now locale comes from a combo box
+#
+#    def test_should_proof_that_locale_complies_to_standard(self):
+#    	sel = self.selenium
+#        sel.open("/admin/config_add")
+#        sel.type("locale", "Here")
+#        sel.click("commit")
+#        sel.wait_for_page_to_load("30000")
+#        text = sel.get_body_text()
+#        self.assertTrue(string.find(text,"Must be a valid locale string. E.g. en_UK.utf-8") > 0) 
 
     def test_switch_server_on_off(self):
     	sel = self.selenium
