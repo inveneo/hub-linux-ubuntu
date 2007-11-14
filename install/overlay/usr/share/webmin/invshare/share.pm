@@ -72,6 +72,8 @@ sub share_exists {
    my $name = shift; 
    if ( is_valid_share_name($name) ) { 
       my $conf_fn = get_share_conf_filename($name);    
+
+      # test for the user's personal share
       my $conf_fn2 = get_share_conf_filename($name . "_docs");
       return (( -e "$conf_fn" ) || ( -e "$conf_fn2")) ? 1 : 0; 
    } else {
@@ -141,7 +143,12 @@ sub delete_share {
     my $sharename = shift;
     if ( is_valid_share_name($sharename) ) {
         $conf_fn = get_share_conf_filename($sharename);
-        return unlink(get_share_conf_filename($sharename));
+        if ( !unlink(get_share_conf_filename($sharename)) ) {
+           # delete the user's personal share
+	   return unlink(get_share_conf_filename($sharename . "_docs"));
+	} else {
+	   return 1;        
+	}
     } else {
 	return 0;
     }

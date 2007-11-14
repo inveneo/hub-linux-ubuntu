@@ -36,11 +36,10 @@ if ($config{'url'}) {
 	print &ui_form_start("createshare.cgi");
 	print "<table>";
         input_box_row("sharename","Share Name");
-        print_row_title("Public",&ui_yesno_radio("public", ""));
-        print_row_title("- Or -");
 
         $users_list = get_users_list();
         @sel_list = ();
+	push @sel_list, [ "- Public Share -", "- Public Share -" ];
         foreach $user ( @{ $users_list } ) {
                 push @sel_list, [ @{ $user }[1], @{ $user }[1] ];
         }

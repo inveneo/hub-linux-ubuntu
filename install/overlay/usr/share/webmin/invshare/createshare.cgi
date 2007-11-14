@@ -11,7 +11,6 @@ use constant SHARE_STORAGE_PUB_DIR => "/srv/samba/public_shares/";
 use constant SHARE_STORAGE_PRI_DIR => "/srv/samba/user_shares/";
 
 $sharename=trim($in{'sharename'});
-$public=trim($in{'public'});
 $owner=trim($in{'owner'});
 
 	# validate input fields
@@ -33,7 +32,7 @@ $owner=trim($in{'owner'});
 
 	if ( $valid_input ) {            
             
-            if ( $public ) {
+            if ( $owner eq "- Public Share -" ) {
               $data_file= SHARE_TEMPLATE_DIR . "public.conf";
               $cmd = "sed \"s/\%SHARENAME\%/$sharename/g\" \"$data_file\" > \"$share_conf\"";
               mkdir(SHARE_STORAGE_PUB_DIR . convert_to_share_dir_name($sharename));
