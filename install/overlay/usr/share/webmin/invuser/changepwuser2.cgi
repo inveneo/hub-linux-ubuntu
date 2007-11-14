@@ -2,7 +2,7 @@
 # Either redirects to link.cgi, if a URL has been set, or asks for a URL
 
 require './invuser-lib.pl';
-require './validation.pl';
+require '../invlib/validation.pl';
 &ReadParse();
 
 $username=$in{'uname'};
