@@ -17,9 +17,9 @@ if ($config{'url'}) {
 	}
 	
 
-	@userlisttable = ("Share Name", "Owner", "Delete");
+	@sharetable= ("Share Name", "Owner", "Delete");
 	print "<h2>Network Shares</h2>\n";
-	print &ui_columns_start(\@userlisttable);
+	print &ui_columns_start(\@sharetable);
 
 
         @shares = get_share_names(SHARE_CONF_DIR);  
@@ -27,8 +27,8 @@ if ($config{'url'}) {
 			$column1 = $share; 
                         $column2 = get_share_owner($share);
 			$column3 = "<a href='delshare.cgi?sharename=" . urlize($share) . "'>Delete</a>";
-			@usertablerow = ($column1, $column2, $column3);
-			print &ui_columns_row(\@usertablerow);
+			@sharetablerow= ($column1, $column2, $column3);
+			print &ui_columns_row(\@sharetablerow);
 	}
 	print &ui_columns_end();
 	print "<br>\n";

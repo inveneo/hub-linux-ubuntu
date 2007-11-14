@@ -5,7 +5,6 @@ require "./util.pl";
 
 use constant SHARE_CONF_DIR => "/etc/inveneo/samba/shares.d";
 
-
 sub slurp_contents {
     local( $/ );
     my $fn = shift;    
@@ -122,10 +121,11 @@ sub reload_samba_settings {
 
     open (FH,"/etc/init.d/samba reload |");
     $result = <FH>;
+    close(FH);
+    
     if ( $result =~ m/No process in pidfile/ ) {
        system("/etc/init.d/samba start");
     } 
-    close(FH);
      
 }
 

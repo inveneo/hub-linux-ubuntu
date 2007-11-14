@@ -2,7 +2,7 @@
 # Either redirects to link.cgi, if a URL has been set, or asks for a URL
 use share;
 require './invshare-lib.pl';
-require './validation.pl';
+require '../invlib/validation.pl';
 &ReadParse();
 
 use constant SHARE_CONF_DIR => "/etc/inveneo/samba/shares.d/";
@@ -15,7 +15,7 @@ $public=trim($in{'public'});
 $owner=trim($in{'owner'});
 
 	# validate input fields
-	&error_setup('Failed to create user');
+	&error_setup('Failed to create the share');
 	$valid_input = 1;
         @errors = ();
 
