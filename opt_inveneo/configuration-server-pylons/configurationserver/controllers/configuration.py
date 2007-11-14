@@ -3,6 +3,7 @@ import paste
 import socket
 
 from configurationserver.lib.base import *
+from configurationserver.controllers.authentication import *
 
 log = logging.getLogger(__name__)
 
