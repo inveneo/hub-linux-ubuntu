@@ -9,6 +9,24 @@ log = logging.getLogger(__name__)
 
 class AdminController(BaseController):
 
+    def __before__(self, action, **params):
+        log.debug("before check " + str(session.get('user')))
+        user = session.get('user')
+        if user:
+            request.environ['REMOTE_USER'] = user
+
+    def signin(self):
+        return render('/admin/signin.mako')
+
+    def signin_process(self):
+        if len(request.params) > 1 and \
+         request.params['password'] == request.params['username']:
+            session['user'] = request.params['username']
+            session.save()
+            return redirect_to('/admin/dashboard')
+        else:
+            return redirect_to('/admin/signin')
+
     ###########################
     # helper methods
     ###########################
