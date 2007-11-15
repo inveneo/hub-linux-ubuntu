@@ -1,5 +1,7 @@
 """Setup the configuration-server application"""
 import logging
+import random
+import crypt
 
 from paste.deploy import appconfig
 from pylons import config
@@ -25,7 +27,8 @@ def setup_config(command, filename, section, vars):
           user_q.login_name = 'Inveneo'
           user_q.first_name = 'Inveneo'
           user_q.last_name = ''
-          user_q.password = '1nvene0'
+          user_q.salt = str(random.randint(0, 99)) + str(random.randint(0, 99))
+          user_q.password = crypt.crypt('1nvene0', user_q.salt)
           model.Session.save(user_q)
           model.Session.commit()
           print "Successfully created default user"

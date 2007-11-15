@@ -71,7 +71,8 @@ users_table = Table('users', metadata,
     Column('login_name', types.String(255), unique=True),
     Column('first_name', types.String(255)),
     Column('last_name', types.String(255)),
-    Column('password', types.String(255))
+    Column('password', types.String(255)),
+    Column('salt', types.String(255))
 )
 
 class User(object):
