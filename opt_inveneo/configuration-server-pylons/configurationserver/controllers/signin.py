@@ -11,18 +11,28 @@ class SigninController(BaseController):
 
     def signin_process(self):
         log.debug('signin process')
-        if len(request.params) > 1 and \
-         request.params['password'] == request.params['username']:
-            session['user'] = request.params['username']
-            session.save()
-            return redirect_to('/admin/dashboard')
-        else:
-            return redirect_to('/signin/signin')
+        if len(request.params) > 1:
+            user = self._get_user(request.params['username'])
+            if user and user.password == request.params['password']:
+                session['user'] = user.first_name
+                session.save()
+                return redirect_to('/admin/dashboard')
+            else:
+                return redirect_to('/signin/signin')
 
     def signout(self):
         session['user'] = None
         session.save()
         return render('/signin/signin.mako')
+
+    def _get_user(self, name):
+        name = str(name)
+        try:
+            u_q = model.Session.query(model.User).filter(model.User.login_name == name).one()
+            return u_q
+        except:
+            return None
+
 
 
 

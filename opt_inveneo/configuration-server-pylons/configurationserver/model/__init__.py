@@ -43,7 +43,7 @@ mapper(Config, configs_table)
 servers_table = Table('servers', metadata,
     Column('id', types.Integer, primary_key=True),
     Column('name', types.String(255), default="Inveneon"),
-    Column('server_on', types.Boolean, default=True),
+    Column('server_on', types.Boolean, default=True)
 )
 
 class Server(object):
@@ -56,7 +56,7 @@ mapper(Server, servers_table)
 stations_table = Table('stations', metadata,
     Column('id', types.Integer, primary_key=True),
     Column('mac', types.String(255), default="Inveneon"),
-    Column('station_on', types.Boolean, default=True),
+    Column('station_on', types.Boolean, default=True)
 )
 
 class Station(object):
@@ -65,11 +65,17 @@ class Station(object):
     
 mapper(Station, stations_table)
 
-# timezones table
-timezones_table = Table('timezones', metadata,
+# users table
+users_table = Table('users', metadata,
     Column('id', types.Integer, primary_key=True),
-    Column('name', types.String(255), default='GMT'),
-    Column('gmt_offset', types.Integer, default='0'),
+    Column('login_name', types.String(255), unique=True),
+    Column('first_name', types.String(255)),
+    Column('last_name', types.String(255)),
+    Column('password', types.String(255))
 )
 
-
+class User(object):
+    def __str__(self):
+        return self.title
+    
+mapper(User, users_table)
