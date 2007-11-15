@@ -39,7 +39,7 @@ class AdminController(AuthenticationController):
     ###########################
     # instance  helper methods
     ###########################    
-    def get_config_entry_by_id_or_mac_or_create(self, key):
+    def _get_config_entry_by_id_or_mac_or_create(self, key):
         key = str(key)
 
         log.debug('Key: ' + key)
@@ -60,7 +60,7 @@ class AdminController(AuthenticationController):
 
         return q
        
-    def validate_configuration(self, config, is_edit):
+    def _validate_configuration(self, config, is_edit):
         log.debug('config validation')
         error = {}
 
@@ -84,13 +84,13 @@ class AdminController(AuthenticationController):
 
         return error
 
-    def copy_reset_config(self, dir):
+    def _copy_reset_config(self, dir):
         for f in os.listdir(dir):
             if str(f).endswith('.tar.gz'):
                 log.debug(dir + '../blank.tar.gz' + ' overwrites  ' + f)
                 shutil.copyfile(dir + '../blank.tar.gz', dir + '/' + f)
 
-    def get_inveneon_server(self):
+    def _get_inveneo_server(self):
         return model.Session.query(model.Server).filter(model.Server.name == 'Inveneon').one()
 
     ###########################
@@ -100,12 +100,12 @@ class AdminController(AuthenticationController):
         return redirect_to('/admin/dashboard')
 
     def dashboard(self):
-        c.Server = self.get_inveneon_server()
+        c.Server = self._get_inveneo_server()
 
         return render('/admin/dashboard.mako')
 
     def set_server_on(self, id):
-        q = self.get_inveneon_server()
+        q = self._get_inveneo_server()
         q.server_on = not q.server_on
 
         model.Session.update(q)
@@ -114,14 +114,14 @@ class AdminController(AuthenticationController):
         return redirect_to('/admin/dashboard')
 
     def reset_client_config(self, id):
-        q = self.get_config_entry_by_id_or_mac_or_create(id)
+        q = self._get_config_entry_by_id_or_mac_or_create(id)
         q = self.Get_initial_config(q)
 
         model.Session.update(q)
         model.Session.commit()
 
-        self.copy_reset_config(h.get_config_dir_station())
-        self.copy_reset_config(h.get_config_dir_user())
+        self._copy_reset_config(h.get_config_dir_station())
+        self._copy_reset_config(h.get_config_dir_user())
 
         return redirect_to('/admin/dashboard')
 
@@ -129,7 +129,7 @@ class AdminController(AuthenticationController):
         return self.edit(DEADDEADBEEF)
 
     def edit(self, id):
-        c.Config = self.get_config_entry_by_id_or_mac_or_create(id)
+        c.Config = self._get_config_entry_by_id_or_mac_or_create(id)
         c.Edit = True
         return render('/admin/config_edit.mako')
 
@@ -155,7 +155,7 @@ class AdminController(AuthenticationController):
         return render('/admin/config_edit.mako')
 
     def config_edit_process(self, id):
-        newconfig_q = self.get_config_entry_by_id_or_mac_or_create(id)
+        newconfig_q = self._get_config_entry_by_id_or_mac_or_create(id)
         is_edit = False
 
         try:
@@ -178,7 +178,7 @@ class AdminController(AuthenticationController):
         newconfig_q.locale = cgi.escape(request.POST['locale']) 
         newconfig_q.single_user_login = h.is_checkbox_set(request, 'single_user_login', log)
 
-        error = self.validate_configuration(newconfig_q, is_edit)
+        error = self._validate_configuration(newconfig_q, is_edit)
 
         if len(error) == 0:
             model.Session.save(newconfig_q)

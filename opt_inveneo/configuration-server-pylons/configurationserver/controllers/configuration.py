@@ -12,7 +12,7 @@ class ConfigurationController(BaseController):
     ###########################
     # instance  helper methods
     ###########################    
-    def get_tmp_config_file_path(self, id, category):
+    def _get_tmp_config_file_path(self, id, category):
         log.debug('get tmp config file for id: ' + id + ' and category ' + category )
 
         local_station_file = h.get_config_dir_for(category) + id + '.tar.gz'
@@ -24,7 +24,7 @@ class ConfigurationController(BaseController):
             log.info('config file found')
             return h.copy_to_temp_file(local_station_file, log)
        
-    def return_config_file(self, name, category):
+    def _return_config_file(self, name, category):
         name = str(name)
         category = str(category)
 
@@ -34,7 +34,7 @@ class ConfigurationController(BaseController):
             log.error('Need a valid user name')
             return abort(404)
 
-        tmp_config_file = self.get_tmp_config_file_path(name, category)
+        tmp_config_file = self._get_tmp_config_file_path(name, category)
 
         if tmp_config_file == NOT_FOUND:
             log.error('No config file found')
@@ -43,7 +43,7 @@ class ConfigurationController(BaseController):
         fapp = paste.fileapp.FileApp(tmp_config_file)
         return fapp(request.environ, self.start_response)
 
-    def save_config_file(self, request, name, category):
+    def _save_config_file(self, request, name, category):
         name = str(name)
         category = str(category)
 
@@ -71,7 +71,7 @@ class ConfigurationController(BaseController):
                               tmp_dest_file)
                 
 
-    def create_db_config_map(self, q):
+    def _create_db_config_map(self, q):
         DEFAULT_DB_ATTRS['INV_TIME_ZONE'] =  str(q.timezone)
         DEFAULT_DB_ATTRS['INV_NTP_ON'] = str(q.ntp_on)
         DEFAULT_DB_ATTRS['INV_NTP_SERVERS'] = str(q.ntp_servers)
@@ -90,14 +90,14 @@ class ConfigurationController(BaseController):
 
         return DEFAULT_DB_ATTRS
 
-    def create_dyn_config_map(self, mac):
+    def _create_dyn_config_map(self, mac):
         DEFAULT_DYN_ATTRS['INV_CONFIG_HOST'] =  socket.gethostname()
         DEFAULT_DYN_ATTRS['INV_CONFIG_HOST_TYPE'] =  'hub'
         DEFAULT_DYN_ATTRS['INV_HOSTNAME'] =  'station-' + mac
 
         return DEFAULT_DYN_ATTRS
 
-    def return_initial_config_file(self, config_map):
+    def _return_initial_config_file(self, config_map):
         log.debug('return initial config file for name: ' + config_map['INV_HOSTNAME'])
 
         tmp_file_path = h.tmp_file_name(log)
@@ -115,13 +115,13 @@ class ConfigurationController(BaseController):
         fapp = paste.fileapp.FileApp(tmp_file_path)
         return fapp(request.environ, self.start_response)
  
-    def is_server_on(self):
+    def _is_server_on(self):
         q = model.Session.query(model.Server).filter(model.Server.name == 'Inveneon').one()
         
         log.debug('Checking if configuration-server is on: ' + str(q.server_on))
         return q.server_on
 
-    def is_station_on(self, mac):
+    def _is_station_on(self, mac):
         ret_value = False
         try:
             q = model.Session.query(model.Station).filter(model.Station.mac == mac).one()
@@ -132,7 +132,7 @@ class ConfigurationController(BaseController):
         log.debug('Checking if station is on: ' + str(ret_value))
         return ret_value
 
-    def add_station_mac_to_list_if_new(self, mac):
+    def _add_station_mac_to_list_if_new(self, mac):
         try:
             q = model.Session.query(model.Station).filter(model.Station.mac == mac).one()
         except:            
@@ -148,25 +148,25 @@ class ConfigurationController(BaseController):
         return
 
     def get_user_config(self, id):
-        if not self.is_server_on():
+        if not self._is_server_on():
             return abort(501)
 
         log.debug('get user config for: ' + str(id))
-        return self.return_config_file(id, 'user')
+        return self._return_config_file(id, 'user')
 
     def get_station_config(self, id):
-        if not self.is_server_on():
+        if not self._is_server_on():
             return abort(501)
-        if not self.is_station_on(id):
+        if not self._is_station_on(id):
             return abort(404)
 
         log.debug('get station config for: ' + str(id))
-        return self.return_config_file(id, 'station')
+        return self._return_config_file(id, 'station')
 
     def get_station_initial_config(self, id):
-        if not self.is_server_on():
+        if not self._is_server_on():
             return abort(501)
-        if not self.is_station_on(id):
+        if not self._is_station_on(id):
             return abort(404)
 
         mac_address = str(id)
@@ -177,7 +177,7 @@ class ConfigurationController(BaseController):
             log.error('Need a valid station MAC address')
             return abort(404)
 
-        map = self.create_dyn_config_map(mac_address)
+        map = self._create_dyn_config_map(mac_address)
         initialconfig_q = model.Session.query(model.Config).filter(model.Config.mac == mac_address).one()
 
         log.info('type : ' + str(type(initialconfig_q)))
@@ -185,31 +185,31 @@ class ConfigurationController(BaseController):
         if str(type(initialconfig_q)) == NONE_TYPE: # this code stinks
             map.update(DEFAULT_DB_ATTRS)
         else:
-            map.update(self.create_db_config_map(initialconfig_q))
+            map.update(self._create_db_config_map(initialconfig_q))
 
-        return self.return_initial_config_file(map)
+        return self._return_initial_config_file(map)
 
     def save_user_config(self, id):
-        if not self.is_server_on():
+        if not self._is_server_on():
             return abort(404)
 
         log.debug('save user config for: ' + str(id))
-        return self.save_config_file(request, id, 'user')
+        return self._save_config_file(request, id, 'user')
 
     def save_station_config(self, id):
-        if not self.is_server_on():
+        if not self._is_server_on():
             return abort(404)
-        if not self.is_station_on(id):
+        if not self._is_station_on(id):
             return abort(501)
 
         log.debug('save station config for: ' + str(id))
-        self.add_station_mac_to_list_if_new(id)
-        return self.save_config_file(request, id, 'station')
+        self._add_station_mac_to_list_if_new(id)
+        return self._save_config_file(request, id, 'station')
 
     def save_station_initial_config(self, id):
-        if not self.is_server_on():
+        if not self._is_server_on():
             return abort(404)
-        if not self.is_station_on(id):
+        if not self._is_station_on(id):
             return abort(501)
 
         mac_address = str(id)
