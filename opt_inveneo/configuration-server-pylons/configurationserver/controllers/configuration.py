@@ -129,7 +129,7 @@ class ConfigurationController(BaseController):
         except:
             pass
      
-        log.debug('Checking if station is on: ' + str(ret_value))
+        log.debug('Checking if station is on for mac ' + str(mac) + ' -- ' + str(ret_value))
         return ret_value
 
     def _add_station_mac_to_list_if_new(self, mac):
