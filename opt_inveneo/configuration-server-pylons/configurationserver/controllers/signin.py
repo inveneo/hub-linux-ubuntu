@@ -16,7 +16,10 @@ class SigninController(BaseController):
             user = self._get_user(request.params['username'])
             if self._user_credetintials_ok(user):
                 return redirect_to('/admin/dashboard')
-        return redirect_to('/signin/signin')
+        error = {}
+        error['signin'] = 'Username and password combination are not valid.'
+        c.Error = error
+        return render('/signin/signin.mako')
 
     def signout(self):
         session['user'] = None
