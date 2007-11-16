@@ -116,7 +116,7 @@ class ConfigurationController(BaseController):
         return fapp(request.environ, self.start_response)
  
     def _is_server_on(self):
-        q = model.Session.query(model.Server).filter(model.Server.name == 'Inveneon').one()
+        q = model.Session.query(model.Server).filter(model.Server.name == 'Inveneo').one()
         
         log.debug('Checking if configuration-server is on: ' + str(q.server_on))
         return q.server_on
