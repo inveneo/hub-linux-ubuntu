@@ -1,4 +1,4 @@
-<%include file="../header.html"/>
+<%include file="../header.mako"/>
 <h3>Set Initial Configuration</h3>
 ${h.form(h.url(controller='admin', action='config_edit_process', id=c.Config.id), method='post')}
 <table>

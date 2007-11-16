@@ -1,3 +1,4 @@
+<%include file="../header.mako"/>
 <h3>Login</h3>
 ${h.form(h.url(controller='signin', action='signin_process'), method='post')}
 <table>
@@ -10,5 +11,6 @@ ${h.form(h.url(controller='signin', action='signin_process'), method='post')}
 <td>${h.password_field('password')}</td>
 </tr>
 </table>
+<p/>
 ${h.submit('Login')}
 ${h.end_form()}

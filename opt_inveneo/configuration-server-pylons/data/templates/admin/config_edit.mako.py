@@ -1,7 +1,7 @@
 from mako import runtime, filters, cache
 UNDEFINED = runtime.UNDEFINED
 _magic_number = 2
-_modified_time = 1195000748.977036
+_modified_time = 1195094301.514677
 _template_filename='/home/rjocham/pylons/opt_inveneo/configuration-server-pylons/configurationserver/templates/admin/config_edit.mako'
 _template_uri='/admin/config_edit.mako'
 _template_cache=cache.Cache(__name__, _modified_time)
@@ -16,7 +16,7 @@ def render_body(context,**pageargs):
         h = context.get('h', UNDEFINED)
         c = context.get('c', UNDEFINED)
         # SOURCE LINE 1
-        runtime._include_file(context, u'../header.html', _template_uri)
+        runtime._include_file(context, u'../header.mako', _template_uri)
         context.write(u'\n<h3>Set Initial Configuration</h3>\n')
         # SOURCE LINE 3
         context.write(unicode(h.form(h.url(controller='admin', action='config_edit_process', id=c.Config.id), method='post')))

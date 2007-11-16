@@ -1,4 +1,4 @@
-<%include file="../header.html"/>
+<%include file="../header.mako"/>
 <h3>Existing Station Configurations</h3>
 ${h.form(h.url(controller='configuration', action='set_all_stations_on', all_on='True'), method='post')}
 <input type="submit" value="All On" class="button" />

@@ -1,4 +1,4 @@
-<%include file="../header.html"/>
+<%include file="../header.mako"/>
 <h2>Dashboard for ${c.Server.name} Server</h2>
 </p>
 Server On:
