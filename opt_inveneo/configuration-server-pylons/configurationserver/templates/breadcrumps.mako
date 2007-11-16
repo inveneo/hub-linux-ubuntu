@@ -1,0 +1,1 @@
+<h4><a href="/admin/dashboard">Dashboard</a>&nbsp;&nbsp;&nbsp;<a href="/signin/signout">Signout</a>&nbsp;(${session['user']})</h4>
