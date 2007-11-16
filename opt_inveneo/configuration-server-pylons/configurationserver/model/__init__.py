@@ -52,7 +52,7 @@ class Server(object):
     
 mapper(Server, servers_table)
 
-# servers table
+# stations table
 stations_table = Table('stations', metadata,
     Column('id', types.Integer, primary_key=True),
     Column('mac', types.String(255)),

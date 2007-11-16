@@ -1,7 +1,7 @@
 from mako import runtime, filters, cache
 UNDEFINED = runtime.UNDEFINED
 _magic_number = 2
-_modified_time = 1195099026.8212931
+_modified_time = 1195106533.409163
 _template_filename='/home/rjocham/pylons/opt_inveneo/configuration-server-pylons/configurationserver/templates/admin/config_edit.mako'
 _template_uri='/admin/config_edit.mako'
 _template_cache=cache.Cache(__name__, _modified_time)
@@ -117,7 +117,7 @@ def render_body(context,**pageargs):
         context.write(u'</tr>\n<tr>\n<td>Single User Login:</td>\n<td>')
         # SOURCE LINE 89
         context.write(unicode(h.check_box('single_user_login', checked=c.Config.single_user_login)))
-        context.write(u'</td>\n</tr>\n</table>\n</p>\n')
+        context.write(u'</td>\n</tr>\n</table>\n<p/>\n')
         # SOURCE LINE 93
         context.write(unicode(h.submit('Persist')))
         context.write(u'\n')

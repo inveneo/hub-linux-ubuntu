@@ -18,10 +18,17 @@ def setup_config(command, filename, section, vars):
      print "Creating tables"
      model.metadata.create_all(bind=config['pylons.g'].sa_engine)
      print "Successfully setup"
+     create_default_user()
+     create_default_station()
+     create_default_server()
+
+
+def create_default_user():
+     from configurationserver import model
      print "Creating default user if not existing"
      try:
-        model.Session.query(model.User).filter(model.User.login_name == 'Inveneo').one()
-        print "User already existing"
+          model.Session.query(model.User).filter(model.User.login_name == 'Inveneo').one()
+          print "User already existing"
      except:
           user_q = model.User()
           user_q.login_name = 'Inveneo'
@@ -33,4 +40,27 @@ def setup_config(command, filename, section, vars):
           model.Session.commit()
           print "Successfully created default user"
 
+def create_default_station():
+     from configurationserver import model
+     from configurationserver.controllers import admin
+     print "Creating default 'DEADDEADBEEF' station"
+     try:
+          model.Session.query(model.Config).filter(model.Config.mac == 'deaddeadbeef').one()
+          print "Station already existing"
+     except:
+          newconfig_q = admin.Get_initial_config()          
+          model.Session.save(newconfig_q)
+          model.Session.commit()
+          print "Successfully created default station"
 
+def create_default_server():
+     from configurationserver import model
+     print "Creating default 'Inveneo' server"
+     try:
+          model.Session.query(model.Server).filter(model.Server.name == 'Inveneo').one()
+          print "Server already existing"
+     except:
+          s_q = model.Server()
+          model.Session.save(s_q)
+          model.Session.commit()
+          print "Successfully created default server"

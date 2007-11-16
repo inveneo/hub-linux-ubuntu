@@ -6,7 +6,7 @@ ${h.end_form()}
 ${h.form(h.url(controller='configuration', action='set_all_stations_on', all_on='False'), method='post')}
 <input type="submit" value="All Off" class="button" />
 ${h.end_form()}
-</p>
+<p/>
 </br>
 % for station in c.Stations:
 <div class="content">
@@ -21,6 +21,9 @@ NO
 ${h.form(h.url(controller='configuration', action='set_station_on', id=station.mac), method='post')}
 <input type="submit" value="Toggle" class="button" />
 ${h.end_form()}
-</p>
+${h.form(h.url(controller='admin', action='station_remove', id=station.mac), method='post')}
+<input type="submit" value="Remove" class="button" onclick="return confirmSubmit()"/>
+${h.end_form()}
+<p/>
 </div>
 % endfor

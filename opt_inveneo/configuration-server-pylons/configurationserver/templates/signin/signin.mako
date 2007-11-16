@@ -1,6 +1,10 @@
 <%include file="../header.mako"/>
 <h3>Login</h3>
 ${h.form(h.url(controller='signin', action='signin_process'), method='post')}
+% if c.Error and c.Error.has_key('signin'):
+<b>${c.Error['signin']}<b>
+<p/>
+% endif
 <table>
 <tr>
 <td>Username:</td>

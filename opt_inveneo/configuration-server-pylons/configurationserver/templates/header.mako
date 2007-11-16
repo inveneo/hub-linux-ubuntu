@@ -4,3 +4,15 @@
 %if 'user' in session.keys() and session['user']:
 <%include file="breadcrumps.mako"/>
 %endif
+
+
+<script language="JavaScript">
+function confirmSubmit()
+{
+var agree=confirm("Are you sure you wish to continue?");
+if (agree)
+	return true ;
+else
+	return false ;
+}
+</script>

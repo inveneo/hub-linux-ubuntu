@@ -27,9 +27,7 @@ class ConfigurationController(BaseController):
     def _return_config_file(self, name, category):
         name = str(name)
         category = str(category)
-
         log.debug('return config file for name: ' + name + ' and category ' + category )
-
         if name == NONE:
             log.error('Need a valid user name')
             return abort(404)
@@ -41,18 +39,35 @@ class ConfigurationController(BaseController):
             return abort(404)
 
         fapp = paste.fileapp.FileApp(tmp_config_file)
+        log.debug("=== End return config file ===")
+        return fapp(request.environ, self.start_response)
+
+    def _return_initial_config_file(self, config_map):
+        log.debug('return initial config file for name: ' + config_map['INV_HOSTNAME'])
+
+        tmp_file_path = h.tmp_file_name(log)
+        output = open(tmp_file_path, 'a+')
+        properties = []
+
+        properties.append('#Initial Configuration\n')
+
+        for key, value in config_map.iteritems():
+            properties.append(str(key) + '="' + h.escape_quotes(str(value)) + '"\n')
+ 
+        output.writelines(properties)
+        output.close()
+
+        fapp = paste.fileapp.FileApp(tmp_file_path)
+        log.debug("=== End return initial config file ===")
         return fapp(request.environ, self.start_response)
 
     def _save_config_file(self, request, name, category):
         name = str(name)
         category = str(category)
-
-        log.debug('return config file for name: ' + name + ' and category ' + category )
-        
+        log.debug('save config file for name: ' + name + ' and category ' + category )
         if not h.does_parameter_exist(request, 'config_file', log):
             log.error('No config file found')
             return abort(400)
-
         config_file = request.POST['config_file']
         tmp_dest_file = h.tmp_file_name(log)
 
@@ -66,10 +81,9 @@ class ConfigurationController(BaseController):
                 if not byte: break
                 out.write(byte)
             out.close()
-
         h.copy_from_temp_file(h.get_config_dir_for(category) + name + '.tar.gz',
                               tmp_dest_file)
-                
+        log.debug("=== End save config file ===")
 
     def _create_db_config_map(self, q):
         DEFAULT_DB_ATTRS['INV_TIME_ZONE'] =  str(q.timezone)
@@ -96,24 +110,6 @@ class ConfigurationController(BaseController):
         DEFAULT_DYN_ATTRS['INV_HOSTNAME'] =  'station-' + mac
 
         return DEFAULT_DYN_ATTRS
-
-    def _return_initial_config_file(self, config_map):
-        log.debug('return initial config file for name: ' + config_map['INV_HOSTNAME'])
-
-        tmp_file_path = h.tmp_file_name(log)
-        output = open(tmp_file_path, 'a+')
-        properties = []
-
-        properties.append('#Initial Configuration\n')
-
-        for key, value in config_map.iteritems():
-            properties.append(str(key) + '="' + h.escape_quotes(str(value)) + '"\n')
- 
-        output.writelines(properties)
-        output.close()
-
-        fapp = paste.fileapp.FileApp(tmp_file_path)
-        return fapp(request.environ, self.start_response)
  
     def _is_server_on(self):
         q = model.Session.query(model.Server).filter(model.Server.name == 'Inveneo').one()
@@ -148,6 +144,7 @@ class ConfigurationController(BaseController):
         return
 
     def get_user_config(self, id):
+        log.debug("=== Start get user config file ===")
         if not self._is_server_on():
             return abort(501)
 
@@ -155,6 +152,7 @@ class ConfigurationController(BaseController):
         return self._return_config_file(id, 'user')
 
     def get_station_config(self, id):
+        log.debug("=== Start get station config file ===")
         if not self._is_server_on():
             return abort(501)
         if not self._is_station_on(id):
@@ -164,6 +162,7 @@ class ConfigurationController(BaseController):
         return self._return_config_file(id, 'station')
 
     def get_station_initial_config(self, id):
+        log.debug("=== Start get station initial config file ===")
         if not self._is_server_on():
             return abort(501)
         if not self._is_station_on(id):
@@ -190,6 +189,7 @@ class ConfigurationController(BaseController):
         return self._return_initial_config_file(map)
 
     def save_user_config(self, id):
+        log.debug("=== Start save user config file ===")
         if not self._is_server_on():
             return abort(404)
 
@@ -197,16 +197,18 @@ class ConfigurationController(BaseController):
         return self._save_config_file(request, id, 'user')
 
     def save_station_config(self, id):
+        log.debug("=== Start save station config file ===")
         if not self._is_server_on():
             return abort(404)
+        self._add_station_mac_to_list_if_new(id)
         if not self._is_station_on(id):
             return abort(501)
 
         log.debug('save station config for: ' + str(id))
-        self._add_station_mac_to_list_if_new(id)
         return self._save_config_file(request, id, 'station')
 
     def save_station_initial_config(self, id):
+        log.debug("=== Start save station initial config file ===")
         if not self._is_server_on():
             return abort(404)
         if not self._is_station_on(id):
@@ -291,5 +293,4 @@ class ConfigurationController(BaseController):
             model.Session.commit()
 
         return redirect_to('/admin/list_station_configurations')
-
         

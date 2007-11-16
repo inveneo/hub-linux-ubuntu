@@ -29,12 +29,15 @@ def get_config_dir_user():
 def get_config_dir_for(category):
     return 'saved-configuration/' + category + '/'
 
+def toggle_boolean(flag):
+    return not bool(flag)
+
 def does_parameter_exist(request, name, log = logging.getLogger(__name__)):
     if not name in request.params.keys():
-        log.error('Parameter is not set: ' + name)
+        log.error('Parameter is NOT set: ' + name)
         return False
     else:
-        log.info('Parameter is set: ' + name)
+        log.info('Parameter IS set: ' + name)
         return True
 
 def does_file_exist(file_path, log = logging.getLogger(__name__)):

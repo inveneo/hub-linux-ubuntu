@@ -8,33 +8,30 @@ from configurationserver.controllers.authentication import *
 
 log = logging.getLogger(__name__)
 
+def Get_initial_config(config = model.Config()):
+    config.mac = 'deaddeadbeef'
+    config.timezone = DEFAULT_DB_ATTRS['INV_TIME_ZONE']
+    config.ntp_on = DEFAULT_DB_ATTRS['INV_NTP_ON']
+    config.ntp_servers = DEFAULT_DB_ATTRS['INV_NTP_SERVERS']
+    config.proxy_on = DEFAULT_DB_ATTRS['INV_PROXY_ON']
+    config.http_proxy = DEFAULT_DB_ATTRS['INV_HTTP_PROXY']
+    config.http_proxy_port = DEFAULT_DB_ATTRS['INV_HTTP_PROXY_PORT']
+    config.https_proxy = DEFAULT_DB_ATTRS['INV_HTTPS_PROXY']
+    config.https_proxy_port = DEFAULT_DB_ATTRS['INV_HTTPS_PROXY_PORT']
+    config.ftp_proxy = DEFAULT_DB_ATTRS['INV_FTP_PROXY']
+    config.ftp_proxy_port = DEFAULT_DB_ATTRS['INV_FTP_PROXY_PORT']
+    config.phone_home_on = DEFAULT_DB_ATTRS['INV_PHONE_HOME_ON']
+    config.phone_home_reg = DEFAULT_DB_ATTRS['INV_PHONE_HOME_REG']
+    config.phone_home_checkin = DEFAULT_DB_ATTRS['INV_PHONE_HOME_CHECKIN']
+    config.locale = DEFAULT_DB_ATTRS['INV_LOCALE']
+    config.single_user_login = DEFAULT_DB_ATTRS['INV_SINGLE_USER_LOGIN']
+    return config
+
 class AdminController(AuthenticationController):
 
     ###########################
     # helper methods
     ###########################
-    def Get_initial_config(config = model.Config()):
-        config.mac = 'deaddeadbeef'
-        config.timezone = DEFAULT_DB_ATTRS['INV_TIME_ZONE']
-        config.ntp_on = DEFAULT_DB_ATTRS['INV_NTP_ON']
-        config.ntp_servers = DEFAULT_DB_ATTRS['INV_NTP_SERVERS']
-        config.proxy_on = DEFAULT_DB_ATTRS['INV_PROXY_ON']
-        config.http_proxy = DEFAULT_DB_ATTRS['INV_HTTP_PROXY']
-        config.http_proxy_port = DEFAULT_DB_ATTRS['INV_HTTP_PROXY_PORT']
-        config.https_proxy = DEFAULT_DB_ATTRS['INV_HTTPS_PROXY']
-        config.https_proxy_port = DEFAULT_DB_ATTRS['INV_HTTPS_PROXY_PORT']
-        config.ftp_proxy = DEFAULT_DB_ATTRS['INV_FTP_PROXY']
-        config.ftp_proxy_port = DEFAULT_DB_ATTRS['INV_FTP_PROXY_PORT']
-        config.phone_home_on = DEFAULT_DB_ATTRS['INV_PHONE_HOME_ON']
-        config.phone_home_reg = DEFAULT_DB_ATTRS['INV_PHONE_HOME_REG']
-        config.phone_home_checkin = DEFAULT_DB_ATTRS['INV_PHONE_HOME_CHECKIN']
-        config.locale = DEFAULT_DB_ATTRS['INV_LOCALE']
-        config.single_user_login = DEFAULT_DB_ATTRS['INV_SINGLE_USER_LOGIN']
-
-        return config
-
-    Get_initial_config = staticmethod(Get_initial_config)
-    
 
     ###########################
     # instance  helper methods
@@ -105,8 +102,15 @@ class AdminController(AuthenticationController):
         return render('/admin/dashboard.mako')
 
     def set_server_on(self, id):
+        log.debug('switching server on or off (no "on" parameter is toggle')
         q = self._get_inveneo_server()
-        q.server_on = not q.server_on
+
+        if not h.does_parameter_exist(request, 'on'):
+            log.debug('toggling')
+            q.server_on = h.toggle_boolean(q.server_on)
+        else:
+            log.debug('setting on: ' + request.params['on'])
+            q.server_on = request.params['on'] == 'True'
 
         model.Session.update(q)
         model.Session.commit()
@@ -114,6 +118,7 @@ class AdminController(AuthenticationController):
         return redirect_to('/admin/dashboard')
 
     def reset_client_config(self, id):
+        log.debug('reseting all configurations for clients and stations')
         q = self._get_config_entry_by_id_or_mac_or_create(id)
         q = self.Get_initial_config(q)
 
@@ -194,6 +199,22 @@ class AdminController(AuthenticationController):
     def config_edit_done(self):
         return redirect_to('/admin/list_initial_configurations')
         
+    def station_remove(self, id):
+        mac = str(id)
+
+        if mac == NONE:
+            log.error('Need a valid unique mac identifier')
+            return
+
+        try:
+            q = model.Session.query(model.Station).filter(model.Station.mac == mac).one()
+            model.Session.delete(q)
+            model.Session.commit()
+        except:
+            return
+
+        return redirect_to('/admin/list_station_configurations')
+
     def list_initial_configurations(self):
         config_q = model.Session.query(model.Config)
         c.Configs = config_q.all()
@@ -203,22 +224,4 @@ class AdminController(AuthenticationController):
         config_q = model.Session.query(model.Station)
         c.Stations = config_q.all()
         return render('/admin/list_station_configurations.mako')
-
-
-
-# Create mandatory 'DEADDEADBEEF' station entry -- Only if not already existing
-try:
-    model.Session.query(model.Config).filter(model.Config.mac == 'deaddeadbeef').one()
-except:
-    newconfig_q = AdminController.Get_initial_config()
-        
-    model.Session.save(newconfig_q)
-    model.Session.commit()
-
-# Create mandatory 'Inveneo' server entry -- Only if not already existing
-try:
-    model.Session.query(model.Server).filter(model.Server.name == 'Inveneo').one()
-except:
-    model.Session.save(model.Server())
-    model.Session.commit()
 
