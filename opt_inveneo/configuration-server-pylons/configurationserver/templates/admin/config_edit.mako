@@ -4,7 +4,6 @@ ${h.form(h.url(controller='admin', action='config_edit_process', id=c.Config.id)
 <table>
 <tr>
 <td>MAC:</td>
-<!-- the next line checks if mac is not set -- there must be a better way -->
 %if not c.Edit:
      <td>${h.text_field('mac', value=c.Config.mac)}</td>
      % if c.Error and c.Error.has_key('mac'):
@@ -90,6 +89,6 @@ ${ h.select('locale', h.options_for_select(h.get_locales_as_list(), c.Config.loc
 <td>${h.check_box('single_user_login', checked=c.Config.single_user_login)}</td>
 </tr>
 </table>
-</p>
+<p/>
 ${h.submit('Persist')}
 ${h.end_form}

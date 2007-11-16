@@ -42,7 +42,7 @@ mapper(Config, configs_table)
 # servers table
 servers_table = Table('servers', metadata,
     Column('id', types.Integer, primary_key=True),
-    Column('name', types.String(255), default="Inveneon"),
+    Column('name', types.String(255), default="Inveneo"),
     Column('server_on', types.Boolean, default=True)
 )
 
@@ -55,7 +55,7 @@ mapper(Server, servers_table)
 # servers table
 stations_table = Table('stations', metadata,
     Column('id', types.Integer, primary_key=True),
-    Column('mac', types.String(255), default="Inveneon"),
+    Column('mac', types.String(255)),
     Column('station_on', types.Boolean, default=True)
 )
 

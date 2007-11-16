@@ -91,7 +91,7 @@ class AdminController(AuthenticationController):
                 shutil.copyfile(dir + '../blank.tar.gz', dir + '/' + f)
 
     def _get_inveneo_server(self):
-        return model.Session.query(model.Server).filter(model.Server.name == 'Inveneon').one()
+        return model.Session.query(model.Server).filter(model.Server.name == 'Inveneo').one()
 
     ###########################
     # controller methods
@@ -215,9 +215,9 @@ except:
     model.Session.save(newconfig_q)
     model.Session.commit()
 
-# Create mandatory 'Inveneon' server entry -- Only if not already existing
+# Create mandatory 'Inveneo' server entry -- Only if not already existing
 try:
-    model.Session.query(model.Server).filter(model.Server.name == 'Inveneon').one()
+    model.Session.query(model.Server).filter(model.Server.name == 'Inveneo').one()
 except:
     model.Session.save(model.Server())
     model.Session.commit()
