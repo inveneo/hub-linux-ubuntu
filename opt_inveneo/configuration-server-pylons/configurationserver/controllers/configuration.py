@@ -129,9 +129,13 @@ class ConfigurationController(BaseController):
         return ret_value
 
     def _add_station_mac_to_list_if_new(self, mac):
+        mac = str(mac)
+        log.debug('adding station mac to list if not existing')
         try:
             q = model.Session.query(model.Station).filter(model.Station.mac == mac).one()
-        except:            
+            log.debug('station ALREADY existing: ' + mac)
+        except:       
+            log.debug('station is added: ' + mac)
             newstation_q = model.Station()
             newstation_q.mac = mac
             model.Session.save(newstation_q)
