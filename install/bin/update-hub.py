@@ -42,6 +42,9 @@ def main():
     
     stdout.write('\nReinstalling overlay...\n')
     sp.call([path.join(install_root,'bin','install-hub-overlay.py')])
+
+    stdout.write('\nRepopulating Samba...\n')
+    sp.call([path.join(install_root,'bin','populate-hub-ldap.py')])
     
     return 0
 

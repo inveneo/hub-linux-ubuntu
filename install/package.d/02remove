@@ -1,0 +1,2 @@
+# conflicts with quagga's dependency on capabilities.ko
+apparmor deinstall

@@ -15,6 +15,7 @@ import syslog
 import traceback
 import re
 import pwd
+import glob
 import subprocess as sp
 from os import path
 from sys import stderr,stdout
@@ -35,7 +36,8 @@ def folder_visitor(func, dirname, fnames):
     for entry in fnames:
         full_name=path.join(dirname,entry)
         if path.isfile(full_name): func(full_name)
-        
+
+######## transfer event helpers #########
 def fix_perms(opt_root):
     """docstring for fix_perms"""
     # fix samba shared docs
@@ -43,6 +45,11 @@ def fix_perms(opt_root):
 
     # fix /etc/ldap.secret
     os.chmod(path.join(opt_root,"install","overlay","etc","ldap.secret"),0600)
+
+    # fix quagga conf permissions
+    quagga_conf_dir=path.join(opt_root,'install','overlay','etc','quagga')
+    for conf in glob.glob(path.join(quagga_conf_dir,'*.conf')):
+        os.chmod(path.join(quagga_conf_dir, conf),0644)
     
 def fix_owners(opt_root):
     """docstring for fix_owners"""
@@ -72,9 +79,13 @@ def fix_owners(opt_root):
 
     os.chown(path.join(opt_root,'install','overlay','etc','zaptel.conf'), \
              uinfo[2],uinfo[3])
-    
 
-######## transfer event helpers #########
+    # fix quagga conf permissions
+    uinfo=pwd.getpwnam('quagga')
+    quagga_conf_dir=path.join(opt_root,'install','overlay','etc','quagga')
+    for conf in glob.glob(path.join(quagga_conf_dir,'*.conf')):
+        os.chown(path.join(quagga_conf_dir, conf),uinfo[2],uinfo[3])
+
 def pre_overlay_transfer(overlay_root, dest):
     """docstring for pre_overlay_transfer"""
 
