@@ -41,7 +41,6 @@ usermod -aG lpadmin inveneo
 usermod -aG scanner inveneo
 usermod -aG fuse inveneo
 usermod -aG netdev inveneo
-usermod -aG admin inveneo
 usermod -aG powerdev inveneo
 usermod -aG admin inveneo
 
