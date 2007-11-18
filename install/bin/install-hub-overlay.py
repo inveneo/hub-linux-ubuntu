@@ -50,24 +50,26 @@ def fix_perms(opt_root):
     quagga_conf_dir=path.join(opt_root,'install','overlay','etc','quagga')
     for conf in glob.glob(path.join(quagga_conf_dir,'*.conf')):
         os.chmod(path.join(quagga_conf_dir, conf),0644)
-    
+
 def fix_owners(opt_root):
+    overlay=path.join(opt_root,'install','overlay')
+    
     """docstring for fix_owners"""
     # Globally switch ownership of overlay to root
     uinfo=pwd.getpwnam('root')
-    path.walk(path.join(opt_root,'install','overlay'), \
+    path.walk(path.join(overlay), \
          folder_visitor, \
          lambda f: os.chown(f, uinfo[2],uinfo[3]))
 
     # fix asterisk ownership
     uinfo=pwd.getpwnam('asterisk')
-    path.walk(path.join(opt_root,'install','overlay','etc','asterisk'), \
+    path.walk(path.join(overlay,'etc','asterisk'), \
          folder_visitor, \
          lambda f: os.chown(f, uinfo[2],uinfo[3]))
 
     # fix inveneo home ownership
     uinfo=pwd.getpwnam('inveneo')
-    path.walk(path.join(opt_root,'install','overlay','home','inveneo'), \
+    path.walk(path.join(overlay,'home','inveneo'), \
          folder_visitor, \
          lambda f: os.chown(f, uinfo[2],uinfo[3]))
 
@@ -77,15 +79,21 @@ def fix_owners(opt_root):
          folder_visitor, \
          lambda f: os.chown(f, uinfo[2],uinfo[3]))
 
-    os.chown(path.join(opt_root,'install','overlay','etc','zaptel.conf'), \
+    os.chown(path.join(overlay,'etc','zaptel.conf'), \
              uinfo[2],uinfo[3])
 
     # fix quagga conf permissions
     uinfo=pwd.getpwnam('quagga')
-    quagga_conf_dir=path.join(opt_root,'install','overlay','etc','quagga')
+    quagga_conf_dir=path.join(overlay,'etc','quagga')
     for conf in glob.glob(path.join(quagga_conf_dir,'*.conf')):
         os.chown(path.join(quagga_conf_dir, conf),uinfo[2],uinfo[3])
 
+    # fix squid cache dir
+    uinfo=pwd.getpwnam('proxy')
+    path.walk(path.join(overlay,'srv','squid3'), \
+        folder_visitor, \
+        lambda f: os.chown(f, uinfo[2],uinfo[3]))
+    
 def pre_overlay_transfer(overlay_root, dest):
     """docstring for pre_overlay_transfer"""
 
