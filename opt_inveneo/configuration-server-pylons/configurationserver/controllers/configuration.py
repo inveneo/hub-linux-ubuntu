@@ -169,8 +169,9 @@ class ConfigurationController(BaseController):
         log.debug("=== Start get station initial config file ===")
         if not self._is_server_on():
             return abort(501)
-        if not self._is_station_on(id):
-            return abort(404)
+# this is client station check -- don't think we need it here
+#        if not self._is_station_on(id):
+#            return abort(404)
 
         mac_address = str(id)
 
@@ -181,14 +182,14 @@ class ConfigurationController(BaseController):
             return abort(404)
 
         map = self._create_dyn_config_map(mac_address)
-        initialconfig_q = model.Session.query(model.Config).filter(model.Config.mac == mac_address).one()
 
-        log.info('type : ' + str(type(initialconfig_q)))
-
-        if str(type(initialconfig_q)) == NONE_TYPE: # this code stinks
-            map.update(DEFAULT_DB_ATTRS)
-        else:
+        try:
+            initialconfig_q = model.Session.query(model.Config).filter(model.Config.mac == mac_address).one()
             map.update(self._create_db_config_map(initialconfig_q))
+            log.debug('found config')
+        except:            
+            map.update(DEFAULT_DB_ATTRS)
+            log.debug('created config')
 
         return self._return_initial_config_file(map)
 
@@ -215,8 +216,9 @@ class ConfigurationController(BaseController):
         log.debug("=== Start save station initial config file ===")
         if not self._is_server_on():
             return abort(404)
-        if not self._is_station_on(id):
-            return abort(501)
+# this is client station check -- don't think we need it here
+#        if not self._is_station_on(id):
+#            return abort(501)
 
         mac_address = str(id)
 
@@ -234,14 +236,16 @@ class ConfigurationController(BaseController):
             while 1:
                 line = config_file.file.readline()
                 items = line.split("=")
-                log.info('Items.count = ' + str(len(items)))
                 if len(items) == 2:
                     map[str(items[0])] = str(items[1]).strip('" \t\n')
                 if not line: break
         
-        newconfig_q = model.Session.query(model.Config).filter(model.Config.mac == mac_address).one()
+                
 
-        if str(type(newconfig_q)) == NONE_TYPE: # this code stinks
+        try:
+            newconfig_q = model.Session.query(model.Config).filter(model.Config.mac == mac_address).one()
+            log.debug('Config file found for mac: ' + mac_address)
+        except:       
             return abort(400)
 
         newconfig_q.timezone = map['INV_TIME_ZONE']

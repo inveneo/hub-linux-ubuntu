@@ -9,7 +9,7 @@ from configurationserver.controllers.authentication import *
 log = logging.getLogger(__name__)
 
 def Get_initial_config(config = model.Config()):
-    config.mac = 'deaddeadbeef'
+    config.mac = str(DEADDEADBEEF)
     config.timezone = DEFAULT_DB_ATTRS['INV_TIME_ZONE']
     config.ntp_on = DEFAULT_DB_ATTRS['INV_NTP_ON']
     config.ntp_servers = DEFAULT_DB_ATTRS['INV_NTP_SERVERS']
@@ -39,18 +39,20 @@ class AdminController(AuthenticationController):
     def _get_config_entry_by_id_or_mac_or_create(self, key):
         key = str(key)
 
-        log.debug('Key: ' + key)
+        log.debug('get config entry with key: ' + key)
 
         o_q = model.Session.query(model.Config)
         if len(key) == 12:
             try:
                 q = o_q.filter(model.Config.mac == key).one()
+                log.debug('found by mac')
             except:
                 q = model.Config()
-
-                q.mac = 'deaddeadbeef'
+                q = Get_initial_config(q)
+                log.debug('create new default config')
         else:
             q = o_q.get(key)
+            log.debug('found by primary key')
                 
         if str(type(q)) == NONE_TYPE: # this code stinks
             q = model.Config()
@@ -120,7 +122,7 @@ class AdminController(AuthenticationController):
     def reset_client_config(self, id):
         log.debug('reseting all configurations for clients and stations')
         q = self._get_config_entry_by_id_or_mac_or_create(id)
-        q = self.Get_initial_config(q)
+        q = Get_initial_config(q)
 
         model.Session.update(q)
         model.Session.commit()
@@ -128,9 +130,13 @@ class AdminController(AuthenticationController):
         self._copy_reset_config(h.get_config_dir_station())
         self._copy_reset_config(h.get_config_dir_user())
 
-        return redirect_to('/admin/dashboard')
+        return redirect_to('/admin/dashboard')    
 
     def set_initial_config(self):
+        q = self._get_config_entry_by_id_or_mac_or_create(DEADDEADBEEF)
+        model.Session.save(q)
+        model.Session.commit()
+
         return self.edit(DEADDEADBEEF)
 
     def edit(self, id):
@@ -150,7 +156,7 @@ class AdminController(AuthenticationController):
             model.Session.delete(q)
             model.Session.commit()
         except:
-            return
+            pass
 
         return redirect_to('/admin/list_initial_configurations')
 
@@ -160,6 +166,7 @@ class AdminController(AuthenticationController):
         return render('/admin/config_edit.mako')
 
     def config_edit_process(self, id):
+        log.debug('config edit process for: ' + str(id))
         newconfig_q = self._get_config_entry_by_id_or_mac_or_create(id)
         is_edit = False
 
@@ -186,6 +193,7 @@ class AdminController(AuthenticationController):
         error = self._validate_configuration(newconfig_q, is_edit)
 
         if len(error) == 0:
+            log.debug('found error in one of the values')
             model.Session.save(newconfig_q)
             model.Session.commit()
         else:
@@ -211,7 +219,7 @@ class AdminController(AuthenticationController):
             model.Session.delete(q)
             model.Session.commit()
         except:
-            return
+            pass
 
         return redirect_to('/admin/list_station_configurations')
 
