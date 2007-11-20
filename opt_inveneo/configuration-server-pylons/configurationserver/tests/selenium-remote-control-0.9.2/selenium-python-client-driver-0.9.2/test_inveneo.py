@@ -6,12 +6,16 @@ import httplib
 import time
 
 PROTOCOL = "http"
-URL = "192.168.15.198"
+URL = "192.168.1.105"
 PORT = "8008"
 
 class TestConfigurationServer(unittest.TestCase):
     def assertStringInBodyText(self, str_txt):
     	self.assertTrue(string.find(self.selenium.get_body_text(), str_txt) >= 0)
+    	
+    def assertFileSizeIsEqual(self, file1, file2):
+    	SIZE = 6
+    	self.assertEquals(os.stat(file1)[SIZE], os.stat(file2)[SIZE])
 
     def setUp(self):
         self.selenium = selenium("localhost", \
@@ -53,8 +57,18 @@ class TestConfigurationServer(unittest.TestCase):
         sel.wait_for_page_to_load("30000")
         self.assertStringInBodyText("111111111111")        
         os.system('curl -O http://' + URL + ':' + PORT + '/configuration/get_station_config/111111111111')
-	self.assertEquals(os.stat('def_station_config.tar.gz')[6], os.stat('111111111111')[6])
+        self.assertFileSizeIsEqual('def_station_config.tar.gz', '111111111111')
 	os.remove('111111111111')
+
+    def test_up_and_download_user_config(self):
+        sel = self.selenium
+        sel.open("/admin/set_server_on/1?on=True")
+        sel.wait_for_page_to_load("30000")
+    	os.system('curl --fail -s -w %{size_upload} -F config_file=@def_user_config.tar.gz http://' + URL + ':' + PORT + '/configuration/save_user_config/jamesbond -v')
+	time.sleep(1)
+        os.system('curl -O http://' + URL + ':' + PORT + '/configuration/get_user_config/jamesbond')
+        self.assertFileSizeIsEqual('def_user_config.tar.gz', 'jamesbond')
+	os.remove('jamesbond')
         
     def test_get_501_on_get_config_when_server_is_off(self):   	
        	sel = self.selenium
@@ -109,6 +123,17 @@ class TestConfigurationServer(unittest.TestCase):
 	text = sel.get_body_text()
 	if (string.find(text, "NO") > 0):
 	    sel.click("link=Switch On")
+	    
+    def test_should_return_404_when_user_or_station_is_not_found(self):
+    	conn = httplib.HTTPConnection(URL + ":" + PORT)
+    	conn.request("GET", "/configuration/get_user_config/not_existing_user")
+    	req = conn.getresponse()
+    	conn.close()
+    	self.assertEquals(404, req.status)
+    	conn.request("GET", "/configuration/get_station_config/not_existing_station")
+	req = conn.getresponse()
+	conn.close()
+	self.assertEquals(404, req.status)
 
     def test_index_should_redirect_to_admin_dashboard(self):
         sel = self.selenium
@@ -127,7 +152,7 @@ class TestConfigurationServer(unittest.TestCase):
     def test_should_create_new_configuration(self):
     	sel = self.selenium
         sel.open("/admin/list_initial_configurations")
- 	sel.click("//input[@value='Create New']")
+        sel.click("link=Create New")
         sel.wait_for_page_to_load("30000")
         sel.type("mac", "000000000000")
         sel.type("timezone", "Pacific/Los Angeles")
