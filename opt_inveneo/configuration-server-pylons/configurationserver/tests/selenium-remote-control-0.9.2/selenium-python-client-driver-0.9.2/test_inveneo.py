@@ -6,7 +6,7 @@ import httplib
 import time
 
 PROTOCOL = "http"
-URL = "192.168.1.104"
+URL = "192.168.15.198"
 PORT = "8008"
 
 class TestConfigurationServer(unittest.TestCase):
@@ -62,7 +62,7 @@ class TestConfigurationServer(unittest.TestCase):
 	sel.wait_for_page_to_load("2500")
 	text = sel.get_body_text()
 	if (string.find(text, "YES") > 0):
-	    sel.click("//input[@value='Toggle']")
+	    sel.click("link=Switch Off")
 	    sel.wait_for_page_to_load("30000")
     	conn = httplib.HTTPConnection(URL + ":" + PORT)
     	conn.request("GET", "/configuration/get_user_config/any_name_will_do")
@@ -76,13 +76,12 @@ class TestConfigurationServer(unittest.TestCase):
     	conn.request("GET", "/configuration/get_station_initial_config/any_mac_will_do")
 	req = conn.getresponse()
 	conn.close()
-	self.assertEquals(501, req.status)
-	
+	self.assertEquals(501, req.status)	
 	sel.open("/admin/dashboard")
 	sel.wait_for_page_to_load("2500")
 	text = sel.get_body_text()
 	if (string.find(text, "NO") > 0):
-	    sel.click("//input[@value='Toggle']")
+	    sel.click("link=Switch On")
         
     def test_get_404_on_save_config_when_server_is_off(self):   	
        	sel = self.selenium
@@ -90,7 +89,7 @@ class TestConfigurationServer(unittest.TestCase):
 	sel.wait_for_page_to_load("2500")
 	text = sel.get_body_text()
 	if (string.find(text, "YES") > 0):
-	    sel.click("//input[@value='Toggle']")
+	    sel.click("link=Switch Off")
 	    sel.wait_for_page_to_load("30000")
     	conn = httplib.HTTPConnection(URL + ":" + PORT)
     	conn.request("GET", "/configuration/save_user_config/any_name_will_do")
@@ -104,13 +103,12 @@ class TestConfigurationServer(unittest.TestCase):
     	conn.request("GET", "/configuration/save_station_initial_config/any_mac_will_do")
 	req = conn.getresponse()
 	conn.close()
-	self.assertEquals(404, req.status)
-	
+	self.assertEquals(404, req.status)	
 	sel.open("/admin/dashboard")
 	sel.wait_for_page_to_load("2500")
 	text = sel.get_body_text()
 	if (string.find(text, "NO") > 0):
-	    sel.click("//input[@value='Toggle']")
+	    sel.click("link=Switch On")
 
     def test_index_should_redirect_to_admin_dashboard(self):
         sel = self.selenium
@@ -211,9 +209,10 @@ class TestConfigurationServer(unittest.TestCase):
         sel.wait_for_page_to_load("2500")
         if string.find(sel.get_body_text(), "YES"):
             expected = "NO"
+            sel.click("link=Switch Off")
         else:
             expected = "YES"
-	sel.click("//input[@value='Toggle']")
+	    sel.click("link=Switch On")
         sel.wait_for_page_to_load("30000")
 	self.assertStringInBodyText(expected)     
 	
@@ -222,11 +221,11 @@ class TestConfigurationServer(unittest.TestCase):
         sel.open("/admin/dashboard?")
         sel.click("//input[@value='List Station Configurations']")
         sel.wait_for_page_to_load("30000")
-        sel.click("//input[@value='All On']")
+        sel.click("link=All On")
         sel.wait_for_page_to_load("30000")
         text = sel.get_body_text()
 	self.assertTrue(string.find(text,"NO") == -1)      
-        sel.click("//input[@value='All Off']")
+        sel.click("link=All Off")
         sel.wait_for_page_to_load("30000")
         text = sel.get_body_text()
 	self.assertTrue(string.find(text,"YES") == -1)      
