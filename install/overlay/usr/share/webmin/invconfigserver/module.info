@@ -1,0 +1,8 @@
+desc=Inveneo Configuration Server Management
+longdesc=Manage User Settings 
+risk=low medium high
+category=system
+depends=1.360
+version=1.360
+name=Inveneo Configuration Server Management
+os_support=debian-linux generic-linux
