@@ -13,8 +13,8 @@ class SigninController(BaseController):
     def signin_process(self):
         log.debug('signin process')
         if len(request.params) > 1:
-            user = self._get_user(request.params['username'])
-            if self._user_credetintials_ok(user):
+            admin = self._get_admin(request.params['username'])
+            if self._admin_credetintials_ok(admin):
                 return redirect_to('/admin/dashboard')
         error = {}
         error['signin'] = 'Username and password combination are not valid.'
@@ -22,16 +22,16 @@ class SigninController(BaseController):
         return render('/signin/signin.mako')
 
     def signout(self):
-        session['user'] = None
+        session['admin'] = None
         session.save()
         return render('/signin/signin.mako')
     
-    def _user_credetintials_ok(self, user):
-        if user:
-            log.debug('authenticating :' + user.login_name)                
-            pw = self._get_encrypted_password(request.params['password'], user.salt)
-            if user.password == pw:
-                session['user'] = user.first_name
+    def _admin_credetintials_ok(self, admin):
+        if admin:
+            log.debug('authenticating :' + admin.login_name)                
+            pw = self._get_encrypted_password(request.params['password'], admin.salt)
+            if admin.password == pw:
+                session['admin'] = admin.first_name
                 session.save()
                 return True
         return False
@@ -40,10 +40,10 @@ class SigninController(BaseController):
         pw = crypt.crypt(password, salt)
         return pw    
 
-    def _get_user(self, name):
+    def _get_admin(self, name):
         name = str(name)
         try:
-            u_q = model.Session.query(model.User).filter(model.User.login_name == name).one()
+            u_q = model.Session.query(model.Admin).filter(model.Admin.login_name == name).one()
             return u_q
         except:
             return None

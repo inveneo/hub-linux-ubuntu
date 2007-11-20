@@ -7,15 +7,15 @@
 <tr>
 <td><img src="/inveneo.png" alt="inveneo"></td>
 <td valign="top" align="right">
-%if 'user' in session.keys() and session['user']:
+%if 'admin' in session.keys() and session['admin']:
 ${h.link_to('Signout', url=h.url(controller='signin', action='signout'))}
-<span class="small">(${session['user']})</span>
+<span class="small">(${session['admin']})</span>
 %endif
 </td>
 </tr>
 </table>
 
-%if 'user' in session.keys() and session['user']:
+%if 'admin' in session.keys() and session['admin']:
 <%include file="breadcrumps.mako"/>
 %endif
 

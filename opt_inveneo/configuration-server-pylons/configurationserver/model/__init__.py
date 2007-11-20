@@ -66,7 +66,7 @@ class Station(object):
 mapper(Station, stations_table)
 
 # users table
-users_table = Table('users', metadata,
+admins_table = Table('admins', metadata,
     Column('id', types.Integer, primary_key=True),
     Column('login_name', types.String(255), unique=True),
     Column('first_name', types.String(255)),
@@ -75,8 +75,8 @@ users_table = Table('users', metadata,
     Column('salt', types.String(255))
 )
 
-class User(object):
+class Admin(object):
     def __str__(self):
         return self.title
     
-mapper(User, users_table)
+mapper(Admin, admins_table)
