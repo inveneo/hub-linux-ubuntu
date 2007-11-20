@@ -4,6 +4,7 @@ import os
 import string
 import httplib
 import time
+import re
 
 PROTOCOL = "http"
 URL = "192.168.1.105"
@@ -59,7 +60,28 @@ class TestConfigurationServer(unittest.TestCase):
         os.system('curl -O http://' + URL + ':' + PORT + '/configuration/get_station_config/111111111111')
         self.assertFileSizeIsEqual('def_station_config.tar.gz', '111111111111')
 	os.remove('111111111111')
-
+	
+    def test_up_and_download_inital_config(self):
+        sel = self.selenium
+        sel.open("/admin/set_server_on/1?on=True")
+        sel.wait_for_page_to_load("30000")
+    	os.system('curl --fail -s -w %{size_upload} -F config_file=@def_test_station_initial.txt http://' + URL + ':' + PORT + '/configuration/save_station_initial_config/deaddeadbeef -v')
+    	time.sleep(1)
+        os.system('curl -O http://' + URL + ':' + PORT + '/configuration/get_station_initial_config/deaddeadbeef')
+        self.assertFileSizeIsEqual('def_test_station_initial.txt', 'deaddeadbeef')
+	os.remove('deaddeadbeef')	
+	sel.open("/admin/dashboard")
+	sel.wait_for_page_to_load("30000")
+	sel.click("//input[@value='Set Initial Config']")
+	sel.wait_for_page_to_load("30000")
+	sel.open("/admin/dashboard")
+	sel.wait_for_page_to_load("30000")
+	sel.click("//input[@value='List Initial Configurations']")
+	sel.wait_for_page_to_load("30000")
+	sel.click("link=Remove")
+	sel.wait_for_page_to_load("30000")
+	self.failUnless(re.search(r"^Are you sure[\s\S]$", sel.get_confirmation()))
+	
     def test_up_and_download_user_config(self):
         sel = self.selenium
         sel.open("/admin/set_server_on/1?on=True")
