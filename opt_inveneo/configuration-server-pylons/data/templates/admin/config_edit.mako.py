@@ -1,7 +1,7 @@
 from mako import runtime, filters, cache
 UNDEFINED = runtime.UNDEFINED
 _magic_number = 2
-_modified_time = 1195106533.409163
+_modified_time = 1195517449.2337551
 _template_filename='/home/rjocham/pylons/opt_inveneo/configuration-server-pylons/configurationserver/templates/admin/config_edit.mako'
 _template_uri='/admin/config_edit.mako'
 _template_cache=cache.Cache(__name__, _modified_time)
@@ -17,7 +17,7 @@ def render_body(context,**pageargs):
         c = context.get('c', UNDEFINED)
         # SOURCE LINE 1
         runtime._include_file(context, u'../header.mako', _template_uri)
-        context.write(u'\n<h3>Set Initial Configuration</h3>\n')
+        context.write(u'\n<h3 class="header">Set Initial Configuration</h3>\n')
         # SOURCE LINE 3
         context.write(unicode(h.form(h.url(controller='admin', action='config_edit_process', id=c.Config.id), method='post')))
         context.write(u'\n<table>\n<tr>\n<td>MAC:</td>\n')
@@ -30,9 +30,9 @@ def render_body(context,**pageargs):
             # SOURCE LINE 9
             if c.Error and c.Error.has_key('mac'):
                 # SOURCE LINE 10
-                context.write(u'       <td><b>')
+                context.write(u'       <td class="error">')
                 context.write(unicode(c.Error['mac']))
-                context.write(u'<b></td>\n')
+                context.write(u'</td>\n')
             # SOURCE LINE 12
         else:
             # SOURCE LINE 13
@@ -62,9 +62,9 @@ def render_body(context,**pageargs):
         # SOURCE LINE 40
         if c.Error and c.Error.has_key('http_proxy_port'):
             # SOURCE LINE 41
-            context.write(u'     <td><b>')
+            context.write(u'     <td class="error">')
             context.write(unicode(c.Error['http_proxy_port']))
-            context.write(u'<b></td>\n')
+            context.write(u'</td>\n')
         # SOURCE LINE 43
         context.write(u'</tr>\n<tr>\n<td>HTTPS Proxy:</td>\n<td>')
         # SOURCE LINE 46
@@ -76,9 +76,9 @@ def render_body(context,**pageargs):
         # SOURCE LINE 51
         if c.Error and c.Error.has_key('https_proxy_port'):
             # SOURCE LINE 52
-            context.write(u'     <td><b>')
+            context.write(u'     <td class="error">')
             context.write(unicode(c.Error['https_proxy_port']))
-            context.write(u'<b></td>\n')
+            context.write(u'</td>\n')
         # SOURCE LINE 54
         context.write(u'</tr>\n<tr>\n<td>FTP Proxy:</td>\n<td>')
         # SOURCE LINE 57
@@ -90,9 +90,9 @@ def render_body(context,**pageargs):
         # SOURCE LINE 62
         if c.Error and c.Error.has_key('ftp_proxy_port'):
             # SOURCE LINE 63
-            context.write(u'     <td><b>')
+            context.write(u'     <td class="error">')
             context.write(unicode(c.Error['ftp_proxy_port']))
-            context.write(u'<b></td>\n')
+            context.write(u'</td>\n')
         # SOURCE LINE 65
         context.write(u'</tr>\n<tr>\n<td>Phone Home On:</td>\n<td>')
         # SOURCE LINE 68
