@@ -1,8 +1,12 @@
 <%include file="../header.mako"/>
 <h3 class="header">Existing Initial Configurations</h3>
-${h.form(h.url(controller='admin', action='config_add'), method='get')}
-	<p><input type="submit" value="Create New" class="button" /></p>
-${h.end_form()}
+
+<p>
+<span class="post_link">
+${h.link_to('Create New', url=h.url(controller='admin', action='config_add'), method='get')}
+</span>
+</p>
+
 % for config in c.Configs:
 <div class="content">
         <span class="line"><b>MAC:</b> ${config.mac} </span>
@@ -30,10 +34,10 @@ ${h.end_form()}
         <br/>
         <span class="line"><b>Locale:</b> ${config.locale} </span>
         <span class="line"><b>Single User Login:</b> ${config.single_user_login} </span>
-	<br/>
-	${h.form(h.url(controller='admin', action='edit', id=config.id), method='post')}
-	<p><input type="submit" value="Edit" class="button" /></p>
-${h.end_form()}
+	<br><br>
+        <span class="post_link">
+        ${h.link_to('Edit', url=h.url(controller='admin', action='edit', id=config.id), method='post')}
+        </span>
 	<p/>
 </div>
 % endfor

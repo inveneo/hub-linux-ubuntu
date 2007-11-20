@@ -22,7 +22,6 @@ def setup_config(command, filename, section, vars):
      create_default_station()
      create_default_server()
 
-
 def create_default_user():
      from configurationserver import model
      print "Creating default user if not existing"

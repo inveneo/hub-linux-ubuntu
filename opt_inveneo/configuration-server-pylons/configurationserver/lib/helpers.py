@@ -9,12 +9,12 @@ import logging
 import shutil
 import fcntl
 import os
+import tempfile
 import formencode
 from formencode import validators
 
 
 def tmp_file_name(log = logging.getLogger(__name__)):
-    import tempfile
     tmp = tempfile.NamedTemporaryFile('w+b', -1, '', '', 'tmp')
     tmp_file = tmp.name
     tmp.close()
