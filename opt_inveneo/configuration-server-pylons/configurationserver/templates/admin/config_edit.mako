@@ -1,5 +1,5 @@
 <%include file="../header.mako"/>
-<h3>Set Initial Configuration</h3>
+<h3 class="header">Set Initial Configuration</h3>
 ${h.form(h.url(controller='admin', action='config_edit_process', id=c.Config.id), method='post')}
 <table>
 <tr>
@@ -7,7 +7,7 @@ ${h.form(h.url(controller='admin', action='config_edit_process', id=c.Config.id)
 %if not c.Edit:
      <td>${h.text_field('mac', value=c.Config.mac)}</td>
      % if c.Error and c.Error.has_key('mac'):
-       <td><b>${c.Error['mac']}<b></td>
+       <td class="error">${c.Error['mac']}</td>
      % endif
 % else:
 <td>${c.Config.mac}</td>
@@ -38,7 +38,7 @@ ${ h.select('timezone', h.options_for_select(h.get_timezones_as_string_list(), c
 <td>HTTP Proxy Port:</td>
 <td>${h.text_field('http_proxy_port', value=c.Config.http_proxy_port)}</td>
 % if c.Error and c.Error.has_key('http_proxy_port'):
-     <td><b>${c.Error['http_proxy_port']}<b></td>
+     <td class="error">${c.Error['http_proxy_port']}</td>
 % endif
 </tr>
 <tr>
@@ -49,7 +49,7 @@ ${ h.select('timezone', h.options_for_select(h.get_timezones_as_string_list(), c
 <td>HTTPS Proxy Port:</td>
 <td>${h.text_field('https_proxy_port', value=c.Config.https_proxy_port)}</td>
 % if c.Error and c.Error.has_key('https_proxy_port'):
-     <td><b>${c.Error['https_proxy_port']}<b></td>
+     <td class="error">${c.Error['https_proxy_port']}</td>
 % endif
 </tr>
 <tr>
@@ -60,7 +60,7 @@ ${ h.select('timezone', h.options_for_select(h.get_timezones_as_string_list(), c
 <td>FTP Proxy Port:</td>
 <td>${h.text_field('ftp_proxy_port', value=c.Config.ftp_proxy_port)}</td>
 % if c.Error and c.Error.has_key('ftp_proxy_port'):
-     <td><b>${c.Error['ftp_proxy_port']}<b></td>
+     <td class="error">${c.Error['ftp_proxy_port']}</td>
 % endif
 </tr>
 <tr>

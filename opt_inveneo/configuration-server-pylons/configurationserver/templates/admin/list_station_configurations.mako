@@ -1,29 +1,33 @@
 <%include file="../header.mako"/>
-<h3>Existing Station Configurations</h3>
-${h.form(h.url(controller='configuration', action='set_all_stations_on', all_on='True'), method='post')}
-<input type="submit" value="All On" class="button" />
-${h.end_form()}
-${h.form(h.url(controller='configuration', action='set_all_stations_on', all_on='False'), method='post')}
-<input type="submit" value="All Off" class="button" />
-${h.end_form()}
-<p/>
-</br>
+<h3 class="header">Existing Station Configurations</h3>
+
+<p>
+Switch: 
+<span class="post_link">
+${h.link_to('All On', url=h.url(controller='configuration', action='set_all_stations_on', all_on='True'), method='post')}
+</span>
+<span class="post_link">
+${h.link_to('All Off', url=h.url(controller='configuration', action='set_all_stations_on', all_on='False'), method='post')}
+</span>
+<p>
+<br>
+
 % for station in c.Stations:
-<div class="content">
         <span class="line"><b>Mac:</b>${station.mac}</span>
 	<span class="line"><b>On:</b>
 %if station.station_on:
-YES
+<span class="green">YES</span>
+<span class="post_link">
+${h.link_to('Switch off', url=h.url(controller='configuration', action='set_station_on', id=station.mac), method='post')}
+</span>
 % else:
-NO
+<span class="red">NO</span>
+<span class="post_link">
+${h.link_to('Switch on', url=h.url(controller='configuration', action='set_station_on', id=station.mac), method='post')}
+</span>
 % endif
 </span>
-${h.form(h.url(controller='configuration', action='set_station_on', id=station.mac), method='post')}
-<input type="submit" value="Toggle" class="button" />
-${h.end_form()}
-${h.form(h.url(controller='admin', action='station_remove', id=station.mac), method='post')}
-<input type="submit" value="Remove" class="button" onclick="return confirmSubmit()"/>
-${h.end_form()}
-<p/>
-</div>
+<span class="post_link">
+${h.link_to('Remove', url=h.url(controller='admin', action='station_remove', id=station.mac), method='post', confirm='Are you sure?')}
+</span>
 % endfor

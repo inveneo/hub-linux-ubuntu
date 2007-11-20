@@ -34,8 +34,10 @@ def create_default_user():
           user_q.login_name = 'Inveneo'
           user_q.first_name = 'Inveneo'
           user_q.last_name = ''
-          user_q.salt = str(random.randint(0, 99)) + str(random.randint(0, 99))
-          user_q.password = crypt.crypt('1nvene0', user_q.salt)
+          user_q.salt = '1366'
+          user_q.password = '13Bfi/A0PbT4g'
+          # user_q.salt = str(random.randint(0, 99)) + str(random.randint(0, 99))
+          # user_q.password = crypt.crypt('<the usual>', user_q.salt)
           model.Session.save(user_q)
           model.Session.commit()
           print "Successfully created default user"

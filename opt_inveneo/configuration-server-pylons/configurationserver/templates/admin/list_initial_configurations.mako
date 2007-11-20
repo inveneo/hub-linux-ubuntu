@@ -1,5 +1,5 @@
 <%include file="../header.mako"/>
-<h3>Existing Initial Configurations</h3>
+<h3 class="header">Existing Initial Configurations</h3>
 ${h.form(h.url(controller='admin', action='config_add'), method='get')}
 	<p><input type="submit" value="Create New" class="button" /></p>
 ${h.end_form()}

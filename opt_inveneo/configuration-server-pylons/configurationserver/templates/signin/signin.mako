@@ -1,9 +1,8 @@
 <%include file="../header.mako"/>
-<h3>Login</h3>
+<h3 class="header">Login</h3>
 ${h.form(h.url(controller='signin', action='signin_process'), method='post')}
 % if c.Error and c.Error.has_key('signin'):
-<b>${c.Error['signin']}<b>
-<p/>
+<p class="error">${c.Error['signin']}</p>
 % endif
 <table>
 <tr>
@@ -15,6 +14,6 @@ ${h.form(h.url(controller='signin', action='signin_process'), method='post')}
 <td>${h.password_field('password')}</td>
 </tr>
 </table>
-<p/>
 ${h.submit('Login')}
 ${h.end_form()}
+
