@@ -4,6 +4,5 @@ require "../invshare/invshare-lib.pl";
 
 $server = $ENV{'SERVER_NAME'};
 $port = 8088;
-
-&redirect("http://$server:$port/");
+&redirect("http://$server:$port/asterisk/static/config/setup/install.html");
 
