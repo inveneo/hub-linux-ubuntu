@@ -47,7 +47,7 @@ print <<JS;
 JS
 
 $configTypes = [ ['- Select One -', '- Select One -'], ['DHCP', 'DHCP'], ['Static', 'Static'] ];
-print &ui_form_start("interfaceConfig.cgi","post");
+print &ui_form_start("interfaceConfig.cgi","get");
 print &ui_hidden('interface',WAN_INTERFACE);
 print "<h2>WAN Configuration</h2>";
 print "<table>";
