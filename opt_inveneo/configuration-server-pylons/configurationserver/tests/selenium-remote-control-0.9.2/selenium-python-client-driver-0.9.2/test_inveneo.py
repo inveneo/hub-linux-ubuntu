@@ -7,7 +7,7 @@ import time
 import re
 
 PROTOCOL = "http"
-URL = "192.168.1.105"
+URL = "192.168.15.198"
 PORT = "8008"
 
 class TestConfigurationServer(unittest.TestCase):
@@ -23,7 +23,7 @@ class TestConfigurationServer(unittest.TestCase):
             4444, "*firefox", PROTOCOL + "://" + URL + ":" + PORT)
         self.selenium.start()
         self.selenium.open("/signin/signin")
-	self.selenium.type("username", "Inveneo")
+	self.selenium.type("username", "root")
 	self.selenium.type("password", "1nvene0")
 	self.selenium.click("commit")
         self.selenium.wait_for_page_to_load("30000")
@@ -70,17 +70,11 @@ class TestConfigurationServer(unittest.TestCase):
         os.system('curl -O http://' + URL + ':' + PORT + '/configuration/get_station_initial_config/deaddeadbeef')
         self.assertFileSizeIsEqual('def_test_station_initial.txt', 'deaddeadbeef')
 	os.remove('deaddeadbeef')	
-	sel.open("/admin/dashboard")
-	sel.wait_for_page_to_load("30000")
-	sel.click("//input[@value='Set Initial Config']")
-	sel.wait_for_page_to_load("30000")
-	sel.open("/admin/dashboard")
-	sel.wait_for_page_to_load("30000")
-	sel.click("//input[@value='List Initial Configurations']")
-	sel.wait_for_page_to_load("30000")
-	sel.click("link=Remove")
-	sel.wait_for_page_to_load("30000")
-	self.failUnless(re.search(r"^Are you sure[\s\S]$", sel.get_confirmation()))
+    	os.system('curl --fail -s -w %{size_upload} -F config_file=@def_station_initial.txt http://' + URL + ':' + PORT + '/configuration/save_station_initial_config/deaddeadbeef -v')
+    	time.sleep(1)
+        os.system('curl -O http://' + URL + ':' + PORT + '/configuration/get_station_initial_config/deaddeadbeef')
+        self.assertFileSizeIsEqual('def_station_initial.txt', 'deaddeadbeef')
+	os.remove('deaddeadbeef')	
 	
     def test_up_and_download_user_config(self):
         sel = self.selenium
