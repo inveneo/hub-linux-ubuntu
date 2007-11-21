@@ -57,7 +57,7 @@ print &ui_form_end();
 
 print "<hr>";
 $configTypes = [ ['Static', 'Static'] ];
-print &ui_form_start("interfaceConfig.cgi","post");
+print &ui_form_start("interfaceConfig.cgi","get");
 print &ui_hidden('interface',LAN_INTERFACE);
 print &ui_hidden('type','Static');
 print "<h2>LAN Configuration</h2>";
