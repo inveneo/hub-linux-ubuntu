@@ -29,7 +29,7 @@ if ( $type eq 'STATIC' ) {
 	print "</table>";
 	&ui_print_footer("/", $text{'index'});
 } elsif ( $type eq 'PPP' ) { 
-	# need more info for this one 	
+	# todo: not implemented 	
 } else {
 	push @errors, "An unknown type was provided.";	
 } 
