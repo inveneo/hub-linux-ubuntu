@@ -46,7 +46,6 @@ print <<JS;
 	</script>
 JS
 
-$interfaces = get_network_interfaces();	
 $configTypes = [ ['- Select One -', '- Select One -'], ['DHCP', 'DHCP'], ['Static', 'Static'] ];
 print &ui_form_start("interfaceConfig.cgi","post");
 print &ui_hidden('interface',WAN_INTERFACE);
@@ -78,8 +77,6 @@ print &ui_form_end();
 print "<hr>";
 
 @hosts = get_hosts();
-#print "hosts<br><pre>" . Dumper(\@hosts) . "</pre>";
-
 print &ui_form_start("updateDhcpStatus.cgi","get");
 print "<h2>Static DHCP Bindings</h2>";
 $columns = ["Host Name", "MAC Address","Network Address", "&nbsp;"];

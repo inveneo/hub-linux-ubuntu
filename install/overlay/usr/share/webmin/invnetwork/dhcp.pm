@@ -1,7 +1,6 @@
 
 use constant RESOLVE_CONF => "/etc/resolv.conf";
-#use constant INTERFACES_CONF => "/etc/network/interfaces";
-use constant INTERFACES_CONF => "/home/inveneo/interfaces";
+use constant INTERFACES_CONF => "/etc/network/interfaces";
 
 sub get_dhcp_status {
     
@@ -15,10 +14,6 @@ sub get_dhcp_status {
     
     return ( $result =~ m/not running/ ) ? "Disabled" : "Enabled";
 
-}
-
-sub get_network_interfaces {
-        return [[ 'eth0', 'eth0' ]];
 }
 
 sub get_interface_info {
@@ -63,25 +58,6 @@ sub get_interface_info {
 
 	return %retval;
 
-}
-
-sub generate_interfaces_config {
-	local ( %config ) = @_;
-	if ( $config{'type'} eq 'static' ) {
-		$outval = "auto " . $config{'iface'} . "\n";
-		$outval = "iface " . $config{'iface'} . " inet static\n\t";
-		$outval .= "address " . $config{'address'} . "\n\t";
-		$outval .= "gateway " . $config{'gateway'} . "\n\t";
-		$outval .= "netmask " . $config{'netmask'} . "\n\t";		
-	} elsif ( $config{'type'} eq 'DHCP' ) {
-		
-	} else {
-		print "here2000";
-	}	
-}
-
-sub enable_dhcp {
-	return 1;
 }
 
 sub find_member { 

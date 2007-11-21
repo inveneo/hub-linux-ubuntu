@@ -28,13 +28,6 @@ if ( $type eq 'STATIC' ) {
 	print &ui_form_end();
 	print "</table>";
 	&ui_print_footer("/", $text{'index'});
-} elsif ( $type eq 'DHCP' ) {
-	$res = enable_dhcp($interface);
-	if ( $res ) {
-		redirect('index.cgi?msg=' . urlize("DHCP enabled for interface $interface"));			
-  	} else {
-		push @errors, "An error occured while updating the configuration for $interface";			
-	}
 } elsif ( $type eq 'PPP' ) { 
 	# need more info for this one 	
 } else {
