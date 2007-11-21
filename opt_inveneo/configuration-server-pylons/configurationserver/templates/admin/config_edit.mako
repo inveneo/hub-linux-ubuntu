@@ -19,6 +19,7 @@ ${h.form(h.url(controller='admin', action='config_edit_process', id=c.Config.id)
 ${ h.select('timezone', h.options_for_select(h.get_timezones_as_string_list(), c.Config.timezone)) }
 </td>
 </tr>
+<tr>
 <td>NTP On:</td>
 <td>${h.check_box('ntp_on', checked=c.Config.ntp_on)}</td>
 </tr>

@@ -13,6 +13,11 @@ import tempfile
 import formencode
 from formencode import validators
 
+def is_default_initial_config(config):
+    if config.mac == 'deaddeadbeef':
+        return True
+    else:
+        return False
 
 def tmp_file_name(log = logging.getLogger(__name__)):
     tmp = tempfile.NamedTemporaryFile('w+b', -1, '', '', 'tmp')

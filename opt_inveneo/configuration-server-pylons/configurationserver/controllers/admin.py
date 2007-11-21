@@ -48,8 +48,8 @@ class AdminController(AuthenticationController):
                 log.debug('found by mac')
             except:
                 q = model.Config()
-                q = Get_initial_config(q)
-                log.debug('create new default config')
+                q.mac = key
+                log.debug('create new config')
         else:
             q = o_q.get(key)
             log.debug('found by primary key')
@@ -137,6 +137,8 @@ class AdminController(AuthenticationController):
         model.Session.save(q)
         model.Session.commit()
 
+        c.Config = None
+
         return self.edit(DEADDEADBEEF)
 
     def edit(self, id):
@@ -201,6 +203,8 @@ class AdminController(AuthenticationController):
             c.Edit = is_edit
             c.Config = newconfig_q
             return render('/admin/config_edit.mako')
+
+        c.Config = None
 
         return redirect_to('/admin/config_edit_done')
 

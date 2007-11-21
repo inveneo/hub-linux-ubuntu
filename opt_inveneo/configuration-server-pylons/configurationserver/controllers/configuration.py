@@ -183,13 +183,14 @@ class ConfigurationController(BaseController):
 
         map = self._create_dyn_config_map(mac_address)
 
-        try:
-            initialconfig_q = model.Session.query(model.Config).filter(model.Config.mac == mac_address).one()
-            map.update(self._create_db_config_map(initialconfig_q))
-            log.debug('found config')
-        except:            
+        initialconfig_q = model.Session.query(model.Config).filter(model.Config.mac == mac_address).one()
+
+        log.info('type : ' + str(type(initialconfig_q)))
+
+        if str(type(initialconfig_q)) == NONE_TYPE: # this code stinks
             map.update(DEFAULT_DB_ATTRS)
-            log.debug('created config')
+        else:
+            map.update(self._create_db_config_map(initialconfig_q))
 
         return self._return_initial_config_file(map)
 
@@ -238,10 +239,8 @@ class ConfigurationController(BaseController):
                 items = line.split("=")
                 if len(items) == 2:
                     map[str(items[0])] = str(items[1]).strip('" \t\n')
-                if not line: break
-        
+                if not line: break        
                 
-
         try:
             newconfig_q = model.Session.query(model.Config).filter(model.Config.mac == mac_address).one()
             log.debug('Config file found for mac: ' + mac_address)

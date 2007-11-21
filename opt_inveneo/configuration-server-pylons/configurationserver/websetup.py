@@ -26,12 +26,12 @@ def create_default_admin():
      from configurationserver import model
      print "Creating default admin if not existing"
      try:
-          model.Session.query(model.Admin).filter(model.Admin.login_name == 'Inveneo').one()
+          model.Session.query(model.Admin).filter(model.Admin.login_name == 'root').one()
           print "Admin already existing"
      except:
           admin_q = model.Admin()
-          admin_q.login_name = 'Inveneo'
-          admin_q.first_name = 'Inveneo'
+          admin_q.login_name = 'root'
+          admin_q.first_name = 'root'
           admin_q.last_name = ''
           admin_q.salt = '1366'
           admin_q.password = '13Bfi/A0PbT4g'

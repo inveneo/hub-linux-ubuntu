@@ -34,10 +34,16 @@ ${h.link_to('Create New', url=h.url(controller='admin', action='config_add'), me
         <br/>
         <span class="line"><b>Locale:</b> ${config.locale} </span>
         <span class="line"><b>Single User Login:</b> ${config.single_user_login} </span>
-	<br><br>
+	<p>
         <span class="post_link">
         ${h.link_to('Edit', url=h.url(controller='admin', action='edit', id=config.id), method='post')}
         </span>
-	<p/>
+	%if not h.is_default_initial_config(config):
+	    <span class="post_link">
+	    ${h.link_to('Remove', url=h.url(controller='admin', action='config_remove', id=config.mac), method='post', confirm='Are you sure?')}
+        </span>
+	%endif
+	</p>
+	<br>
 </div>
 % endfor
