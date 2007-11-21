@@ -12,7 +12,7 @@ $interface = $in{'interface'};
 
 if ( $type eq 'STATIC' ) {
 	&ui_print_header(undef, $module_info{'desc'}, "", undef, 1, 1);
-	print "<h2>Interface Configuration - $interface - $type</h2>";
+	print "<h2>Interface Configuration - $type</h2>";
 	print "<table>";
 	%values = get_interface_info($interface);
 	print &ui_form_start("interfaceUpdate.cgi","post");
