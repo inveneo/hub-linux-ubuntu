@@ -9,13 +9,6 @@ use Data::Dumper;
 &lock_file($config{'dhcpd_conf'});
 ($par, $host, $indent, $npar, $nindent) = get_branch('hst');
 
-if ( 1 && 0 ) { 
-        &ui_print_header(undef, "","", undef, 1, 1);
-        print "<pre>" . Dumper(\%in) . "</pre>";
-        &ui_print_footer("/", "");
-} else {
-
-
 # check acls
 %access = &get_module_acl();
 &error_setup("<blink><font color=red>$text{'eacl_aviol'}</font></blink>");
@@ -145,5 +138,4 @@ if ( $in{'inveneo_redirect'} ) {
         &redirect( $in{'inveneo_redirect'} . "?" . ($in{'inveneo_message'} ? ("msg=" . $in{'inveneo_message'}) : "") );
 } else {
         &redirect($in{'ret'} ? "edit_$in{'ret'}.cgi?$retparms" : "");
-}
 }
