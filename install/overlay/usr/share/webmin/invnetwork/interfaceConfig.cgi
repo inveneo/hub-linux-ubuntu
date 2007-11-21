@@ -22,8 +22,8 @@ if ( $type eq 'STATIC' ) {
 	print_row_title("IP Address", &ui_textbox("ip",$values{'address'},20));
 	print_row_title("Netmask", &ui_textbox("mask",$values{'netmask'},20));
 	print_row_title("Gateway", &ui_textbox("gateway",$values{'gateway'},20));
-	print_row_title("Preferred DNS", &ui_textbox("dns1",$values{'dns'}[0],20));
-	print_row_title("Alternate DNS", &ui_textbox("dns2",$values{'dns'}[1],20));
+        #print_row_title("Preferred DNS", &ui_textbox("dns1",$values{'dns'}[0],20));
+        #print_row_title("Alternate DNS", &ui_textbox("dns2",$values{'dns'}[1],20));
 	print_row_title("", "<input type='submit' value='Update'>");
 	print &ui_form_end();
 	print "</table>";
