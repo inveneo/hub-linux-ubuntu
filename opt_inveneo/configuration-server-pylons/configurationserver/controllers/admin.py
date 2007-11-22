@@ -151,14 +151,14 @@ class AdminController(AuthenticationController):
 
         if mac == NONE:
             log.error('Need a valid unique mac identifier')
-            return
+            return abort(400)
 
         try:
             q = model.Session.query(model.Config).filter(model.Config.mac == mac).one()
             model.Session.delete(q)
             model.Session.commit()
         except:
-            pass
+            return abort(400)
 
         return redirect_to('/admin/list_initial_configurations')
 
@@ -216,14 +216,14 @@ class AdminController(AuthenticationController):
 
         if mac == NONE:
             log.error('Need a valid unique mac identifier')
-            return
+            return abort(400)
 
         try:
             q = model.Session.query(model.Station).filter(model.Station.mac == mac).one()
             model.Session.delete(q)
             model.Session.commit()
         except:
-            pass
+            return abort(400)
 
         return redirect_to('/admin/list_station_configurations')
 
