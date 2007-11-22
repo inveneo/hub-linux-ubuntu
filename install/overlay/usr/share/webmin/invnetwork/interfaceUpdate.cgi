@@ -44,9 +44,9 @@ if ( $type eq 'static' ) {
 		push @$errors, "'$mask' is not a valid netmask.";	
 	}
 	
-	if ( !check_ipaddress($gateway) ) {
-		push @$errors, "'$gateway' is not a valid gateway address.";	
-	}
+        #if ( !check_ipaddress($gateway) ) {
+        #	push @$errors, "'$gateway' is not a valid gateway address.";	
+        #}
 
 	if ( scalar(@$errors) == 0 ) {
 		$options = []; 
