@@ -21,7 +21,7 @@ from os import path
 from sys import stderr,stdout
 
 # services to stop, in order. Will be started after in reverse order
-SERVICES=('asterisk','samba','samba-shares.sh','slapd','squid3','dhcp3-server', \
+SERVICES=('asterisk','samba','samba-shares.sh','inv-config-server.sh','slapd','squid3','dhcp3-server', \
           'apache2','avahi-daemon','cupsys','mysql','webmin')
 
 # Folder walking 'cause os.path functions aren't recursive 
