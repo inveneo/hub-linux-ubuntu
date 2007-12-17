@@ -85,7 +85,7 @@ check_raid() {
 
     if  [ $DRIVE1_SUPERBLOCK_OK -eq 0 ] ||  [ $DRIVE2_SUPERBLOCK_OK -eq 0 ]
     then 
-        echo "RAID array at $1 has superblocks on at least one drive. Leaving along"
+        echo "RAID array at $1 has superblocks on at least one drive. Leaving alone"
         return 0
     fi
     
@@ -133,11 +133,3 @@ done
 
 # always exit with success
 exit 0
-
-
-
-
-
-
-
-

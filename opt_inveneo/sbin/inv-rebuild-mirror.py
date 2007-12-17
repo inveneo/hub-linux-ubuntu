@@ -300,7 +300,7 @@ def main():
 
 	array_hash[DEGRADED]=mdadm_proc.returncode != 0
         
-	# set all_ and some_ degarded for later use
+	# set all_ and some_ degraded for later use
 	all_degraded=all_degraded and array_hash[DEGRADED]
         some_degraded=some_degraded or array_hash[DEGRADED]
 
@@ -317,7 +317,7 @@ def main():
         write_msg("Some, but not all arrays degraded, will try to re-add missing parititons")
         return re_add_partitions(arrays)
     else:
-        write_msg("No degarded arrays")
+        write_msg("No degraded arrays")
         return 0
 
     
