@@ -215,9 +215,19 @@ def add_drive_to_mirror(arrays_hash):
                 sp.call(['mdadm','--zero-superblock','/dev/'+dev[3]])
                 
     # now the MBR
+    '''
     write_msg("Copying MBR from '"+active_device+"' to '"+target_device+"'")
     sp.call(['dd','if='+active_device,'of='+target_device,'bs=512','count=1'])
-    
+    '''
+    write_msg("Copying MBR onto %s", target_device)
+    command = [GRUB, '--batch']
+    child = sp.Popen(command, stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.STDOUT)
+    child.stdin.write("device (hd0) %s\n" % target_device)
+    child.stdin.write("root (hd0,0)\n")
+    child.stdin.write("setup (hd0)\n")
+    child.stdin.write("quit\n")
+    child.communicate()
+
     # now copy over the partition table from the good drive
     write_msg("Copying partition table to: "+target_device)
     dump = sp.Popen(['sfdisk','-d',active_device], stdout=sp.PIPE)
