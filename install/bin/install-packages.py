@@ -122,6 +122,10 @@ def main(dir_or_file):
         stdout.write("Issuing command:\n"+command+"\n")
         os.system(command)
         stdout.write("\n\n")
+        
+    # Now upgrade
+    stdout.write("\nUpgrading packages...\n")
+    sp.call(['apt-get','-y','--force-yes','upgrade'])
 
     # do some clean up
     stdout.write("\nCleaning up APT cache\n")
