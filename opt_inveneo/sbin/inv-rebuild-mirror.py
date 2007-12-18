@@ -18,6 +18,8 @@ MDADM_STAT='/proc/mdstat'
 PARTITIONS='/proc/partitions'
 MOUNTS='/proc/mounts'
 
+GRUB='/usr/sbin/grub'
+
 # hash keys
 DEGRADED='degraded'
 PARTITIONS_IN_CONF='configured_drives' # drives found in mdadm.conf
@@ -219,7 +221,7 @@ def add_drive_to_mirror(arrays_hash):
     write_msg("Copying MBR from '"+active_device+"' to '"+target_device+"'")
     sp.call(['dd','if='+active_device,'of='+target_device,'bs=512','count=1'])
     '''
-    write_msg("Copying MBR onto %s", target_device)
+    write_msg("Copying MBR onto %s" % target_device)
     command = [GRUB, '--batch']
     child = sp.Popen(command, stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.STDOUT)
     child.stdin.write("device (hd0) %s\n" % target_device)
