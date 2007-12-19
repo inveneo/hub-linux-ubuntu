@@ -221,7 +221,7 @@ def add_drive_to_mirror(arrays_hash):
     write_msg("Copying MBR from '"+active_device+"' to '"+target_device+"'")
     sp.call(['dd','if='+active_device,'of='+target_device,'bs=512','count=1'])
     '''
-    write_msg("Copying MBR onto %s" % target_device)
+    write_msg("Installing GRUB on new drive %s" % target_device)
     command = [GRUB, '--batch']
     child = sp.Popen(command, stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.STDOUT)
     child.stdin.write("device (hd0) %s\n" % target_device)
