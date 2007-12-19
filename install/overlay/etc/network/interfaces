@@ -8,11 +8,9 @@ iface lo inet loopback
 # WAN interface
 auto eth0
 iface eth0 inet dhcp
-	pre-up iptables -t nat -A POSTROUTING -o $IFACE -j MASQUERADE
-	pre-up iptables -A INPUT -i eth0 -p tcp -m tcp --dport 10000 -j DROP 
+	pre-up /opt/inveneo/sbin/wan-firewall.sh up
 
-	post-down iptables -t nat -D POSTROUTING -o $IFACE -j MASQUERADE
-	post-down iptables -D INPUT -i eth0 -p tcp -m tcp --dport 10000 -j DROP
+	post-down /opt/inveneo/sbin/wan-firewall.sh down
 
 # LAN interface (runs DHCP server on this)
 auto eth1 
