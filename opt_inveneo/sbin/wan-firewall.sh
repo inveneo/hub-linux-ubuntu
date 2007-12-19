@@ -3,7 +3,18 @@
 # set a reasonable path
 PATH=/bin:/sbin:/usr/bin:/usr/sbin
 
-BLOCK_PORTS="10000 8008"
+# default ports to block on wan interface are:
+# 80 (http)
+# 443 (https)
+# 10000 (webmin)
+# 8008 (inveneo configuration server)
+# 8088 (asterisk configuration)
+# 631 (cups and cups admin)
+# 3128 (squid web proxy)
+# 389 (ldap)
+# 53 (dns)
+
+BLOCK_PORTS="80 443 10000 8008 8088 631 3128 389 53"
 IFACE="eth0"
 
 do_wall_up() {
@@ -13,7 +24,8 @@ do_wall_up() {
     # Blocked ports
     for PORT in $BLOCK_PORTS 
     do
-	iptables -A INPUT -i $IFACE -p tcp -m tcp --dport $PORT -j DROP 
+	iptables -A INPUT -i $IFACE -p tcp --dport $PORT -j DROP 
+	iptables -A INPUT -i $IFACE -p udp --dport $PORT -j DROP 
     done
 }
 
@@ -24,7 +36,8 @@ do_wall_down() {
     # Blocked ports
     for PORT in $BLOCK_PORTS
     do
-	iptables -D INPUT -i $IFACE -p tcp -m tcp --dport $PORT -j DROP
+	iptables -D INPUT -i $IFACE -p tcp --dport $PORT -j DROP
+	iptables -D INPUT -i $IFACE -p udp --dport $PORT -j DROP
     done
 }
 
