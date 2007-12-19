@@ -219,7 +219,7 @@ def add_drive_to_mirror(arrays_hash):
     # now the MBR
     
     write_msg("Copying MBR and GRUB from '"+active_device+"' to '"+target_device+"'")
-    sp.call(['dd','if='+active_device,'of='+target_device,'bs=512','count=64'])
+    sp.call(['dd','if='+active_device,'of='+target_device,'bs=512','count=63'])
    
     # GRUB install doesn't work unless system is _already_ synced and 
     # grub stage1.5 and stage2 are present in the file system...

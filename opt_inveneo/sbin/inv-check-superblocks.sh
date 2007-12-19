@@ -25,7 +25,7 @@ part_is_raid() {
 # args are: array-device device1 device2
 # e.g. check_raid /dev/md0 /dev/sdb1 /dev/sdb2
 check_raid() { 
-    mdadm --detail --brief --test $1
+    mdadm --detail --brief --test $1 2>/dev/null
     if [ $? -lt 2 ]
     then
         echo "RAID array at $1 already active"
@@ -91,11 +91,11 @@ check_raid() {
     
     # Ok, if we got here we have at _least_ one drive present and no superblock
     echo "Attempting to rewrite super-blocks for DEVICE: $DRIVE1 $DRIVE2 on ARRAY: $1"
-    yes | mdadm --create $1 --size=max --level=1 --raid-devices=2 --auto=yes  $DRIVE1 $DRIVE2
+    yes | mdadm --create $1 --size=max --level=1 --raid-devices=2 --auto=yes  $DRIVE1 $DRIVE2 2>/dev/null
     if [ $? -eq 0 ]
         then
         echo "stopping newly created array"
-        mdadm --stop $1
+        mdadm --stop $1 2>/dev/null
     fi
 
 }
