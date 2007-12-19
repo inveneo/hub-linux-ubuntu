@@ -217,9 +217,13 @@ def add_drive_to_mirror(arrays_hash):
                 sp.call(['mdadm','--zero-superblock','/dev/'+dev[3]])
                 
     # now the MBR
-    '''
-    write_msg("Copying MBR from '"+active_device+"' to '"+target_device+"'")
-    sp.call(['dd','if='+active_device,'of='+target_device,'bs=512','count=1'])
+    
+    write_msg("Copying MBR and GRUB from '"+active_device+"' to '"+target_device+"'")
+    sp.call(['dd','if='+active_device,'of='+target_device,'bs=512','count=64'])
+   
+    # GRUB install doesn't work unless system is _already_ synced and 
+    # grub stage1.5 and stage2 are present in the file system...
+
     '''
     write_msg("Installing GRUB on new drive %s" % target_device)
     command = [GRUB, '--batch']
@@ -229,6 +233,7 @@ def add_drive_to_mirror(arrays_hash):
     child.stdin.write("setup (hd0)\n")
     child.stdin.write("quit\n")
     child.communicate()
+    '''
 
     # now copy over the partition table from the good drive
     write_msg("Copying partition table to: "+target_device)
