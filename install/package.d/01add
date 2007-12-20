@@ -36,13 +36,13 @@ vim             install
 nmap            install
 
 # services
-#dnsmasq	install
 bind9		install
 dhcp3-server	install
 dhcp3-client 	install
 apache2 	install
 squid3	        install
 squid-cgi	install
+squidguard	install
 libnss-mdns	install
 samba           install
 smbclient       install

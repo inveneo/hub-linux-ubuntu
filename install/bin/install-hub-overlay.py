@@ -88,9 +88,13 @@ def fix_owners(opt_root):
     for conf in glob.glob(path.join(quagga_conf_dir,'*.conf')):
         os.chown(path.join(quagga_conf_dir, conf),uinfo[2],uinfo[3])
 
-    # fix squid cache dir
+    # fix squid cache dir and squidGuard dbs
     uinfo=pwd.getpwnam('proxy')
     path.walk(path.join(overlay,'srv','squid3'), \
+        folder_visitor, \
+        lambda f: os.chown(f, uinfo[2],uinfo[3]))
+
+    path.walk(path.join(overlay,'var','lib','squidguard','db'), \
         folder_visitor, \
         lambda f: os.chown(f, uinfo[2],uinfo[3]))
     
