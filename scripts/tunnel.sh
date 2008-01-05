@@ -1,5 +1,9 @@
 #!/bin/sh
 
+#
+# template for setting up remote tunnel scripts
+#
+
 HOST=scooter.inveneo.org
 TUNNELUSER=invtunnel
 PORT=40000
