@@ -13,8 +13,9 @@ PATH=/bin:/sbin:/usr/bin:/usr/sbin
 # 3128 (squid web proxy)
 # 389 (ldap)
 # 53 (dns)
+# 5353 (mDns)
 
-BLOCK_PORTS="80 443 10000 8008 8088 631 3128 389 53"
+BLOCK_PORTS="80 443 10000 8008 8088 631 3128 389 53 5353"
 IFACE="eth0"
 
 do_wall_up() {
