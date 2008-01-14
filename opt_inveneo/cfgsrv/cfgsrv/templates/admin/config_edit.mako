@@ -18,7 +18,7 @@ ${h.form(h.url(controller='admin', action='config_edit_process', id=c.Config.id)
 <td>Language:</td>
 <td>
 ${ h.select('lang',
-    h.options_for_select(h.get_locales_as_list(), c.Config.lang)) }
+    h.options_for_select(h.get_langs_as_list(), c.Config.lang)) }
 </td>
 % if c.Error and c.Error.has_key('lang'):
      <td><b>${c.Error['lang']}<b></td>

@@ -140,8 +140,8 @@ def get_timezones_as_string_list():
         list.append(tz[0] + ' ' + tz[1])
     return list
 
-def get_locales_as_list():
+def get_langs_as_list():
     list = []
-    for l in g.LOCALES_LIST:
+    for l in g.LANGS_LIST:
         list.append(l)
         return list

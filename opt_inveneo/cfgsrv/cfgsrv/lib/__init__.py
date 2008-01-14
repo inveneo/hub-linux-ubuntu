@@ -1,6 +1,6 @@
 # tried to put this method into helpers.py and import it
 # does not work though -- rjocham 
-#import configurationserver.lib.helpers as h
+#import cfgsrv.lib.helpers as h
 import os
 import glob
 

@@ -32,7 +32,7 @@ ${h.end_form()}
 </p>
 
 <p>
-${h.form(h.url(controller='admin', action='reset_client_config', id='deaddeadbeef'), method='post')}
+${h.form(h.url(controller='admin', action='reset_client_config', id=g.DEFAULT_MAC), method='post')}
 <p><input type="submit" value="Reset Client Config" class="button" onclick="return confirmSubmit()"/></p>
 ${h.end_form()}
 </p>

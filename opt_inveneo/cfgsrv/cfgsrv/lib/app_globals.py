@@ -39,7 +39,7 @@ class Globals(object):
     NONE_TYPE = "<type 'NoneType'>"
     BUFF_SIZE = 1024
     MAC_REGEXP = '^[0-9a-f]{12,12}$'
-    LOCALE_REGEXP = '^[a-z][a-z](_[A-Z][A-Z](.[uU][tT][fF]-8)?)?$'
+    LANG_REGEXP = '^[a-z][a-z](_[A-Z][A-Z](.[uU][tT][fF]-8)?)?$'
     DEFAULT_MAC = 'deaddeadbeef'
 
     # globals Ralph had in the helpers.py class
@@ -130,7 +130,7 @@ class Globals(object):
     ['(GMT+13:00)', 'Nuku\'alofa']
     ]
 
-    LOCALES_LIST = [
+    LANGS_LIST = [
     'ar_DZ.UTF-8',
     'ar_SA.UTF-8',
     'bg_BG.UTF-8',

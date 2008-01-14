@@ -79,7 +79,7 @@ class AdminController(AuthenticationController):
 
         if not h.validate_with_regexp(MAC_REGEXP, config.mac, True, log):
             error['mac'] = 'MAC address must be 12 hex lower case values, no separator' 
-        if not h.validate_with_regexp(LOCALE_REGEXP, config.lang, True, log):
+        if not h.validate_with_regexp(LANG_REGEXP, config.lang, True, log):
             error['lang'] = 'Must be a valid lang string. E.g. en_UK.utf-8'
 
         return error
