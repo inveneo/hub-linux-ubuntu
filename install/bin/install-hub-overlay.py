@@ -16,6 +16,7 @@ import traceback
 import re
 import pwd
 import glob
+import shutil
 import subprocess as sp
 from os import path
 from sys import stderr,stdout
@@ -113,12 +114,6 @@ def pre_overlay_transfer(overlay_root, dest):
         os.remove(path.join(dest,"etc","rc2.d","S12hal"))
     except OSError, ex:
         pass # silent, must not have been there
-
-    # get rid of fstab so we can link later
-    try:
-        os.remove(path.join(dest,"etc","fstab"))
-    except OSError, ex:
-        pass # must not have been there
     
     # blow away webmin modules info cache so that new modules are found
     try:
@@ -161,7 +156,7 @@ def make_links(dest):
     if is_raid:
         fstab='fstab.raid'
     stdout.write("using: "+fstab+" for /etc/fstab\n") 
-    os.symlink(path.join(dest,'etc',fstab), path.join(dest,'etc','fstab'))
+    shutil.copyfile(path.join(dest,'etc',fstab), path.join(dest,'etc','fstab'))
     pass
 
 
