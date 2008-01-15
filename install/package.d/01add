@@ -53,6 +53,8 @@ webmin	        install
 asterisk	install
 zaptel		install
 zaptel-modules-2.6.22-14-generic	install
+pppoe		install
+pppoeconf 	install
 
 #freeradius	install
 #freeradius-mysql	install
