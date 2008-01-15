@@ -8,32 +8,6 @@ from cfgsrv.controllers.authentication import *
 
 log = logging.getLogger(__name__)
 
-def Get_initial_config(config = model.Config()):
-    config.mac = str(g.DEFAULT_MAC)
-
-    config.lang = g.DEFAULT_DB_ATTRS['INV_LANG']
-    config.time_zone = g.DEFAULT_DB_ATTRS['INV_TIME_ZONE']
-
-    config.config_host = g.DEFAULT_DB_ATTRS['INV_CONFIG_HOST']
-    config.config_host_type = g.DEFAULT_DB_ATTRS['INV_CONFIG_HOST_TYPE']
-
-    config.proxy_on = g.DEFAULT_DB_ATTRS['INV_PROXY_ON']
-
-    config.ntp_on = g.DEFAULT_DB_ATTRS['INV_NTP_ON']
-    config.ntp_servers = g.DEFAULT_DB_ATTRS['INV_NTP_SERVERS']
-
-    config.hub_docs_dirs_on = g.DEFAULT_DB_ATTRS['INV_HUB_DOCS_DIRS_ON']
-    config.local_shared_docs_dir_on = \
-            g.DEFAULT_DB_ATTRS['INV_LOCAL_SHARED_DOCS_DIR_ON']
-    config.local_user_docs_dir_on = \
-            g.DEFAULT_DB_ATTRS['INV_LOCAL_USER_DOCS_DIR_ON']
-
-    config.phone_home_on = g.DEFAULT_DB_ATTRS['INV_PHONE_HOME_ON']
-    config.phone_home_reg_url = g.DEFAULT_DB_ATTRS['INV_PHONE_HOME_REG_URL']
-    config.phone_home_checkin_url = \
-            g.DEFAULT_DB_ATTRS['INV_PHONE_HOME_CHECKIN_URL']
-    return config
-
 class AdminController(AuthenticationController):
 
     ###########################
@@ -61,7 +35,7 @@ class AdminController(AuthenticationController):
             q = o_q.get(key)
             log.debug('found by primary key')
                 
-        if str(type(q)) == NONE_TYPE: # this code stinks
+        if str(type(q)) == g.NONE_TYPE: # this code stinks
             q = model.Config()
 
         return q

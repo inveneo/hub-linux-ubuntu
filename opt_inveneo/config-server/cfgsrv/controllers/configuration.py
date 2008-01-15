@@ -196,7 +196,7 @@ class ConfigurationController(BaseController):
 
         log.info('type : ' + str(type(initialconfig_q)))
 
-        if str(type(initialconfig_q)) == NONE_TYPE: # this code stinks
+        if str(type(initialconfig_q)) == g.NONE_TYPE: # this code stinks
             map.update(DEFAULT_DB_ATTRS)
         else:
             map.update(self._create_db_config_map(initialconfig_q))
