@@ -1,4 +1,10 @@
 """The application's Globals object"""
+
+"""
+Please refer to:
+    http://svn.inveneo.org/browse/wsvn/inveneo-linux-ubuntu/trunk/opt_inveneo/lib/python/inveneo/config.py
+"""
+
 from pylons import config
 
 class Globals(object):
@@ -24,9 +30,9 @@ class Globals(object):
         'INV_NTP_ON': True,
         'INV_NTP_SERVERS': "hub.local:pool.ntp.org:ntp.ubuntu.com",
 
-        'INV_HUB_DOCS_DIRS_ON': True,
-        'INV_LOCAL_SHARED_DOCS_DIR_ON': False,
         'INV_LOCAL_USER_DOCS_DIR_ON': False,
+        'INV_LOCAL_SHARED_DOCS_DIR_ON': False,
+        'INV_HUB_DOCS_DIRS_ON': True,
 
         'INV_PHONE_HOME_ON': False,
         'INV_PHONE_HOME_REG_URL': "http://community.inveneo.org/phonehome/reg",

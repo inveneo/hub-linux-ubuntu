@@ -1,21 +1,29 @@
 <%include file="../header.mako"/>
 <h3 class="header">Dashboard for ${c.Server.name} Server</h3>
 
-Server On:
+<p>
+Server Enabled:
 %if c.Server.server_on:
 <span class="green inline">YES</span>
 <span class="post_link">
-${h.link_to('Switch Off', url=h.url(controller='admin', action='set_server_on', id=c.Server.id), method='post')}
+${h.link_to('Disable',
+    url=h.url(controller='admin', action='set_server_on', id=c.Server.id),
+    method='post')}
 </span>
 % else:
 <span class="red">NO</span>
 <span class="post_link">
-${h.link_to('Switch On', url=h.url(controller='admin', action='set_server_on', id=c.Server.id), method='post')}
+${h.link_to('Enable',
+    url=h.url(controller='admin', action='set_server_on', id=c.Server.id),
+    method='post')}
 </span>
 % endif
-<p/>
-${h.form(h.url(controller='admin', action='set_initial_config'), method='get')}
-<p><input type="submit" value="Set Initial Config" class="button" /></p>
+</p>
+
+<p>
+${h.form(h.url(controller='admin', action='set_initial_config'),
+    method='get')}
+<input type="submit" value="Set Initial Config" class="button" />
 ${h.end_form()}
 </p>
 

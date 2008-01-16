@@ -19,25 +19,23 @@ class AdminController(AuthenticationController):
     ###########################    
     def _get_config_entry_by_id_or_mac_or_create(self, key):
         key = str(key)
-
-        log.debug('get config entry with key: ' + key)
-
-        o_q = model.Session.query(model.Config)
+        log.debug('_get_config_entry_by_id_or_mac_or_create(%s)' % key)
+        conf = model.Session.query(model.Config)
         if len(key) == 12:
+            # look for MAC
             try:
-                q = o_q.filter(model.Config.mac == key).one()
-                log.debug('found by mac')
+                q = conf.filter(model.Config.mac == key).one()
+                log.debug('MAC found')
             except:
                 q = model.Config()
                 q.mac = key
-                log.debug('create new config')
+                log.debug('MAC not found: create new config')
         else:
-            q = o_q.get(key)
-            log.debug('found by primary key')
-                
-        if str(type(q)) == g.NONE_TYPE: # this code stinks
+            # look for Primary Key
+            q = conf.get(key)
+            log.debug('Primary Key found')
+        if q == None:
             q = model.Config()
-
         return q
        
     def _validate_configuration(self, config, is_edit):
@@ -51,9 +49,9 @@ class AdminController(AuthenticationController):
             except:
                 pass
 
-        if not h.validate_with_regexp(MAC_REGEXP, config.mac, True, log):
+        if not h.validate_with_regexp(g.MAC_REGEXP, config.mac, True, log):
             error['mac'] = 'MAC address must be 12 hex lower case values, no separator' 
-        if not h.validate_with_regexp(LANG_REGEXP, config.lang, True, log):
+        if not h.validate_with_regexp(g.LANG_REGEXP, config.lang, True, log):
             error['lang'] = 'Must be a valid lang string. E.g. en_UK.utf-8'
 
         return error
@@ -65,34 +63,46 @@ class AdminController(AuthenticationController):
                 shutil.copyfile(dir + '../blank.tar.gz', dir + '/' + f)
 
     def _get_inveneo_server(self):
-        return model.Session.query(model.Server).filter(model.Server.name == 'inveneo').one()
+        """return the one and only record as a scalar, else raise"""
+        q = model.Session.query(model.Server)
+        return q.filter(model.Server.name == 'inveneo').one()
 
     ###########################
     # controller methods
     ###########################    
     def index(self):
+        """simply redirect to dashboard"""
+        log.debug('index()')
         return redirect_to('/admin/dashboard')
 
     def dashboard(self):
+        """render the dashboard"""
+        log.debug('dashboard()')
         c.Server = self._get_inveneo_server()
-
         return render('/admin/dashboard.mako')
 
     def set_server_on(self, id):
-        log.debug('switching server on or off (no "on" parameter is toggle')
-        q = self._get_inveneo_server()
-
+        """switch server ON or OFF (no param is toggle)"""
+        log.debug('set_server_on()')
+        server = self._get_inveneo_server()
         if not h.does_parameter_exist(request, 'on'):
             log.debug('toggling')
-            q.server_on = h.toggle_boolean(q.server_on)
+            server.server_on = h.toggle_boolean(server.server_on)
         else:
-            log.debug('setting on: ' + request.params['on'])
-            q.server_on = request.params['on'] == 'True'
-
-        model.Session.update(q)
+            value = request.params['on'].lower()
+            log.debug('setting on: ' + value)
+            server.server_on = (value == 'true' or value == '1' or \
+                    value == 'yes')
+        model.Session.update(server)
         model.Session.commit()
-
         return redirect_to('/admin/dashboard')
+
+    def set_initial_config(self):
+        q = self._get_config_entry_by_id_or_mac_or_create(g.DEFAULT_MAC)
+        model.Session.save(q)
+        model.Session.commit()
+        c.Config = None
+        return self.edit(g.DEFAULT_MAC)
 
     def reset_client_config(self, id):
         log.debug('reseting all configurations for clients and stations')
@@ -106,15 +116,6 @@ class AdminController(AuthenticationController):
         self._copy_reset_config(h.get_config_dir_user())
 
         return redirect_to('/admin/dashboard')    
-
-    def set_initial_config(self):
-        q = self._get_config_entry_by_id_or_mac_or_create(g.DEFAULT_MAC)
-        model.Session.save(q)
-        model.Session.commit()
-
-        c.Config = None
-
-        return self.edit(g.DEFAULT_MAC)
 
     def edit(self, id):
         c.Config = self._get_config_entry_by_id_or_mac_or_create(id)
