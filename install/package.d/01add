@@ -27,6 +27,17 @@ hpijs-ppds      install
 foo2zjs         install
 openprinting-ppds install
 
+# cd/dvd burning
+wodim	install
+genisoimage install
+icedax	    instll
+mkisofs	    install
+cdda2wav    install
+lame	    install
+cdrecord	install
+cdrskin		install
+dvd+rw-tools	install
+
 # For Jeff's sanity
 emacs-nox   install
 python-mode install
