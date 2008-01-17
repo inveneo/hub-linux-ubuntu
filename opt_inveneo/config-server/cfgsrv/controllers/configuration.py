@@ -127,28 +127,13 @@ class ConfigurationController(BaseController):
         return q.server_on
 
     def _is_station_on(self, mac):
-        ret_value = False
-        try:
-            q = model.Session.query(model.Station).filter(model.Station.mac == mac).one()
-            ret_value = q.station_on
-        except:
-            pass
-     
-        log.debug('Checking if station is on for mac ' + str(mac) + ' -- ' + str(ret_value))
-        return ret_value
-
-    def _add_station_mac_to_list_if_new(self, mac):
-        mac = str(mac)
-        log.debug('adding station mac to list if not existing')
-        try:
-            q = model.Session.query(model.Station).filter(model.Station.mac == mac).one()
-            log.debug('station ALREADY existing: ' + mac)
-        except:       
-            log.debug('station is added: ' + mac)
-            newstation_q = model.Station()
-            newstation_q.mac = mac
-            model.Session.save(newstation_q)
-            model.Session.commit()
+        log.debug('_is_station_on(%s)' % mac)
+        q = model.Session.query(model.Station)
+        r = q.filter(model.Station.mac == mac).first()
+        if r:
+            return r.on
+        else:
+            return False
 
     ###########################
     # controller methods
@@ -305,35 +290,24 @@ class ConfigurationController(BaseController):
 
         return
 
-    def set_station_on(self, id):
-        mac = str(id)
-
-        log.debug('setting on/off status on station ' + mac)
-
-        q = model.Session.query(model.Station).filter(model.Station.mac == mac).one()
-        q.station_on = not q.station_on
-
-        model.Session.update(q)
-        model.Session.commit()
-
-        log.debug('station ' + mac + ' is now on: ' + str(q.station_on))
-
+    def toggle_station_on(self, mac):
+        log.debug('set_station_on(%s)' % mac)
+        q = model.Session.query(model.Station)
+        r = q.filter(model.Station.mac == mac).first()
+        if r:
+            r.on = not r.on
+            model.Session.save(r)
+            model.Session.commit()
+        else:
+            log.debug('station %s not found!' % mac)
         return redirect_to('/admin/list_station_configurations')
 
     def set_all_stations_on(self):
+        log.debug('set_all_stations_on(%s)' % mac)
         on_off = request.params['all_on']
         q = model.Session.query(model.Station)
-
-        log.debug('setting on/off status for all stations to ' + str(on_off))
-
-        for s in q.all():
-            s_q = model.Session.query(model.Station).filter(model.Station.mac == s.mac).one()
-            # this is weird -- the short version does not work -- rjocham
-            if on_off == 'True':
-                s_q.station_on = True
-            else:
-                s_q.station_on = False
-            model.Session.update(s_q)
-            model.Session.commit()
-
+        for r in q.all():
+            r.on = True
+            model.Session.save(r)
+        model.Session.commit()
         return redirect_to('/admin/list_station_configurations')

@@ -1,4 +1,4 @@
-<%inherit file="base.mako"/>
+<%inherit file="/base.mako"/>
 
 <h3 class="header">Configuration Server Login</h3>
 ${h.form(h.url(controller='signin', action='signin_process'), method='post')}

@@ -49,30 +49,13 @@ def setup_config(command, filename, section, vars):
 
     # Create default station
     print "Creating default station"
-    try:
-        q = model.Session.query(model.Config)
-        q.filter(model.Config.mac == g.DEFAULT_MAC).one()
+    q = model.Session.query(model.Station)
+    r = q.filter(model.Station.mac == g.DEFAULT_MAC).first()
+    print r
+    if r:
         print "Station already existing"
-    except:
-        station = model.Config()
-        station.mac = str(g.DEFAULT_MAC)
-        station.lang = g.DEFAULT_DB_ATTRS['INV_LANG']
-        station.time_zone = g.DEFAULT_DB_ATTRS['INV_TIME_ZONE']
-        station.config_host = g.DEFAULT_DB_ATTRS['INV_CONFIG_HOST']
-        station.config_host_type = g.DEFAULT_DB_ATTRS['INV_CONFIG_HOST_TYPE']
-        station.proxy_on = g.DEFAULT_DB_ATTRS['INV_PROXY_ON']
-        station.ntp_on = g.DEFAULT_DB_ATTRS['INV_NTP_ON']
-        station.ntp_servers = g.DEFAULT_DB_ATTRS['INV_NTP_SERVERS']
-        station.hub_docs_dirs_on = g.DEFAULT_DB_ATTRS['INV_HUB_DOCS_DIRS_ON']
-        station.local_shared_docs_dir_on = \
-                g.DEFAULT_DB_ATTRS['INV_LOCAL_SHARED_DOCS_DIR_ON']
-        station.local_user_docs_dir_on = \
-                g.DEFAULT_DB_ATTRS['INV_LOCAL_USER_DOCS_DIR_ON']
-        station.phone_home_on = g.DEFAULT_DB_ATTRS['INV_PHONE_HOME_ON']
-        station.phone_home_reg_url = \
-                g.DEFAULT_DB_ATTRS['INV_PHONE_HOME_REG_URL']
-        station.phone_home_checkin_url = \
-                g.DEFAULT_DB_ATTRS['INV_PHONE_HOME_CHECKIN_URL']
+    else:
+        station = model.Station(g.DEFAULT_MAC)
         model.Session.save(station)
         model.Session.commit()
         print "Successfully created default station"
