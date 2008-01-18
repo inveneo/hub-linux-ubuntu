@@ -46,7 +46,6 @@ class Globals(object):
     BUFF_SIZE = 1024
     MAC_REGEXP = '^[0-9a-f]{12,12}$'
     LANG_REGEXP = '^[a-z][a-z](_[A-Z][A-Z](.[uU][tT][fF]-8)?)?$'
-    DEFAULT_MAC = 'deaddeadbeef'
 
     # globals Ralph had in the helpers.py class
     TIMEZONES_LIST = [
@@ -195,6 +194,10 @@ class Globals(object):
     TEMP_DIR = 'tmp'
     SAVE_DIR = 'saved-configuration'
     HOST_TYPES = ['station', 'hub']
+
+    DEFAULT_SERVER = 'inveneo-hub'
+    DEFAULT_STATION = 'inveneo-station'
+    DEFAULT_MAC = 'deaddeadbeef'
 
     def __init__(self):
         """One instance of Globals is created during application

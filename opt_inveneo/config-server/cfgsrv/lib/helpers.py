@@ -137,11 +137,5 @@ def validate_number(min, max, value, log = logging.getLogger(__name__)):
 def get_timezones_as_string_list():
     list = []
     for tz in g.TIMEZONES_LIST:
-        list.append(tz[0] + ' ' + tz[1])
+        list.append('%s %s' % (tz[0], tz[1]))
     return list
-
-def get_langs_as_list():
-    list = []
-    for l in g.LANGS_LIST:
-        list.append(l)
-        return list

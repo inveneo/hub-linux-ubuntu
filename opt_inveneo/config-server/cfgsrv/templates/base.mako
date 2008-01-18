@@ -4,6 +4,7 @@
     <head>
         <title>Inveneo Configuration Server</title>
         ${h.stylesheet_link_tag('/screen.css')}
+
         <script type="text/javascript">
         function confirmSubmit() {
         var agree = confirm("Are you sure you wish to continue?");
@@ -14,6 +15,7 @@
         }
         </script>
     </head>
+
     <body>
         <img src="/inveneo.png"><br/>
         %if 'admin' in session.keys() and session['admin']:

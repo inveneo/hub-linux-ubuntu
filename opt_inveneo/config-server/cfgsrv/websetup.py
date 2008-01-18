@@ -49,10 +49,9 @@ def setup_config(command, filename, section, vars):
 
     # Create default station
     print "Creating default station"
-    q = model.Session.query(model.Station)
-    r = q.filter(model.Station.mac == g.DEFAULT_MAC).first()
-    print r
-    if r:
+    stations = model.Session.query(model.Station)
+    station = stations.filter(model.Station.mac == g.DEFAULT_MAC).first()
+    if station:
         print "Station already existing"
     else:
         station = model.Station(g.DEFAULT_MAC)
@@ -62,13 +61,13 @@ def setup_config(command, filename, section, vars):
 
     # Create default server
     print "Creating default server"
-    try:
-        q = model.Session.query(model.Server)
-        q.filter(model.Server.name == 'inveneo').one()
+    servers = model.Session.query(model.Server)
+    server = servers.filter(model.Server.name == g.DEFAULT_SERVER).first()
+    if server:
         print "Server already existing"
-    except:
-        s_q = model.Server()
-        model.Session.save(s_q)
+    else:
+        server = model.Server(g.DEFAULT_SERVER)
+        model.Session.save(server)
         model.Session.commit()
         print "Successfully created default server"
 

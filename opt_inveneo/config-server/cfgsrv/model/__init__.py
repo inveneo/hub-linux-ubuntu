@@ -3,10 +3,12 @@ from sqlalchemy import Column, MetaData, Table, types
 from sqlalchemy.orm import mapper
 from sqlalchemy.orm import scoped_session, sessionmaker
 
+g = config['pylons.g']
+
 # Global session manager.  Session() returns the session object
 # appropriate for the current web request.
 Session = scoped_session(sessionmaker(autoflush=True, transactional=True,
-                                          bind=config['pylons.g'].sa_engine))
+                                          bind=g.sa_engine))
 
 # Global metadata. If you have multiple databases with overlapping table
 # names, you'll need a metadata for each database.
@@ -47,7 +49,7 @@ class Station(object):
         self.mac = mac
         self.on = True
         #INV_HOSTNAME
-        self.hostname = 'generic-station'
+        self.hostname = g.DEFAULT_STATION
         #INV_LANG and INV_LANGUAGE
         self.language = 'en_US.UTF-8'
         #INV_TIME_ZONE
@@ -55,23 +57,23 @@ class Station(object):
         #INV_NTP_ON
         self.ntp_on = True
         #INV_NTP_SERVERS
-        self.ntp_servers = 'inveneo-hub:pool.ntp.org:ntp.ubuntu.com'
+        self.ntp_servers = g.DEFAULT_SERVER + ':pool.ntp.org:ntp.ubuntu.com'
         #INV_CONFIG_HOST
-        self.config_host = 'inveneo-hub'
+        self.config_host = g.DEFAULT_SERVER
         #INV_CONFIG_HOST_TYPE
         self.config_host_type = 'hub'
         #INV_PROXY_ON
         self.proxy_on = False
         #INV_HTTP_PROXY
-        self.http_proxy = 'inveneo-hub'
+        self.http_proxy = g.DEFAULT_SERVER
         #INV_HTTP_PROXY_PORT
         self.http_proxy_port = 80
         #INV_HTTPS_PROXY
-        self.https_proxy = 'inveneo-hub'
+        self.https_proxy = g.DEFAULT_SERVER
         #INV_HTTPS_PROXY_PORT
         self.https_proxy_port = 443
         #INV_FTP_PROXY
-        self.ftp_proxy = 'inveneo-hub'
+        self.ftp_proxy = g.DEFAULT_SERVER
         #INV_FTP_PROXY_PORT
         self.ftp_proxy_port = 21
         #INV_LOCAL_USER_DOCS_DIR_ON
@@ -127,14 +129,24 @@ mapper(Station, station_table)
 
 # servers table
 servers_table = Table('servers', metadata,
-    Column('id', types.Integer, primary_key=True),
-    Column('name', types.String(255), default="inveneo"),
+    Column('name', types.String(255), primary_key=True),
     Column('server_on', types.Boolean, default=True)
 )
 
 class Server(object):
+
+    def __init__(self, name):
+        """set default values on new config"""
+        self.name = name
+        self.server_on = True
+
     def __str__(self):
-        return str(type(self))
+        """return object contents as string"""
+        s = ''
+        s += 'id = %s, ' % str(self.id)
+        s += 'name = %s, ' % str(self.name)
+        s += 'server_on = %s, ' % str(self.server_on)
+        return s
 
 mapper(Server, servers_table)
 

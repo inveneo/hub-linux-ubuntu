@@ -65,7 +65,7 @@ class AdminController(AuthenticationController):
     def _get_inveneo_server(self):
         """return the one and only record as a scalar, else raise"""
         q = model.Session.query(model.Server)
-        return q.filter(model.Server.name == 'inveneo').one()
+        return q.filter(model.Server.name == g.DEFAULT_SERVER).one()
 
     ###########################
     # controller methods
@@ -78,8 +78,11 @@ class AdminController(AuthenticationController):
     def dashboard(self):
         """render the dashboard"""
         log.debug('dashboard()')
-        c.Server = self._get_inveneo_server()
-        return render('/admin/dashboard.mako')
+        servers = model.Session.query(model.Server)
+        c.Server = servers.filter(model.Server.name == g.DEFAULT_SERVER).one()
+        stations = model.Session.query(model.Station)
+        c.Station = stations.filter(model.Station.mac == g.DEFAULT_MAC).one()
+        return render('/dashboard.mako')
 
     def set_server_on(self, id):
         """switch server ON or OFF (no param is toggle)"""
@@ -89,10 +92,9 @@ class AdminController(AuthenticationController):
             log.debug('toggling')
             server.server_on = h.toggle_boolean(server.server_on)
         else:
-            value = request.params['on'].lower()
+            value = request.params['on']
             log.debug('setting on: ' + value)
-            server.server_on = (value == 'true' or value == '1' or \
-                    value == 'yes')
+            server.server_on = h.is_affirmative(value)
         model.Session.update(server)
         model.Session.commit()
         return redirect_to('/admin/dashboard')
@@ -120,7 +122,7 @@ class AdminController(AuthenticationController):
     def edit(self, id):
         c.Config = self._get_config_entry_by_id_or_mac_or_create(id)
         c.Edit = True
-        return render('/admin/config_edit.mako')
+        return render('/config_edit.mako')
 
     def config_remove(self, id):
         mac = str(id)
@@ -141,7 +143,7 @@ class AdminController(AuthenticationController):
     def config_add(self):
         c.Config = model.Config()
         c.Edit = False
-        return render('/admin/config_edit.mako')
+        return render('/config_edit.mako')
 
     def config_edit_process(self, id):
         log.debug('config edit process for: ' + str(id))
@@ -187,7 +189,7 @@ class AdminController(AuthenticationController):
             c.Error = error
             c.Edit = is_edit
             c.Config = newconfig_q
-            return render('/admin/config_edit.mako')
+            return render('/config_edit.mako')
 
         c.Config = None
 
@@ -215,10 +217,10 @@ class AdminController(AuthenticationController):
     def list_initial_configurations(self):
         config_q = model.Session.query(model.Config)
         c.Configs = config_q.all()
-        return render('/admin/list_initial_configurations.mako')
+        return render('/list_initial_configurations.mako')
 
     def list_station_configurations(self):
         config_q = model.Session.query(model.Station)
         c.Stations = config_q.all()
-        return render('/admin/list_station_configurations.mako')
+        return render('/list_station_configurations.mako')
 

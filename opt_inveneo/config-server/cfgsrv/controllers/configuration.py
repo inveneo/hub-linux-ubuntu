@@ -121,7 +121,7 @@ class ConfigurationController(BaseController):
         return DEFAULT_DYN_ATTRS
  
     def _is_server_on(self):
-        q = model.Session.query(model.Server).filter(model.Server.name == 'inveneo').one()
+        q = model.Session.query(model.Server).filter(model.Server.name == g.DEFAULT_SERVER).one()
         
         log.debug('Checking if configuration-server is on: ' + str(q.server_on))
         return q.server_on

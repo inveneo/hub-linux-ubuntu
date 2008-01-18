@@ -1,4 +1,4 @@
-<%inherit file="../base.mako"/>
+<%inherit file="base.mako"/>
 
 <h3 class="header">Configuration Server</h3>
 <p>
