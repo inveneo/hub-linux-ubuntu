@@ -19,7 +19,7 @@ class ConfigurationController(BaseController):
         config_file_path = os.path.join(g.SAVE_DIR, category, name + '.tar.gz')
         if not os.path.exists(config_file_path):
             abort(404, 'Config file not found')
-        tmp_config_file = h.copy_to_temp_file(local_station_file, log)
+        tmp_config_file = h.copy_to_temp_file(config_file_path, log)
         if not tmp_config_file:
             abort(404, 'No config file found')
         fapp = paste.fileapp.FileApp(tmp_config_file)
@@ -100,7 +100,7 @@ class ConfigurationController(BaseController):
         tmp_file_path = h.tmp_file_name(log)
         output = open(tmp_file_path, 'a+')
         proplist = ['#Initial Configuration\n']
-        for key, value in station.properties.iteritems():
+        for key, value in station.properties().iteritems():
             line = '%s="%s"\n' % (key, h.escape_quotes(value))
             proplist.append(line)
         output.writelines(proplist)
@@ -146,7 +146,6 @@ class ConfigurationController(BaseController):
                     key = elems[0].strip()
                     value = elems[1].strip().strip('"')
                     items[key] = value
-                    log.debug('%s=%s' % (key, value))
 
         # update/add to DB
         stations = model.Session.query(model.Station)

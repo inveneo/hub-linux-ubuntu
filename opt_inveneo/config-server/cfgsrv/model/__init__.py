@@ -124,7 +124,8 @@ class Station(object):
             elif key == 'INV_PHONE_HOME_LONGITUDE':
                 self.phone_home_longitude = value
             else:
-                raise Exception("Invalid Key: %s", key)
+                #raise Exception("Invalid Key: %s", key)
+                pass
 
     def properties(self):
         """return _most_ object contents as a dictionary (all strings)"""

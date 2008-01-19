@@ -92,18 +92,22 @@ class AdminController(AuthenticationController):
         model.Session.commit()
         redirect_to('/admin/dashboard')
 
-    def edit_station(self, mac):
+    def edit_station(self):
         """edit the settings of a station, or create a new one"""
         mac = request.params.get('mac', g.DEFAULT_MAC)
         log.debug('edit_station(%s)' % mac)
+
+        # collect desired request params into dictionary
+        # XXX need to do validation here
+        items = request.params
+
         stations = model.Session.query(model.Station)
         station = stations.filter(model.Station.mac == mac).first()
-        if station:
-            station.update(request.params)
-            model.Session.update(station)
-        else:
-            station = model.Station(request.params)
+        if not station:
+            station = model.Station(mac)
             model.Session.save(station)
+        station.update(items)
+        model.Session.update(station)
         model.Session.commit()
         redirect_to('/admin/dashboard')
 
