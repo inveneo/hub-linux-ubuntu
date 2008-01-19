@@ -191,13 +191,14 @@ class Globals(object):
     # jwiggins additions
     STATION = 'station'
     USER = 'user'
-    TEMP_DIR = 'tmp'
-    SAVE_DIR = 'saved-configuration'
+    TEMP_DIR = '/opt/inveneo/config-server/tmp'
+    SAVE_DIR = '/opt/inveneo/config-server/saved-configuration'
     HOST_TYPES = ['station', 'hub']
 
+    DEFAULT_ADMIN = 'inveneo'
     DEFAULT_SERVER = 'inveneo-hub'
     DEFAULT_STATION = 'inveneo-station'
-    DEFAULT_MAC = 'deaddeadbeef'
+    DEFAULT_MAC = 'ffffffffffff'
 
     def __init__(self):
         """One instance of Globals is created during application

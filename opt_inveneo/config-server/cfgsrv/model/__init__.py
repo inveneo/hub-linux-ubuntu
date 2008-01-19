@@ -4,6 +4,7 @@ from sqlalchemy.orm import mapper
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 g = config['pylons.g']
+h = config['pylons.h']
 
 # Global session manager.  Session() returns the session object
 # appropriate for the current web request.
@@ -45,85 +46,122 @@ station_table = Table('station', metadata,
 class Station(object):
 
     def __init__(self, mac):
-        """set default values on new config"""
+        """create a default station with given MAC address"""
         self.mac = mac
         self.on = True
-        #INV_HOSTNAME
         self.hostname = g.DEFAULT_STATION
-        #INV_LANG and INV_LANGUAGE
         self.language = 'en_US.UTF-8'
-        #INV_TIME_ZONE
         self.time_zone = 'US/Pacific'
-        #INV_NTP_ON
         self.ntp_on = True
-        #INV_NTP_SERVERS
         self.ntp_servers = g.DEFAULT_SERVER + ':pool.ntp.org:ntp.ubuntu.com'
-        #INV_CONFIG_HOST
         self.config_host = g.DEFAULT_SERVER
-        #INV_CONFIG_HOST_TYPE
         self.config_host_type = 'hub'
-        #INV_PROXY_ON
         self.proxy_on = False
-        #INV_HTTP_PROXY
         self.http_proxy = g.DEFAULT_SERVER
-        #INV_HTTP_PROXY_PORT
         self.http_proxy_port = 80
-        #INV_HTTPS_PROXY
         self.https_proxy = g.DEFAULT_SERVER
-        #INV_HTTPS_PROXY_PORT
         self.https_proxy_port = 443
-        #INV_FTP_PROXY
         self.ftp_proxy = g.DEFAULT_SERVER
-        #INV_FTP_PROXY_PORT
         self.ftp_proxy_port = 21
-        #INV_LOCAL_USER_DOCS_DIR_ON
         self.local_user_docs_dir_on = False
-        #INV_LOCAL_SHARED_DOCS_DIR_ON
         self.local_shared_docs_dir_on = False
-        #INV_HUB_DOCS_DIRS_ON
         self.hub_docs_dirs_on = True
-        #INV_PHONE_HOME_ON
         self.phone_home_on = False
-        #INV_PHONE_HOME_REG_URL
         self.phone_home_reg_url = \
                 'http://community.inveneo.org/phone_home/register'
-        #INV_PHONE_HOME_CHECKIN_URL
         self.phone_home_checkin_url = \
                 'http://community.inveneo.org/phone_home/phone_home'
-        #INV_PHONE_HOME_LATITUDE
         self.phone_home_latitude = ''
-        #INV_PHONE_HOME_LONGITUDE
         self.phone_home_longitude = ''
+
+    def update(self, d):
+        """update state according to dictionary values"""
+        # XXX validate values
+        for key, value in d.iteritems():
+            if key == 'INV_HOSTNAME':
+                self.hostname = value
+            elif key == 'INV_LANG' or key == 'INV_LANGUAGE':
+                self.language = value
+            elif key == 'INV_TIME_ZONE':
+                # XXX this needs to be in the right format
+                self.time_zone = value
+            elif key == 'INV_NTP_ON':
+                self.ntp_on = h.is_true(value)
+            elif key == 'INV_NTP_SERVERS':
+                self.ntp_servers = value
+            elif key == 'INV_CONFIG_HOST':
+                self.config_host = value
+            elif key == 'INV_CONFIG_HOST_TYPE':
+                self.config_host_type = value
+            elif key == 'INV_PROXY_ON':
+                self.proxy_on = h.is_true(value)
+            elif key == 'INV_HTTP_PROXY':
+                self.http_proxy = value
+            elif key == 'INV_HTTP_PROXY_PORT':
+                self.http_proxy_port = int(value)
+            elif key == 'INV_HTTPS_PROXY':
+                self.https_proxy = value
+            elif key == 'INV_HTTPS_PROXY_PORT':
+                self.https_proxy_port = int(value)
+            elif key == 'INV_FTP_PROXY':
+                self.ftp_proxy = value
+            elif key == 'INV_FTP_PROXY_PORT':
+                self.ftp_proxy_port = int(value)
+            elif key == 'INV_LOCAL_USER_DOCS_DIR_ON':
+                self.local_user_docs_dir_on = h.is_true(value)
+            elif key == 'INV_LOCAL_SHARED_DOCS_DIR_ON':
+                self.local_shared_docs_dir_on = h.is_true(value)
+            elif key == 'INV_HUB_DOCS_DIRS_ON':
+                self.hub_docs_dirs_on = h.is_true(value)
+            elif key == 'INV_PHONE_HOME_ON':
+                self.phone_home_on = h.is_true(value)
+            elif key == 'INV_PHONE_HOME_REG_URL':
+                self.phone_home_reg_url = value
+            elif key == 'INV_PHONE_HOME_CHECKIN_URL':
+                self.phone_home_checkin_url = value
+            elif key == 'INV_PHONE_HOME_LATITUDE':
+                self.phone_home_latitude = value
+            elif key == 'INV_PHONE_HOME_LONGITUDE':
+                self.phone_home_longitude = value
+            else:
+                raise Exception("Invalid Key: %s", key)
+
+    def properties(self):
+        """return _most_ object contents as a dictionary (all strings)"""
+        d = {}
+        d['INV_HOSTNAME'] = self.hostname
+        d['INV_LANG'] = d['INV_LANGUAGE'] = self.language
+        d['INV_TIME_ZONE'] = self.time_zone
+        d['INV_NTP_ON'] = ['0', '1'][self.ntp_on]
+        d['INV_NTP_SERVERS'] = self.ntp_servers
+        d['INV_CONFIG_HOST'] = self.config_host
+        d['INV_CONFIG_HOST_TYPE'] = self.config_host_type
+        d['INV_PROXY_ON'] = ['0', '1'][self.proxy_on]
+        d['INV_HTTP_PROXY'] = self.http_proxy
+        d['INV_HTTP_PROXY_PORT'] = str(self.http_proxy_port)
+        d['INV_HTTPS_PROXY'] = self.https_proxy
+        d['INV_HTTPS_PROXY_PORT'] = str(self.https_proxy_port)
+        d['INV_FTP_PROXY'] = self.ftp_proxy
+        d['INV_FTP_PROXY_PORT'] = str(self.ftp_proxy_port)
+        d['INV_LOCAL_USER_DOCS_DIR_ON'] = \
+                ['no', 'yes'][self.local_user_docs_dir_on]
+        d['INV_LOCAL_SHARED_DOCS_DIR_ON'] = \
+                ['no', 'yes'][self.local_shared_docs_dir_on]
+        d['INV_HUB_DOCS_DIRS_ON'] = \
+                ['no', 'yes'][self.hub_docs_dirs_on]
+        d['INV_PHONE_HOME_ON'] = ['no', 'yes'][self.phone_home_on]
+        d['INV_PHONE_HOME_REG_URL'] = self.phone_home_reg_url
+        d['INV_PHONE_HOME_CHECKIN_URL'] = self.phone_home_checkin_url
+        d['INV_PHONE_HOME_LATITUDE'] = self.phone_home_latitude
+        d['INV_PHONE_HOME_LONGITUDE'] = self.phone_home_longitude
+        return d
 
     def __str__(self):
         """return object contents as string"""
-        s = ''
-        s += 'mac = %s, ' % str(self.mac)
-        s += 'on = %s, ' % str(self.on)
-        s += 'hostname = %s, ' % str(self.hostname)
-        s += 'language = %s, ' % str(self.language)
-        s += 'time_zone = %s, ' % str(self.time_zone)
-        s += 'ntp_on = %s, ' % str(self.ntp_on)
-        s += 'ntp_servers = %s, ' % str(self.ntp_servers)
-        s += 'config_host = %s, ' % str(self.config_host)
-        s += 'config_host_type = %s, ' % str(self.config_host_type)
-        s += 'proxy_on = %s, ' % str(self.proxy_on)
-        s += 'http_proxy = %s, ' % str(self.http_proxy)
-        s += 'http_proxy_port = %s, ' % str(self.http_proxy_port)
-        s += 'https_proxy = %s, ' % str(self.https_proxy)
-        s += 'https_proxy_port = %s, ' % str(self.https_proxy_port)
-        s += 'ftp_proxy = %s, ' % str(self.ftp_proxy)
-        s += 'ftp_proxy_port = %s, ' % str(self.ftp_proxy_port)
-        s += 'local_user_docs_dir_on = %s, ' % str(self.local_user_docs_dir_on)
-        s += 'local_shared_docs_dir_on = %s, ' % \
-                str(self.local_shared_docs_dir_on)
-        s += 'hub_docs_dirs_on = %s, ' % str(self.hub_docs_dirs_on)
-        s += 'phone_home_on = %s, ' % str(self.phone_home_on)
-        s += 'phone_home_reg_url = %s, ' % str(self.phone_home_reg_url)
-        s += 'phone_home_checkin_url = %s, ' % str(self.phone_home_checkin_url)
-        s += 'phone_home_latitude = %s, ' % str(self.phone_home_latitude)
-        s += 'phone_home_longitude = %s, ' % str(self.phone_home_longitude)
-        return s
+        d = self.properties()
+        d['mac'] = self.mac
+        d['on'] = str(self.on)
+        return str(d)
 
 mapper(Station, station_table)
 
@@ -136,7 +174,7 @@ servers_table = Table('servers', metadata,
 class Server(object):
 
     def __init__(self, name):
-        """set default values on new config"""
+        """set default values on new object"""
         self.name = name
         self.server_on = True
 
@@ -161,8 +199,25 @@ admins_table = Table('admins', metadata,
 )
 
 class Admin(object):
+
+    def __init__(self):
+        """set default values on new object"""
+        self.login_name = g.DEFAULT_ADMIN
+        self.first_name = g.DEFAULT_ADMIN
+        self.last_name = ''
+        self.password = ''
+        self.salt = 0
+
     def __str__(self):
-        return str(type(self))
+        """return object contents as string"""
+        s = ''
+        s += 'id = %s, ' % str(self.id)
+        s += 'login_name = %s, ' % str(self.login_name)
+        s += 'first_name = %s, ' % str(self.first_name)
+        s += 'last_name = %s, ' % str(self.last_name)
+        s += 'password = %s, ' % str(self.password)
+        s += 'salt = %s, ' % str(self.salt)
+        return s
 
 mapper(Admin, admins_table)
 

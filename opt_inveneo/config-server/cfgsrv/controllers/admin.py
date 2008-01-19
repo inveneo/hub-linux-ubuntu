@@ -17,6 +17,7 @@ class AdminController(AuthenticationController):
     ###########################
     # instance  helper methods
     ###########################    
+    """
     def _get_config_entry_by_id_or_mac_or_create(self, key):
         key = str(key)
         log.debug('_get_config_entry_by_id_or_mac_or_create(%s)' % key)
@@ -61,11 +62,7 @@ class AdminController(AuthenticationController):
             if str(f).endswith('.tar.gz'):
                 log.debug(dir + '../blank.tar.gz' + ' overwrites  ' + f)
                 shutil.copyfile(dir + '../blank.tar.gz', dir + '/' + f)
-
-    def _get_inveneo_server(self):
-        """return the one and only record as a scalar, else raise"""
-        q = model.Session.query(model.Server)
-        return q.filter(model.Server.name == g.DEFAULT_SERVER).one()
+    """
 
     ###########################
     # controller methods
@@ -84,21 +81,33 @@ class AdminController(AuthenticationController):
         c.Station = stations.filter(model.Station.mac == g.DEFAULT_MAC).one()
         return render('/dashboard.mako')
 
-    def set_server_on(self, id):
+    def toggle_server(self):
         """switch server ON or OFF (no param is toggle)"""
-        log.debug('set_server_on()')
-        server = self._get_inveneo_server()
-        if not h.does_parameter_exist(request, 'on'):
-            log.debug('toggling')
-            server.server_on = h.toggle_boolean(server.server_on)
-        else:
-            value = request.params['on']
-            log.debug('setting on: ' + value)
-            server.server_on = h.is_affirmative(value)
+        name = request.params.get('name', g.DEFAULT_SERVER)
+        log.debug('toggle_server(%s)' % name)
+        servers = model.Session.query(model.Server)
+        server = servers.filter(model.Server.name == name).one()
+        server.server_on = not server.server_on
         model.Session.update(server)
         model.Session.commit()
-        return redirect_to('/admin/dashboard')
+        redirect_to('/admin/dashboard')
 
+    def edit_station(self, mac):
+        """edit the settings of a station, or create a new one"""
+        mac = request.params.get('mac', g.DEFAULT_MAC)
+        log.debug('edit_station(%s)' % mac)
+        stations = model.Session.query(model.Station)
+        station = stations.filter(model.Station.mac == mac).first()
+        if station:
+            station.update(request.params)
+            model.Session.update(station)
+        else:
+            station = model.Station(request.params)
+            model.Session.save(station)
+        model.Session.commit()
+        redirect_to('/admin/dashboard')
+
+    """
     def set_initial_config(self):
         q = self._get_config_entry_by_id_or_mac_or_create(g.DEFAULT_MAC)
         model.Session.save(q)
@@ -117,28 +126,23 @@ class AdminController(AuthenticationController):
         self._copy_reset_config(h.get_config_dir_station())
         self._copy_reset_config(h.get_config_dir_user())
 
-        return redirect_to('/admin/dashboard')    
-
-    def edit(self, id):
-        c.Config = self._get_config_entry_by_id_or_mac_or_create(id)
-        c.Edit = True
-        return render('/config_edit.mako')
+        redirect_to('/admin/dashboard')    
 
     def config_remove(self, id):
         mac = str(id)
 
         if mac == NONE:
             log.error('Need a valid unique mac identifier')
-            return abort(400)
+            abort(400)
 
         try:
             q = model.Session.query(model.Config).filter(model.Config.mac == mac).one()
             model.Session.delete(q)
             model.Session.commit()
         except:
-            return abort(400)
+            abort(400)
 
-        return redirect_to('/admin/list_initial_configurations')
+        redirect_to('/admin/list_initial_configurations')
 
     def config_add(self):
         c.Config = model.Config()
@@ -193,26 +197,26 @@ class AdminController(AuthenticationController):
 
         c.Config = None
 
-        return redirect_to('/admin/config_edit_done')
+        redirect_to('/admin/config_edit_done')
 
     def config_edit_done(self):
-        return redirect_to('/admin/list_initial_configurations')
+        redirect_to('/admin/list_initial_configurations')
         
     def station_remove(self, id):
         mac = str(id)
 
         if mac == NONE:
             log.error('Need a valid unique mac identifier')
-            return abort(400)
+            abort(400)
 
         try:
             q = model.Session.query(model.Station).filter(model.Station.mac == mac).one()
             model.Session.delete(q)
             model.Session.commit()
         except:
-            return abort(400)
+            abort(400)
 
-        return redirect_to('/admin/list_station_configurations')
+        redirect_to('/admin/list_station_configurations')
 
     def list_initial_configurations(self):
         config_q = model.Session.query(model.Config)
@@ -223,4 +227,4 @@ class AdminController(AuthenticationController):
         config_q = model.Session.query(model.Station)
         c.Stations = config_q.all()
         return render('/list_station_configurations.mako')
-
+    """

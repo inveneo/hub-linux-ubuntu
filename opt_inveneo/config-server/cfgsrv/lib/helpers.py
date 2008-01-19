@@ -8,6 +8,10 @@ from pylons import g
 import logging, tempfile, os, fcntl, shutil
 from formencode import validators
 
+def is_true(s):
+    s = str(s).strip().lower()
+    return s in ['1', 'true', 'y', 'yes']
+
 def is_default_initial_config(config):
     if config.mac == g.DEFAULT_MAC:
         return True
@@ -17,6 +21,7 @@ def is_default_initial_config(config):
 def tmp_file_name(log = logging.getLogger(__name__)):
     tmp = tempfile.NamedTemporaryFile('w+b', -1, '', '', g.TEMP_DIR)
     tmp_file = tmp.name
+    #log.debug('tmp_file_name() = %s' % tmp.name)
     tmp.close()
     return tmp_file
 
@@ -29,17 +34,6 @@ def get_config_dir_user():
 def get_config_dir_for(category):
     return g.SAVE_DIR + '/' + category + '/'
 
-def toggle_boolean(flag):
-    return not bool(flag)
-
-def does_parameter_exist(request, name, log = logging.getLogger(__name__)):
-    if not name in request.params.keys():
-        log.error('Parameter is NOT set: ' + name)
-        return False
-    else:
-        log.info('Parameter IS set: ' + name)
-        return True
-
 def does_file_exist(file_path, log = logging.getLogger(__name__)):
     if not os.path.exists(file_path):
         log.error('File not existing: ' + file_path)
@@ -48,36 +42,61 @@ def does_file_exist(file_path, log = logging.getLogger(__name__)):
         log.info('File existing: ' + file_path)
         return True
 
+def _do_the_copy(src_file_path, dst_file_path, log=logging.getLogger(__name__)):
+    #log.info('Copying %s -> %s' % (src_file_path, dst_file_path))
+    shutil.copyfile(src_file_path, dst_file_path)
+
 def copy_to_temp_file(source_file_path, log = logging.getLogger(__name__)):
     tmp_file = tmp_file_name()
+    lock_file_path = source_file_path + '.lock'
+    #log.info('Aquiring lock on semaphore file: ' + lock_file_path)
     try:
-        lock_file_path = source_file_path + '.lock'
-        log.info('Aquiring lock on semaphore file: ' + lock_file_path)
         lock_file = open(lock_file_path, 'a+')
         fcntl.lockf(lock_file, fcntl.LOCK_EX)
-        log.info('Copying file')
-        shutil.copyfile(source_file_path, tmp_file)
-    finally:
-        log.info('Cleaning up -- removing lock file')
+    except:
+        log.error('Cannot obtain lockfile')
+        return None
+
+    try:
+        _do_the_copy(source_file_path, tmp_file)
+    except:
+        log.error('Copy failed')
+
+    #log.info('Cleaning up -- removing lock file')
+    try:
         fcntl.lockf(lock_file, fcntl.LOCK_UN)
         lock_file.close()
         os.remove(lock_file_path)
-        return tmp_file
+    except:
+        log.error('Cannot remove lockfile')
+    return tmp_file
 
 def copy_from_temp_file(dest_file_path, tmp_file_path,
         log = logging.getLogger(__name__)):
+    status_code = 200
+    lock_file_path = dest_file_path + '.lock'
+    #log.info('Aquiring lock on semaphore file: ' + lock_file_path)
     try:
-        lock_file_path = dest_file_path + '.lock'
-        log.info('Aquiring lock on semaphore file: ' + lock_file_path)
         lock_file = open(lock_file_path, 'a+')
         fcntl.lockf(lock_file, fcntl.LOCK_EX)
-        log.info('Copying file')
-        shutil.copyfile(tmp_file_path, dest_file_path)
-    finally:
-        log.info('Cleaning up -- removing lock file')
+    except:
+        log.error('Cannot obtain lockfile')
+        return 500 
+
+    try:
+        _do_the_copy(tmp_file_path, dest_file_path)
+    except:
+        log.error('Copy failed')
+        status_code = 500
+
+    #log.info('Cleaning up -- removing lock file')
+    try:
         fcntl.lockf(lock_file, fcntl.LOCK_UN)
         lock_file.close()
         os.remove(lock_file_path)
+    except:
+        log.error('Cannot remove lockfile')
+    return status_code
 
 def is_checkbox_set(request, name, log = logging.getLogger(__name__)):
     if not name in request.params.keys():
