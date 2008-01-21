@@ -12,7 +12,7 @@
 
 PATH=/bin:/usr/bin:/sbin:/usr/sbin
 
-SERVER_DIR='/opt/inveneo/configuration-server-pylons'
+SERVER_DIR='/opt/inveneo/config-server'
 
 . /lib/lsb/init-functions
 
