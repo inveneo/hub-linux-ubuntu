@@ -111,6 +111,15 @@ class AdminController(AuthenticationController):
         model.Session.commit()
         redirect_to('/admin/dashboard')
 
+    def reset_stations(self):
+        """reset all stations to the default configuration"""
+        stations = model.Session.query(model.Station)
+        station = stations.filter(model.Station.mac == g.DEFAULT_MAC).one()
+        station.clone(model.Station())
+        model.Session.update(station)
+        model.Session.commit()
+        redirect_to('/admin/dashboard')
+
     """
     def set_initial_config(self):
         q = self._get_config_entry_by_id_or_mac_or_create(g.DEFAULT_MAC)

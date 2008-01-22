@@ -2,22 +2,27 @@
 
 <h3 class="header">Configuration Server</h3>
 <p>
-Server Enabled:
+Automated Configuration Service:
 %if c.Server.server_on:
-<span class="green inline">YES</span>
+<span class="green inline">ON</span>
 <span class="post_link">
-${h.link_to('Disable',
+${h.link_to('Turn Off',
     url=h.url(controller='admin', action='toggle_server', name=c.Server.name),
     method='post')}
 </span>
 % else:
-<span class="red">NO</span>
+<span class="red">OFF</span>
 <span class="post_link">
-${h.link_to('Enable',
+${h.link_to('Turn On',
     url=h.url(controller='admin', action='toggle_server', name=c.Server.name),
     method='post')}
 </span>
 % endif
+</p>
+
+<p>
+${h.link_to('Reset', url=h.url(controller='admin', action='reset_stations'),
+    confirm='Are you sure?')} all desktops to default (factory) configuration
 </p>
 
 <h3 class="header">Station Configuration</h3>
@@ -34,8 +39,7 @@ ${h.form(h.url(controller='admin', action='edit_station', mac=c.Station.mac),
 </tr>
 ${emit_text_field('INV_HOSTNAME', c.Station.hostname)}
 ${emit_select('INV_LANG', c.Station.language, g.LANGS_LIST)}
-${emit_select('INV_TIME_ZONE', c.Station.time_zone,
-    h.get_timezones_as_string_list())}
+${emit_text_field('INV_TIME_ZONE', c.Station.time_zone)}
 ${emit_check_box('INV_NTP_ON', c.Station.ntp_on)}
 ${emit_text_field('INV_NTP_SERVERS', c.Station.ntp_servers)}
 ${emit_text_field('INV_CONFIG_HOST', c.Station.config_host)}

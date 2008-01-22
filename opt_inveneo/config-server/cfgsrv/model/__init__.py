@@ -45,7 +45,7 @@ station_table = Table('station', metadata,
 
 class Station(object):
 
-    def __init__(self, mac):
+    def __init__(self, mac='000000000000'):
         """create a default station with given MAC address"""
         self.mac = mac
         self.on = True
@@ -156,6 +156,32 @@ class Station(object):
         d['INV_PHONE_HOME_LATITUDE'] = self.phone_home_latitude
         d['INV_PHONE_HOME_LONGITUDE'] = self.phone_home_longitude
         return d
+
+    def clone(self, src):
+        """copy all settings (except MAC) from given Station object"""
+        self.on = src.on
+        self.hostname = src.hostname
+        self.language = src.language
+        self.time_zone = src.time_zone
+        self.ntp_on = src.ntp_on
+        self.ntp_servers = src.ntp_servers
+        self.config_host = src.config_host
+        self.config_host_type = src.config_host_type
+        self.proxy_on = src.proxy_on
+        self.http_proxy = src.http_proxy
+        self.http_proxy_port = src.http_proxy_port
+        self.https_proxy = src.https_proxy
+        self.https_proxy_port = src.https_proxy_port
+        self.ftp_proxy = src.ftp_proxy
+        self.ftp_proxy_port = src.ftp_proxy_port
+        self.local_user_docs_dir_on = src.local_user_docs_dir_on
+        self.local_shared_docs_dir_on = src.local_shared_docs_dir_on
+        self.hub_docs_dirs_on = src.hub_docs_dirs_on
+        self.phone_home_on = src.phone_home_on
+        self.phone_home_reg_url = src.phone_home_reg_url
+        self.phone_home_checkin_url = src.phone_home_checkin_url
+        self.phone_home_latitude = src.phone_home_latitude
+        self.phone_home_longitude = src.phone_home_longitude
 
     def __str__(self):
         """return object contents as string"""

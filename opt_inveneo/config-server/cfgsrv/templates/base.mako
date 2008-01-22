@@ -17,12 +17,20 @@
     </head>
 
     <body>
-        <img src="/inveneo.png"><br/>
-        %if 'admin' in session.keys() and session['admin']:
-        ${h.link_to('Signout',
-            url=h.url(controller='signin', action='signout'))}
-        <span class="small">(${session['admin']})</span>
-        %endif
+        <table width="100%">
+            <tr>
+                <td align="left" width="50%">
+                    <font size='+2'>Inveneo Configuration Server</font>
+                </td>
+                <td align="right">
+                    %if 'admin' in session.keys() and session['admin']:
+                    ${h.link_to('Signout',
+                        url=h.url(controller='signin', action='signout'))}
+                    <span class="small">(${session['admin']})</span>
+                    %endif
+                </td>
+            </tr>
+        </table>
         <div class="content">
         ${next.body()}\
         </div>
