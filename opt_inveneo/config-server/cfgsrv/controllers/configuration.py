@@ -42,7 +42,7 @@ class ConfigurationController(BaseController):
                 if not byte: break
                 out.write(byte)
             out.close()
-        dstfile = h.get_config_dir_for(category) + name + '.tar.gz'
+        dstfile = os.path.join(h.get_config_dir_for(category), name + '.tar.gz')
         result = h.copy_from_temp_file(dstfile, tmp_dest_file)
         os.remove(tmp_dest_file)
         return result

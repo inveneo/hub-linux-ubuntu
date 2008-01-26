@@ -10,14 +10,9 @@ log = logging.getLogger(__name__)
 
 class AdminController(AuthenticationController):
 
-    ###########################
-    # helper methods
-    ###########################
-
-    ###########################
-    # instance  helper methods
-    ###########################    
     """
+    # CRUFT
+
     def _get_config_entry_by_id_or_mac_or_create(self, key):
         key = str(key)
         log.debug('_get_config_entry_by_id_or_mac_or_create(%s)' % key)
@@ -113,33 +108,28 @@ class AdminController(AuthenticationController):
 
     def reset_stations(self):
         """reset all stations to the default configuration"""
+        # XXX currently everyone shares the default MAC
+        mac = g.DEFAULT_MAC
         stations = model.Session.query(model.Station)
-        station = stations.filter(model.Station.mac == g.DEFAULT_MAC).one()
+        station = stations.filter(model.Station.mac == mac).one()
         station.clone(model.Station())
         model.Session.update(station)
         model.Session.commit()
+
+        # reset all config archives
+        for type in ['station', 'user']:
+            path = h.get_config_dir_for(type)
+            src = os.path.join(path, '..', g.FACTORY_CONFIG)
+            for f in os.listdir(path):
+                if f.endswith('.tar.gz'):
+                    dst = os.path.join(path, f)
+                    log.debug('%s -> %s' % (src, dst))
+                    shutil.copyfile(src, dst)
+
         redirect_to('/admin/dashboard')
 
     """
-    def set_initial_config(self):
-        q = self._get_config_entry_by_id_or_mac_or_create(g.DEFAULT_MAC)
-        model.Session.save(q)
-        model.Session.commit()
-        c.Config = None
-        return self.edit(g.DEFAULT_MAC)
-
-    def reset_client_config(self, id):
-        log.debug('reseting all configurations for clients and stations')
-        q = self._get_config_entry_by_id_or_mac_or_create(id)
-        q = Get_initial_config(q)
-
-        model.Session.update(q)
-        model.Session.commit()
-
-        self._copy_reset_config(h.get_config_dir_station())
-        self._copy_reset_config(h.get_config_dir_user())
-
-        redirect_to('/admin/dashboard')    
+    # MORE CRUFT
 
     def config_remove(self, id):
         mac = str(id)
@@ -241,3 +231,4 @@ class AdminController(AuthenticationController):
         c.Stations = config_q.all()
         return render('/list_station_configurations.mako')
     """
+

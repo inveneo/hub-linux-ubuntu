@@ -32,7 +32,7 @@ def get_config_dir_user():
     return get_config_dir_for(g.USER)
 
 def get_config_dir_for(category):
-    return g.SAVE_DIR + '/' + category + '/'
+    return os.path.join(g.SAVE_DIR,  category)
 
 def does_file_exist(file_path, log = logging.getLogger(__name__)):
     if not os.path.exists(file_path):

@@ -199,6 +199,7 @@ class Globals(object):
     DEFAULT_SERVER = 'inveneo-hub'
     DEFAULT_STATION = 'inveneo-station'
     DEFAULT_MAC = 'ffffffffffff'
+    FACTORY_CONFIG = 'blank.tar.gz'
 
     def __init__(self):
         """One instance of Globals is created during application
