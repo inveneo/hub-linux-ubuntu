@@ -156,9 +156,11 @@ def make_links(dest):
     if is_raid:
         fstab='fstab.raid'
     stdout.write("using: "+fstab+" for /etc/fstab\n") 
+    try:
+        os.remove(path.join(dest,'etc','fstab'))
+    except:
+        pass
     shutil.copyfile(path.join(dest,'etc',fstab), path.join(dest,'etc','fstab'))
-    pass
-
 
 def main():
     syslog.openlog('install-hub-overlay', 0, syslog.LOG_LOCAL5)
