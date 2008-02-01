@@ -16,9 +16,10 @@ PATH=/bin:/sbin:/usr/bin:/usr/sbin
 # 5353 (mDns)
 
 BLOCK_PORTS="80 443 10000 8008 8088 631 3128 389 53 5353"
-IFACE="eth0"
 
 do_wall_up() {
+    IFACE=$1
+
     # Nat
     iptables -t nat -A POSTROUTING -o $IFACE -j MASQUERADE
     
@@ -31,6 +32,8 @@ do_wall_up() {
 }
 
 do_wall_down() {
+    IFACE=$1
+
     # NAT
     iptables -t nat -D POSTROUTING -o $IFACE -j MASQUERADE
     
@@ -42,17 +45,23 @@ do_wall_down() {
     done
 }
 
+usage() {
+    echo "Usage: $0 [iface] up|down"
+    exit 3
+}
+
+default="eth0"
 case "$1" in
-    up)
-	do_wall_up
-	;;
-    down)
-	do_wall_down
-	;;
+    "") usage ;;
+    "start" | "up") do_wall_up $default ;;
+    "stop" | "down") do_wall_down $default ;;
     *)
-	echo "Usage: wan-firewall.sh {up|down}"
-	exit 3
-	;;
+    case "$2" in
+        "") usage ;;
+        "start" | "up") do_wall_up $1 ;;
+        "stop" | "down") do_wall_down $1 ;;
+        *) usage ;;
+    esac
 esac
 
 exit 0
