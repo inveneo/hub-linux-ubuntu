@@ -5,12 +5,16 @@
 auto lo
 iface lo inet loopback
 
-# WAN interface
+# WAN interfaces
 auto eth0
 iface eth0 inet dhcp
-	pre-up /opt/inveneo/sbin/wan-firewall.sh up
+        pre-up /opt/inveneo/sbin/wan-firewall.sh eth0 up
+        post-down /opt/inveneo/sbin/wan-firewall.sh eth0 down
 
-	post-down /opt/inveneo/sbin/wan-firewall.sh down
+iface ppp0 inet ppp
+        provider dod
+        pre-up /opt/inveneo/sbin/wan-firewall.sh ppp0 up
+        post-down /opt/inveneo/sbin/wan-firewall.sh ppp0 down
 
 # LAN interface (runs DHCP server on this)
 auto eth1 
