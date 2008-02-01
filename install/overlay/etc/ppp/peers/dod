@@ -1,0 +1,13 @@
+noauth
+name wvdial
+usepeerdns
+connect "/usr/bin/wvdial --chat"
+modem
+crtscts
+defaultroute
+usehostname
+noipdefault
+idle 60
+persist
+demand
+logfd 6
