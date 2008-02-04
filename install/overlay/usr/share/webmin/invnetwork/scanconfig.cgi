@@ -38,5 +38,5 @@ fin.close()
 
 s = ''
 for key, val in values.iteritems():
-    s += '%s%s=%s' % (['',','][len(s) > 0], key, val)
+    s += '%s%s=%s' % (['','&'][len(s) > 0], key, val)
 print s
