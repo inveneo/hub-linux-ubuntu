@@ -1,2 +1,0 @@
-recursive-include configurationserver/public *
-recursive-include configurationserver/templates *
