@@ -104,4 +104,7 @@ print <<EOF;
 </form>
 EOF
 
+print `scanconfig.cgi`;
+
 &ui_print_footer("/", $text{'index'});
+
