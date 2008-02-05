@@ -10,55 +10,6 @@ log = logging.getLogger(__name__)
 
 class AdminController(AuthenticationController):
 
-    """
-    # CRUFT
-
-    def _get_config_entry_by_id_or_mac_or_create(self, key):
-        key = str(key)
-        log.debug('_get_config_entry_by_id_or_mac_or_create(%s)' % key)
-        conf = model.Session.query(model.Config)
-        if len(key) == 12:
-            # look for MAC
-            try:
-                q = conf.filter(model.Config.mac == key).one()
-                log.debug('MAC found')
-            except:
-                q = model.Config()
-                q.mac = key
-                log.debug('MAC not found: create new config')
-        else:
-            # look for Primary Key
-            q = conf.get(key)
-            log.debug('Primary Key found')
-        if q == None:
-            q = model.Config()
-        return q
-       
-    def _validate_configuration(self, config, is_edit):
-        log.debug('config validation')
-        error = {}
-
-        if not is_edit:
-            try:
-                model.Session.query(model.Config).filter(model.Config.mac == config.mac).one()
-                error['mac'] = 'MAC is already being used'
-            except:
-                pass
-
-        if not h.validate_with_regexp(g.MAC_REGEXP, config.mac, True, log):
-            error['mac'] = 'MAC address must be 12 hex lower case values, no separator' 
-        if not h.validate_with_regexp(g.LANG_REGEXP, config.lang, True, log):
-            error['lang'] = 'Must be a valid lang string. E.g. en_UK.utf-8'
-
-        return error
-
-    def _copy_reset_config(self, dir):
-        for f in os.listdir(dir):
-            if str(f).endswith('.tar.gz'):
-                log.debug(dir + '../blank.tar.gz' + ' overwrites  ' + f)
-                shutil.copyfile(dir + '../blank.tar.gz', dir + '/' + f)
-    """
-
     ###########################
     # controller methods
     ###########################    
@@ -72,8 +23,6 @@ class AdminController(AuthenticationController):
         log.debug('dashboard()')
         servers = model.Session.query(model.Server)
         c.Server = servers.filter(model.Server.name == g.DEFAULT_SERVER).one()
-        stations = model.Session.query(model.Station)
-        c.Station = stations.filter(model.Station.mac == g.DEFAULT_MAC).one()
         return render('/dashboard.mako')
 
     def toggle_server(self):
@@ -87,13 +36,19 @@ class AdminController(AuthenticationController):
         model.Session.commit()
         redirect_to('/admin/dashboard')
 
+    def display_station(self):
+        """redirect to mako page rendition"""
+        stations = model.Session.query(model.Station)
+        c.Station = stations.filter(model.Station.mac == g.DEFAULT_MAC).one()
+        return render('/edit_station.mako')
+
     def edit_station(self):
         """edit the settings of a station, or create a new one"""
         mac = request.params.get('mac', g.DEFAULT_MAC)
         log.debug('edit_station(%s)' % mac)
 
         # collect desired request params into dictionary
-        # XXX need to do validation here
+        # XXX need to do form validation here
         items = request.params
 
         stations = model.Session.query(model.Station)
@@ -230,5 +185,53 @@ class AdminController(AuthenticationController):
         config_q = model.Session.query(model.Station)
         c.Stations = config_q.all()
         return render('/list_station_configurations.mako')
+
+    # CRUFT
+
+    def _get_config_entry_by_id_or_mac_or_create(self, key):
+        key = str(key)
+        log.debug('_get_config_entry_by_id_or_mac_or_create(%s)' % key)
+        conf = model.Session.query(model.Config)
+        if len(key) == 12:
+            # look for MAC
+            try:
+                q = conf.filter(model.Config.mac == key).one()
+                log.debug('MAC found')
+            except:
+                q = model.Config()
+                q.mac = key
+                log.debug('MAC not found: create new config')
+        else:
+            # look for Primary Key
+            q = conf.get(key)
+            log.debug('Primary Key found')
+        if q == None:
+            q = model.Config()
+        return q
+       
+    def _validate_configuration(self, config, is_edit):
+        log.debug('config validation')
+        error = {}
+
+        if not is_edit:
+            try:
+                model.Session.query(model.Config).filter(model.Config.mac == config.mac).one()
+                error['mac'] = 'MAC is already being used'
+            except:
+                pass
+
+        if not h.validate_with_regexp(g.MAC_REGEXP, config.mac, True, log):
+            error['mac'] = 'MAC address must be 12 hex lower case values, no separator' 
+        if not h.validate_with_regexp(g.LANG_REGEXP, config.lang, True, log):
+            error['lang'] = 'Must be a valid lang string. E.g. en_UK.utf-8'
+
+        return error
+
+    def _copy_reset_config(self, dir):
+        for f in os.listdir(dir):
+            if str(f).endswith('.tar.gz'):
+                log.debug(dir + '../blank.tar.gz' + ' overwrites  ' + f)
+                shutil.copyfile(dir + '../blank.tar.gz', dir + '/' + f)
     """
+
 

@@ -80,6 +80,8 @@ class ConfigurationController(BaseController):
             abort(501, 'Server is not on')
         if not self._is_station_on(id):
             abort(404, 'Station is not on')
+        # XXX for now, we force everything into default MAC
+        id = g.DEFAULT_MAC
         return self._return_config_file(id, 'station')
 
     def get_station_initial_config(self, id):
@@ -120,6 +122,8 @@ class ConfigurationController(BaseController):
         log.debug("save_station_config(%s)" % id)
         if not self._is_server_on():
             abort(503, 'Server Not On')
+        # XXX for now, we force everything into default MAC
+        id = g.DEFAULT_MAC
         response.status_code = self._save_config_file(request, id, 'station')
 
     def save_station_initial_config(self, id):
@@ -135,6 +139,7 @@ class ConfigurationController(BaseController):
         mac = g.DEFAULT_MAC
 
         # create dictionary of sent values
+        # XXX should use xml.sax.saxutils or urllib to do this!
         config_file = request.POST['config_file']
         items = {}
         if config_file.file:

@@ -31,6 +31,7 @@
                 </td>
             </tr>
         </table>
+        <hr>
         <div class="content">
         ${next.body()}\
         </div>

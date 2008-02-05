@@ -48,7 +48,7 @@ class Station(object):
     def __init__(self, mac='000000000000'):
         """create a default station with given MAC address"""
         self.mac = mac
-        self.on = True
+        self.on = False
         self.hostname = g.DEFAULT_STATION
         self.language = 'en_US.UTF-8'
         self.time_zone = 'US/Pacific'
@@ -195,7 +195,7 @@ mapper(Station, station_table)
 # servers table
 servers_table = Table('servers', metadata,
     Column('name', types.String(255), primary_key=True),
-    Column('server_on', types.Boolean, default=True)
+    Column('server_on', types.Boolean)
 )
 
 class Server(object):
@@ -203,7 +203,7 @@ class Server(object):
     def __init__(self, name):
         """set default values on new object"""
         self.name = name
-        self.server_on = True
+        self.server_on = False
 
     def __str__(self):
         """return object contents as string"""
