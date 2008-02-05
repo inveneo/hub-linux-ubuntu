@@ -1,0 +1,8 @@
+desc=Printer Configuration 
+longdesc=Printer Configuration
+risk=low medium high
+category=hardware
+depends=1.360
+version=1.360
+name=Printer Configuration
+os_support=debian-linux generic-linux
