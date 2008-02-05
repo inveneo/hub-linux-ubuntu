@@ -6,6 +6,7 @@ require '../invlib/form.pm';
 require '../dhcpd/dhcpd-lib.pl';
 use Data::Dumper;
 use dhcp;
+use URI::Escape;
 
 &ReadParse();
 
@@ -38,7 +39,7 @@ sub print_wan_static_stuff {
             <td align='right'>IP Address:</td>
             <td><input type='text' name='wan_address'
 EOF
-    &print_value_attr($assoc{"wan_address"});
+    &print_value_attr($assoc{'wan_address'});
     print <<EOF;
             ></td>
         </tr>
@@ -46,7 +47,7 @@ EOF
             <td align='right'>Netmask:</td>
             <td><input type='text' name='wan_netmask'
 EOF
-    &print_value_attr($assoc{"wan_netmask"});
+    &print_value_attr($assoc{'wan_netmask'});
     print <<EOF;
             ></td>
         </tr>
@@ -54,7 +55,70 @@ EOF
             <td align='right'>Gateway:</td>
             <td><input type='text' name='wan_gateway'
 EOF
-    &print_value_attr($assoc{"wan_gateway"});
+    &print_value_attr($assoc{'wan_gateway'});
+    print <<EOF;
+            ></td>
+        </tr>
+        </table>
+EOF
+}
+
+sub print_ppp_stuff {
+    print <<EOF;
+        <table border='1'>
+        <tr>
+            <td align='right'>Phone Number:</td>
+            <td><input type='text' name='ppp_phone'
+EOF
+    &print_value_attr($assoc{'ppp_phone'});
+    print <<EOF;
+            ></td>
+        </tr>
+        <tr>
+            <td align='right'>Username:</td>
+            <td><input type='text' name='ppp_username'
+EOF
+    &print_value_attr($assoc{'ppp_username'});
+    print <<EOF;
+            ></td>
+        </tr>
+        <tr>
+            <td align='right'>Password:</td>
+            <td><input type='password' name='ppp_password'
+EOF
+    &print_value_attr($assoc{'ppp_password'});
+    print <<EOF;
+            ></td>
+        </tr>
+        <tr>
+            <td align='right'>Baud:</td>
+            <td><input type='text' name='ppp_baud'
+EOF
+    &print_value_attr($assoc{'ppp_baud'});
+    print <<EOF;
+            ></td>
+        </tr>
+        <tr>
+            <td align='right'>Idle (secs):</td>
+            <td><input type='text' name='ppp_idle_seconds'
+EOF
+    &print_value_attr($assoc{'ppp_idle_seconds'});
+    print <<EOF;
+            ></td>
+        </tr>
+        <tr>
+            <td align='right'>Init1:</td>
+            <td><input type='text' name='ppp_init1'
+EOF
+    &print_value_attr($assoc{'ppp_init1'});
+    print <<EOF;
+            ></td>
+        </tr>
+        <tr>
+            <td align='right'>Init2:</td>
+            <td><input type='text' name='ppp_init2'
+EOF
+    &print_value_attr($assoc{'ppp_init2'});
     print <<EOF;
             ></td>
         </tr>
@@ -69,9 +133,7 @@ sub print_wan_stuff {
     <tr>
         <td><input type='radio' name='wan_type' value='dhcp'
 EOF
-    if ($assoc{'wan_type'} eq 'dhcp') {
-        print ' checked';
-    }
+    if ($assoc{'wan_type'} eq 'dhcp') { print ' checked'; }
     print <<EOF;
             >DHCP Client</td>
         <td>&nbsp;</td>
@@ -79,9 +141,7 @@ EOF
     <tr>
         <td><input type='radio' name='wan_type' value='static'
 EOF
-    if ($assoc{'wan_type'} eq 'static') {
-        print ' checked';
-    }
+    if ($assoc{'wan_type'} eq 'static') { print ' checked'; }
     print <<EOF;
             >Static</td>
         <td>
@@ -91,14 +151,16 @@ EOF
         </td>
     </tr>
     <tr>
-        <td><input type='radio' name='wan_type' value='dialup'
+        <td><input type='radio' name='wan_type' value='modem'
 EOF
-    if ($assoc{'wan_type'} eq 'dialup') {
-        print ' checked';
-    }
+    if ($assoc{'wan_type'} eq 'modem') { print ' checked'; }
     print <<EOF;
-            >Dialup</td>
-        <td>&nbsp;</td>
+            >Modem</td>
+        <td>
+EOF
+    &print_ppp_stuff;
+    print <<EOF;
+        </td>
     </tr>
     </table>
 EOF
@@ -111,27 +173,48 @@ sub print_lan_stuff {
         <td align='right'>IP Address:</td>
         <td><input type='text' name='lan_address'
 EOF
-    &print_value_attr($assoc{"lan_address"});
+    &print_value_attr($assoc{'lan_address'});
     print <<EOF;
             ></td>
     </tr>
     <tr>
-        <td align='right'>DHCP On:</td>
-        <td><input type='checkbox' name='lan_dhcp_on'></td>
+        <td align='right'>Netmask:</td>
+        <td><input type='text' name='lan_netmask'
+EOF
+    &print_value_attr($assoc{'lan_netmask'});
+    print <<EOF;
+            ></td>
+    </tr>
+    <tr>
+        <td align='right'>DHCP Server On:</td>
+        <td><input type='checkbox' name='lan_dhcp_on'
+EOF
+    print $assoc{'lan_dhcp_on'} ? " checked" : "";
+    print <<EOF;
+            ></td>
     </tr>
     <tr>
         <td align='right'>DHCP Address Range:</td>
-        <td><input type='text' name='lan_dhcp_range'></td>
+        <td><input type='text' name='lan_dhcp_range_start' size='3'
+EOF
+    &print_value_attr($assoc{'lan_dhcp_range_start'});
+    print "> to <input type='text' name='lan_dhcp_range_end' size='3'";
+    &print_value_attr($assoc{'lan_dhcp_range_end'});
+    print <<EOF;
+            ></td>
     </tr>
     </table>
 EOF
 }
 
+# START HERE
+
+# call Python script to glean config values from several files
 $config_string = `./scanconfig.cgi`;
 %assoc = ();
 for $pair (split /&/, $config_string) {
     ($key, $value) = split /=/, $pair;
-    $assoc{&trim($key)} = &trim($value);
+    $assoc{$key} = uri_unescape($value);
 }
 
 #foreach $key (keys %assoc) {
