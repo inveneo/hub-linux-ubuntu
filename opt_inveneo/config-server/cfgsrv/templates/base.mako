@@ -24,7 +24,7 @@
                 </td>
                 <td align="right">
                     %if 'admin' in session.keys() and session['admin']:
-                    ${h.link_to('Signout',
+                    ${h.link_to('Sign Out',
                         url=h.url(controller='signin', action='signout'))}
                     <span class="small">(${session['admin']})</span>
                     %endif
