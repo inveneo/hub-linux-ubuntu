@@ -16,7 +16,6 @@ import traceback
 import re
 import pwd
 import glob
-import shutil
 import subprocess as sp
 from os import path
 from sys import stderr,stdout
@@ -153,15 +152,28 @@ def make_links(dest):
     is_raid = sp.Popen(['rdev'], stdout=sp.PIPE).communicate()[0].find('/md') != -1
     
     fstab='fstab.no-raid'
+    grub='menu.lst.no-raid'
     if is_raid:
         fstab='fstab.raid'
-    stdout.write("using: "+fstab+" for /etc/fstab\n") 
+        grub='menu.lst.raid'
+
+    target=path.join(dest,'etc','fstab')
+    stdout.write("using: "+fstab+" for "+target+"\n") 
     try:
-        os.remove(path.join(dest,'etc','fstab'))
+        os.remove(target)
     except:
         pass
-    shutil.copyfile(path.join(dest,'etc',fstab), path.join(dest,'etc','fstab'))
+    os.symlink(path.join(dest,'etc',fstab), target)
 
+    target=path.join(dest,'boot','grub','menu.lst')
+    stdout.write("using: "+grub+" for "+target+"\n")
+    try:
+        os.remove(target)
+    except:
+        pass
+
+    os.symlink(path.join(dest,'boot','grub',grub), target)
+        
 def main():
     syslog.openlog('install-hub-overlay', 0, syslog.LOG_LOCAL5)
     
