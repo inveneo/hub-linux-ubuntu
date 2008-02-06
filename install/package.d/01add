@@ -13,6 +13,8 @@ mdadm           install
 # useful utilities
 screen  install
 lynx    install
+zip	install
+unzip	install
 
 # python libraries
 python-pexpect 	install
