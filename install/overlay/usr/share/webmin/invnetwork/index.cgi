@@ -210,7 +210,7 @@ EOF
 # START HERE
 
 # call Python script to glean config values from several files
-$config_string = `./scanconfig.cgi`;
+$config_string = `./scanConfig.cgi`;
 %assoc = ();
 for $pair (split /&/, $config_string) {
     ($key, $value) = split /=/, $pair;
@@ -222,7 +222,7 @@ for $pair (split /&/, $config_string) {
 #}
 
 print <<EOF;
-<form action='process.cgi' method='post'>
+<form action='processForm.cgi' method='post'>
 <table border='1'>
 <tr><th>Interface</th><th>&nbsp;</th></tr>
 <tr><td>WAN</td><td>
