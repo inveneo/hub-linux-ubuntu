@@ -170,7 +170,7 @@ def get_drive_type():
         return 'hd'
     
 def is_raid():
-    reutrn get_root_drive().find('md') != -1
+    return get_root_drive().find('md') != -1
     
 def make_links(dest):
     """docstring for make_links"""
