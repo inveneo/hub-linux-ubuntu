@@ -157,6 +157,7 @@ def transfer_overlay(src,dest):
 
 root_drive=None
 def get_root_drive():
+    global root_drive
     if root_drive == None:
         root_drive = sp.Popen(['rdev'], stdout=sp.PIPE).communicate()[0].split()[0]
         root_drive = root_drive[root_drive.rfind('/')+1:]
