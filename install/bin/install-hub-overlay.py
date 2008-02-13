@@ -134,8 +134,13 @@ def post_overlay_transfer(overlay_root, dest):
     # rewrite files that need root drive
     token="%DRIVE_TYPE%"
     dt=get_drive_type()
+    
+    stdout.write("Writing disk type: '"+dt+"'\n")
+    stdout.write("Writing disk type to 'mdadm.conf'\n")
     fileutils.replace_in_file(token, dt, os.path.join(dest,'etc','mdadm','mdadm.conf'))
+    stdout.write("Writing disk type to 'fstab'\n")
     fileutils.replace_in_file(token, dt, os.path.join(dest,'etc','fstab'))
+    stdout.write("Writing disk type to 'menu.lst'\n")
     fileutils.replace_in_file(token, dt, os.path.join(dest,'boot','grub','menu.lst'))
 
     # install new initramfs - we need the scripts to handle raid drives
