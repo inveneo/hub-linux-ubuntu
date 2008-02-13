@@ -67,6 +67,14 @@ sub print_ppp_stuff {
     print <<EOF;
         <table border='1'>
         <tr>
+            <td align='right'>Device:</td>
+            <td><input type='text' name='ppp_modem'
+EOF
+    &print_value_attr($assoc{'ppp_modem'});
+    print <<EOF;
+            ></td>
+        </tr>
+        <tr>
             <td align='right'>Phone Number:</td>
             <td><input type='text' name='ppp_phone'
 EOF
@@ -175,11 +183,19 @@ sub print_lan_stuff {
 EOF
     &print_value_attr($assoc{'lan_address'});
     print <<EOF;
+            ><input type='hidden' name='lan_address_orig'
+EOF
+    &print_value_attr($assoc{'lan_address'});
+    print <<EOF;
             ></td>
     </tr>
     <tr>
         <td align='right'>Netmask:</td>
         <td><input type='text' name='lan_netmask'
+EOF
+    &print_value_attr($assoc{'lan_netmask'});
+    print <<EOF;
+            ><input type='text' name='lan_netmask_orig'
 EOF
     &print_value_attr($assoc{'lan_netmask'});
     print <<EOF;
@@ -207,42 +223,49 @@ EOF
 EOF
 }
 
-# START HERE
+sub print_page {
+    local($config_string) = @_;
 
-# call Python script to glean config values from several files
-$config_string = `./scanConfig.cgi`;
-%assoc = ();
-for $pair (split /&/, $config_string) {
-    ($key, $value) = split /=/, $pair;
-    $assoc{$key} = uri_unescape($value);
+    %assoc = ();
+    for $pair (split /&/, $config_string) {
+        ($key, $value) = split /=/, $pair;
+        $assoc{$key} = uri_unescape($value);
+    }
+
+#    foreach $key (keys %assoc) {
+#        print "'" . $key . "'='" . $assoc{$key} . "'<br>";
+#    }
+
+    print <<EOF;
+    <form action='processForm.cgi' method='post'>
+    <table border='1'>
+    <tr><th>Interface</th><th>&nbsp;</th></tr>
+    <tr><td>WAN</td><td>
+EOF
+
+    &print_wan_stuff;
+
+    print <<EOF;
+    </td></tr>
+    <tr><td>LAN</td><td>
+EOF
+
+    &print_lan_stuff;
+
+    print <<EOF;
+    </td></tr>
+    </table>
+    <input type='submit' value='Submit'>
+    </form>
+EOF
 }
 
-#foreach $key (keys %assoc) {
-#    print "'" . $key . "'='" . $assoc{$key} . "'<br>";
-#}
-
-print <<EOF;
-<form action='processForm.cgi' method='post'>
-<table border='1'>
-<tr><th>Interface</th><th>&nbsp;</th></tr>
-<tr><td>WAN</td><td>
-EOF
-
-&print_wan_stuff;
-
-print <<EOF;
-</td></tr>
-<tr><td>LAN</td><td>
-EOF
-
-&print_lan_stuff;
-
-print <<EOF;
-</td></tr>
-</table>
-<input type='submit' value='Submit'>
-</form>
-EOF
-
+# call Python script to glean config values from several files
+$config_string = `./scanConfig.cgi 2>&1`;
+if ($?) {
+    print "<font color='red'>Internal Error</font><br>";
+    print "<pre>" . $config_string . "</pre>";
+} else {
+    &print_page($config_string);
+}
 &ui_print_footer("/", $text{'index'});
-
