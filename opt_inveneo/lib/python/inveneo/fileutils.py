@@ -31,8 +31,10 @@ def replace_in_file(t, r, fn):
         tokindex=fmap.find(t,start)
         
     # now make sure we put what's left into the buffer
-    print "start: "+str(filesize)+" extent: "+str((filesize-start+1))+"\n"+fmap[start:]
-    buf.write(fmap[start:])
+    try:
+        buf.write(fmap[start:])
+    except:
+        pass 
     
     fmap.close()
     f.close()

@@ -136,6 +136,7 @@ def post_overlay_transfer(overlay_root, dest):
     dt=get_drive_type()
     fileutils.replace_in_file(token, dt, os.path.join(dest,'etc','mdadm','mdadm.conf'))
     fileutils.replace_in_file(token, dt, os.path.join(dest,'etc','fstab'))
+    fileutils.replace_in_file(token, dt, os.path.join(dest,'boot','grub','menu.lst'))
 
     # install new initramfs - we need the scripts to handle raid drives
     sp.check_call(['update-initramfs','-k','all','-u'])
