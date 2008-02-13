@@ -20,6 +20,9 @@ import subprocess as sp
 from os import path
 from sys import stderr,stdout
 
+sys.path.append('/opt/inveneo/lib/python')
+from inveneo import fileutils
+
 # services to stop, in order. Will be started after in reverse order
 SERVICES=('asterisk','samba','samba-shares.sh','inv-config-server.sh','slapd','squid3','dhcp3-server', \
           'apache2','avahi-daemon','cupsys','mysql','webmin')
@@ -119,13 +122,20 @@ def pre_overlay_transfer(overlay_root, dest):
         os.remove(path.join(dest,"etc","webmin","module.infos.cache"))
     except OSError, ex:
         pass # must not have been there
-          
+
 def post_overlay_transfer(overlay_root, dest):
     # HACK: Fix Squid perms 
     uinfo=pwd.getpwnam('proxy')
     path.walk(path.join(dest,'var','log','squid3'), \
         folder_visitor, \
         lambda f: os.chown(f, uinfo[2],uinfo[3]))
+
+
+    # rewrite files that need root drive
+    token="%DRIVE_TYPE%"
+    dt=get_drive_type()
+    fileutils.replace_in_file(token, dt, os.path.join(dest,'etc','mdadm','mdadm.conf'))
+    fileutils.replace_in_file(token, dt, os.path.join(dest,'etc','fstab'))
 
     # install new initramfs - we need the scripts to handle raid drives
     sp.check_call(['update-initramfs','-k','all','-u'])
@@ -145,15 +155,29 @@ def transfer_overlay(src,dest):
     os.system("find . -name .svn -prune -o -print0 | cpio --null -pvud "+dest)
     os.chdir(cur_dir)
 
+root_drive=None
+def get_root_drive():
+    if root_drive == None:
+        root_drive = sp.Popen(['rdev'], stdout=sp.PIPE).communicate()[0].split()[0]
+        root_drive = root_drive[root_drive.rfind('/')+1:]
+        
+    return root_drive
+
+def get_drive_type():
+    if get_root_drive().startswith('sd'):
+        return 'sd'
+    else:
+        return 'hd'
+    
+def is_raid():
+    reutrn get_root_drive().find('md') != -1
+    
 def make_links(dest):
     """docstring for make_links"""
     
-    # find out if we are RAID or not
-    is_raid = sp.Popen(['rdev'], stdout=sp.PIPE).communicate()[0].find('/md') != -1
-    
     fstab='fstab.no-raid'
     grub='menu.lst.no-raid'
-    if is_raid:
+    if is_raid():
         fstab='fstab.raid'
         grub='menu.lst.raid'
 
