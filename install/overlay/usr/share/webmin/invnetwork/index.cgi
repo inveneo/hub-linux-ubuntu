@@ -9,33 +9,57 @@ do '../ui-lib.pl';
 use Data::Dumper;
 use URI::Escape;
 
-# fill global %in with CGI parameters, else from output of scanConfig.py
-&ReadParse();
-$urlstring = "";
-if (not %in) {
-    local $a = \%in;
-    %$a = ( );
-    @terms = split(/\&/, `./scanConfig.py 2>&1`;
-    foreach $term (@terms) {
-        local ($k, $v) = split(/=/, $term, 2);
-        if (!$_[2]) {
-            $k =~ tr/\+/ /;
-            $v =~ tr/\+/ /;
-        }
-        $k =~ s/%(..)/pack("c",hex($1))/ge;
-        $v =~ s/%(..)/pack("c",hex($1))/ge;
-        $a->{$k} = defined($a->{$k}) ? $a->{$k}."\0".$v : $v;
-    }
-}
-
 # draw the page
 &ui_print_header(undef, $module_info{'desc'}, "", undef, 1, 1);     
+$error_string = &get_cgi;
+if ($error_string eq "") {
+#    foreach $key (keys %in) {
+#        print "'" . $key . "'='" . $in{$key} . "'<br>";
+#    }
+    &draw_form;
+} else {
+    print "<font color='red'>Internal Error:</font><br>";
+    print "<pre>" . $error_string . "</pre>";
+}
 &ui_print_footer("/", $text{'index'});
 exit;
 
-#if ( $msg ) {
-#    print "<h4>" . un_urlize($msg) . "</h4><br>";
-#}
+# fill global %in with CGI parameters, else from output of scanConfig.py
+# returns "" on success, else an error string
+sub get_cgi {
+
+    &ReadParse(); # by default, reads QueryString into global %in
+    if (not %in) {
+        local $a = \%in;
+        %$a = ( );
+        $scanconfig = `./scanConfig.py 2>&1`;
+        if ($?) {
+            return $scanconfig;
+        } else {
+            @terms = split(/\&/, $scanconfig);
+            foreach $term (@terms) {
+                local ($k, $v) = split(/=/, $term, 2);
+                if (!$_[2]) {
+                    $k =~ tr/\+/ /;
+                    $v =~ tr/\+/ /;
+                }
+                $k =~ s/%(..)/pack("c",hex($1))/ge;
+                $v =~ s/%(..)/pack("c",hex($1))/ge;
+                $a->{$k} = defined($a->{$k}) ? $a->{$k}."\0".$v : $v;
+            }
+        }
+    }
+    return "";
+}
+
+sub draw_form {
+    print &ui_form_start('processForm.cgi', 'post');
+    print &ui_table_start();
+    print "form here";
+    print &ui_table_end();
+    print &ui_submit('Submit');
+    print &ui_form_end();
+}
 
 sub trim {
     local($str) = @_;
@@ -277,49 +301,4 @@ EOF
     </tr>
     </table>
 EOF
-}
-
-sub print_page {
-    local($config_string) = @_;
-
-    %assoc = ();
-    for $pair (split /&/, $config_string) {
-        ($key, $value) = split /=/, $pair;
-        $assoc{$key} = uri_unescape($value);
-    }
-
-#    foreach $key (keys %assoc) {
-#        print "'" . $key . "'='" . $assoc{$key} . "'<br>";
-#    }
-
-    print <<EOF;
-    <form action='processForm.cgi' method='post'>
-    <table border='1'>
-    <tr><th>Interface</th><th>&nbsp;</th></tr>
-    <tr><td>WAN</td><td>
-EOF
-
-    &print_wan_stuff;
-
-    print <<EOF;
-    </td></tr>
-    <tr><td>LAN</td><td>
-EOF
-
-    &print_lan_stuff;
-
-    print <<EOF;
-    </td></tr>
-    </table>
-    <input type='submit' value='Submit'>
-    </form>
-EOF
-}
-
-# call Python script to glean config values from several files
-if ($?) {
-    print "<font color='red'>Internal Error</font><br>";
-    print "<pre>" . $config_string . "</pre>";
-} else {
-    &print_page($config_string);
 }
