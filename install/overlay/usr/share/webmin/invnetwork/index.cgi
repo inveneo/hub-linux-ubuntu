@@ -174,9 +174,9 @@ EOF
         <td>&nbsp;</td>
     </tr>
     <tr>
-        <td><input type='radio' name='wan_interface' value='eth0'
+        <td><input type='radio' name='wan_interface' value=$WAN_INTERFACE
 EOF
-    if ($assoc{'wan_interface'} eq 'eth0') { print ' checked'; }
+    if ($assoc{'wan_interface'} eq $WAN_INTERFACE) { print ' checked'; }
     print <<EOF;
             >Ethernet</td>
         <td>
