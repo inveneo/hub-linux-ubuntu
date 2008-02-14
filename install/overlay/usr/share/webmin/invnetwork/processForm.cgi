@@ -1,10 +1,16 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+processForm.cgi
 
-# process.cgi - process the form on index.html
+Copyright (c) 2007 Inveneo, inc. All rights reserved.
+"""
 
 import os, sys, string
 import cgi
 import cgitb; cgitb.enable()  # XXX remove this for production systems
+
+sys.path.append('/opt/inveneo/lib/python')
 import netfiles
 
 # START HERE
@@ -13,8 +19,8 @@ print
 
 form = cgi.FieldStorage()
 
-#for key in form.keys():
-#    print '%s = %s<br>' % (key, form[key].value)
+for key in form.keys():
+    print '%s = %s<br>' % (key, form[key].value)
 
 # get submitted form values, or use their defaults
 wan_type    = form.getfirst("wan_type", "")
@@ -54,7 +60,7 @@ o.metadata['idle seconds'] = ppp_idle_seconds
 o.metadata['init1']        = ppp_init1
 o.metadata['init2']        = ppp_init2
 print "<pre>%s</pre><br>" % str(o)
-o.write()
+#o.write()
 
 o = netfiles.EtcDhcp3DhcpConf()
 print "<pre>%s</pre><br>" % str(o)

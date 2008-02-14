@@ -63,6 +63,33 @@ EOF
 EOF
 }
 
+sub print_wan_ethernet_stuff {
+    print <<EOF;
+        <table border='1'>
+        <tr>
+            <td><input type='radio' name='wan_method' value='dhcp'
+EOF
+    if ($assoc{'wan_method'} eq 'dhcp') { print ' checked'; }
+    print <<EOF;
+            >DHCP Client</td>
+            <td>&nbsp;</td>
+        </tr>
+        <tr>
+            <td><input type='radio' name='wan_method' value='static'
+EOF
+    if ($assoc{'wan_method'} eq 'static') { print ' checked'; }
+    print <<EOF;
+            >Static</td>
+            <td>
+EOF
+    &print_wan_static_stuff;
+    print <<EOF;
+            </td>
+        </tr>
+        </table>
+EOF
+}
+
 sub print_ppp_stuff {
     print <<EOF;
         <table border='1'>
@@ -137,31 +164,31 @@ EOF
 sub print_wan_stuff {
     print <<EOF;
     <table border='1'>
-    <tr><th>Type</th><th>&nbsp;</th></tr>
+    <tr><th>Interface</th><th>&nbsp;</th></tr>
     <tr>
-        <td><input type='radio' name='wan_type' value='dhcp'
+        <td><input type='radio' name='wan_interface' value='off'
 EOF
-    if ($assoc{'wan_type'} eq 'dhcp') { print ' checked'; }
+    if ($assoc{'wan_interface'} eq 'off') { print ' checked'; }
     print <<EOF;
-            >DHCP Client</td>
+            >Off</td>
         <td>&nbsp;</td>
     </tr>
     <tr>
-        <td><input type='radio' name='wan_type' value='static'
+        <td><input type='radio' name='wan_interface' value='eth0'
 EOF
-    if ($assoc{'wan_type'} eq 'static') { print ' checked'; }
+    if ($assoc{'wan_interface'} eq 'eth0') { print ' checked'; }
     print <<EOF;
-            >Static</td>
+            >Ethernet</td>
         <td>
 EOF
-    &print_wan_static_stuff;
+    &print_wan_ethernet_stuff;
     print <<EOF;
         </td>
     </tr>
     <tr>
-        <td><input type='radio' name='wan_type' value='modem'
+        <td><input type='radio' name='wan_interface' value='modem'
 EOF
-    if ($assoc{'wan_type'} eq 'modem') { print ' checked'; }
+    if ($assoc{'wan_interface'} eq 'modem') { print ' checked'; }
     print <<EOF;
             >Modem</td>
         <td>
@@ -195,9 +222,21 @@ EOF
 EOF
     &print_value_attr($assoc{'lan_netmask'});
     print <<EOF;
-            ><input type='text' name='lan_netmask_orig'
+            ><input type='hidden' name='lan_netmask_orig'
 EOF
     &print_value_attr($assoc{'lan_netmask'});
+    print <<EOF;
+            ></td>
+    </tr>
+    <tr>
+        <td align='right'>Gateway:</td>
+        <td><input type='text' name='lan_gateway'
+EOF
+    &print_value_attr($assoc{'lan_gateway'});
+    print <<EOF;
+            ><input type='hidden' name='lan_gateway_orig'
+EOF
+    &print_value_attr($assoc{'lan_gateway'});
     print <<EOF;
             ></td>
     </tr>

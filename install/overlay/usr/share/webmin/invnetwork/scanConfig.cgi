@@ -1,9 +1,17 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+scanConfig.cgi
+
+Copyright (c) 2007 Inveneo, inc. All rights reserved.
+"""
 
 import os, sys, traceback
 from subprocess import Popen, PIPE
 from urllib import urlencode, quote
 from IPy import IP
+
+sys.path.append('/opt/inveneo/lib/python')
 import netfiles
 
 CHKCONFIG = '/usr/sbin/sysv-rc-conf'
@@ -20,17 +28,21 @@ def main():
     ppp = o.ifaces['ppp0']
 
     if wan:
-        metadata['wan_type']    = wan.get('method', None)
+        metadata['wan_interface'] = 'eth0'
+        metadata['wan_method']  = wan.get('method', None)
         metadata['wan_address'] = wan.get('address', None)
         metadata['wan_netmask'] = wan.get('netmask', None)
         metadata['wan_gateway'] = wan.get('gateway', None)
+    else:
+        metadata['wan_interface'] = 'off'
 
     if lan:
         metadata['lan_address'] = lan.get('address', None)
         metadata['lan_netmask'] = lan.get('netmask', None)
+        metadata['lan_gateway'] = lan.get('gateway', None)
 
     if 'ppp0' in o.autoset:
-        metadata['wan_type'] = 'modem'
+        metadata['wan_interface'] = 'modem'
 
     # collect the modem definitions
     o = netfiles.EtcWvdialConf()
@@ -39,11 +51,11 @@ def main():
 
     # scan the DHCP daemon config
     o = netfiles.EtcDhcp3DhcpConf()
-    for network, params in o.subnets.iteritems():
-        subnet = IP('%s/%s' % (network, params['netmask']))
-        if metadata['lan_address'] in subnet:
-            start_ip = params.get('start_ip', None)
-            end_ip = params.get('end_ip', None)
+    for subnet, sobj in o.subnets.iteritems():
+        ipnm = IP('%s/%s' % (subnet, sobj.netmask))
+        if metadata['lan_address'] in ipnm:
+            start_ip = sobj.start_ip
+            end_ip = sobj.end_ip
             metadata['lan_dhcp_range_start'] = start_ip.split('.')[3]
             metadata['lan_dhcp_range_end']   = end_ip.split('.')[3]
 
