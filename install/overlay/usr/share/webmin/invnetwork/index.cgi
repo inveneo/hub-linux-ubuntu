@@ -1,26 +1,41 @@
 #!/usr/bin/perl
 
-# Either redirects to link.cgi, if a URL has been set, or asks for a URL
+# index.cgi for invnetwork - draw Inveneo Networking Webmin page
+
+# external resources
 do '../web-lib.pl';
 &init_config();
 do '../ui-lib.pl';
-require '../invlib/form.pm';
-require '../dhcpd/dhcpd-lib.pl';
 use Data::Dumper;
-use dhcp;
 use URI::Escape;
 
+# fill global %in with CGI parameters, else from output of scanConfig.py
 &ReadParse();
-
-use constant WAN_INTERFACE => "eth0";
-use constant LAN_INTERFACE => "eth1";
-
-$msg = $in{'msg'};
-
-&ui_print_header(undef, $module_info{'desc'}, "", undef, 1, 1);     
-if ( $msg ) {
-    print "<h4>" . un_urlize($msg) . "</h4><br>";
+$urlstring = "";
+if (not %in) {
+    local $a = \%in;
+    %$a = ( );
+    @terms = split(/\&/, `./scanConfig.py 2>&1`;
+    foreach $term (@terms) {
+        local ($k, $v) = split(/=/, $term, 2);
+        if (!$_[2]) {
+            $k =~ tr/\+/ /;
+            $v =~ tr/\+/ /;
+        }
+        $k =~ s/%(..)/pack("c",hex($1))/ge;
+        $v =~ s/%(..)/pack("c",hex($1))/ge;
+        $a->{$k} = defined($a->{$k}) ? $a->{$k}."\0".$v : $v;
+    }
 }
+
+# draw the page
+&ui_print_header(undef, $module_info{'desc'}, "", undef, 1, 1);     
+&ui_print_footer("/", $text{'index'});
+exit;
+
+#if ( $msg ) {
+#    print "<h4>" . un_urlize($msg) . "</h4><br>";
+#}
 
 sub trim {
     local($str) = @_;
@@ -302,11 +317,9 @@ EOF
 }
 
 # call Python script to glean config values from several files
-$config_string = `./scanConfig.cgi 2>&1`;
 if ($?) {
     print "<font color='red'>Internal Error</font><br>";
     print "<pre>" . $config_string . "</pre>";
 } else {
     &print_page($config_string);
 }
-&ui_print_footer("/", $text{'index'});

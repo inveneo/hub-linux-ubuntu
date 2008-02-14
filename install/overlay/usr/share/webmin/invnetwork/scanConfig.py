@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-scanConfig.cgi
+scanConfig.py - scan some config files and return interesting values in
+                a URL-encoded string
 
 Copyright (c) 2007 Inveneo, inc. All rights reserved.
 """
@@ -68,12 +69,15 @@ def main():
     metadata['lan_dhcp_on'] = result.split(':')[1]
 
     # report the findings
-    #print urlencode(metadata)
+    sys.stdout.write(urlencode(metadata))
+    """
     s = ''
     for key, value in metadata.iteritems():
         if value:
             s += '%s%s=%s' % (['','&'][len(s) > 0], quote(key), quote(value))
     print s
+    """
 
 if __name__ == '__main__':
     main()
+
