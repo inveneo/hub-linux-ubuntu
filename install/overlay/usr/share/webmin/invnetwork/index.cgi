@@ -1,7 +1,9 @@
 #!/usr/bin/perl
 
 # Either redirects to link.cgi, if a URL has been set, or asks for a URL
-require './invnetwork-lib.pl';
+do '../web-lib.pl';
+&init_config();
+do '../ui-lib.pl';
 require '../invlib/form.pm';
 require '../dhcpd/dhcpd-lib.pl';
 use Data::Dumper;
