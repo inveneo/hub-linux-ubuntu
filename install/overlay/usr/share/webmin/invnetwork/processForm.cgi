@@ -13,6 +13,10 @@ import cgitb; cgitb.enable()  # XXX remove this for production systems
 sys.path.append('/opt/inveneo/lib/python')
 import netfiles
 
+print "Location: /invnetwork/index.cgi?wan_address=1.2.3.4&message=hello+world"
+print
+sys.exit(0)
+
 # START HERE
 print "Content-Type: text/html"
 print

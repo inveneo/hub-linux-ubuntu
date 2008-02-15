@@ -17,6 +17,7 @@ if ($error_string eq "") {
 #    foreach $key (keys %in) {
 #        print "'" . $key . "'='" . $in{$key} . "'<br>";
 #    }
+    print "<font color='orange'>" . $in{'message'} . "</font>";
     &draw_form;
 } else {
     print "<font color='red'>Internal Error:</font><br>";
