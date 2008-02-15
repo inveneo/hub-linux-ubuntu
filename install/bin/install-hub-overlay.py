@@ -171,10 +171,24 @@ def get_root_drive():
     return root_drive
 
 def get_drive_type():
-    if get_root_drive().startswith('sd'):
+    orig_rd=get_root_drive() # save orig return for error reporting
+    rd=orig_rd
+    
+    if rd.startswith('md'):
+        # gotta figure out what the drive is underneath
+        with open('/proc/mdstat') as mdstat:
+            for line in mdstat:
+                if line.startswith(rd):
+                    rd=line.split()[-1] 
+
+    # now let new rd fall through
+    if rd.startswith('sd'):
         return 'sd'
-    else:
+    elif rd.startswith('hd'):
         return 'hd'
+
+    # Don't know what it is!
+    raise Exception("Can't determine root drive type from: "+orig_rd)
     
 def is_raid():
     return get_root_drive().find('md') != -1
@@ -238,4 +252,5 @@ if __name__ == '__main__':
     # sanitize PATH
     os.environ['PATH'] = '/bin:/sbin:/usr/bin:/usr/sbin'
     sys.exit(main())
+    
 
