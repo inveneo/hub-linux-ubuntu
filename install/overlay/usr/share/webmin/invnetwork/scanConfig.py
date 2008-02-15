@@ -18,7 +18,7 @@ import netfiles
 CHKCONFIG = '/usr/sbin/sysv-rc-conf'
 DHCPD = 'dhcp3-server'
 
-metadata = {}
+formvals = {}
 
 def main():
 
@@ -29,36 +29,36 @@ def main():
     ppp = o.ifaces['ppp0']
 
     if wan:
-        metadata['wan_interface'] = 'eth0'
-        metadata['wan_method']  = wan.get('method', None)
-        metadata['wan_address'] = wan.get('address', None)
-        metadata['wan_netmask'] = wan.get('netmask', None)
-        metadata['wan_gateway'] = wan.get('gateway', None)
+        formvals['wan_interface'] = 'ethernet'
+        formvals['wan_method']  = wan.method
+        formvals['wan_address'] = wan.address
+        formvals['wan_netmask'] = wan.netmask
+        formvals['wan_gateway'] = wan.gateway
     else:
-        metadata['wan_interface'] = 'off'
+        formvals['wan_interface'] = 'off'
 
     if lan:
-        metadata['lan_address'] = lan.get('address', None)
-        metadata['lan_netmask'] = lan.get('netmask', None)
-        metadata['lan_gateway'] = lan.get('gateway', None)
+        formvals['lan_address'] = lan.address
+        formvals['lan_netmask'] = lan.netmask
+        formvals['lan_gateway'] = lan.gateway
 
     if 'ppp0' in o.autoset:
-        metadata['wan_interface'] = 'modem'
+        formvals['wan_interface'] = 'modem'
 
     # collect the modem definitions
     o = netfiles.EtcWvdialConf()
     for key, value in o.metadata.iteritems():
-        metadata['ppp_%s' % key.replace(' ', '_')] = value
+        formvals['ppp_%s' % key.replace(' ', '_')] = value
 
     # scan the DHCP daemon config
     o = netfiles.EtcDhcp3DhcpConf()
     for subnet, sobj in o.subnets.iteritems():
         ipnm = IP('%s/%s' % (subnet, sobj.netmask))
-        if metadata['lan_address'] in ipnm:
+        if formvals['lan_address'] in ipnm:
             start_ip = sobj.start_ip
             end_ip = sobj.end_ip
-            metadata['lan_dhcp_range_start'] = start_ip.split('.')[3]
-            metadata['lan_dhcp_range_end']   = end_ip.split('.')[3]
+            formvals['lan_dhcp_range_start'] = start_ip.split('.')[3]
+            formvals['lan_dhcp_range_end']   = end_ip.split('.')[3]
 
     # scan the running daemons for DHCP
     # XXX shouldn't this actually look for an existing startup script instead?
@@ -66,13 +66,13 @@ def main():
     output = Popen(command, stdout=PIPE).communicate()[0]
     tokens = output.split()
     result = tokens[2]
-    metadata['lan_dhcp_on'] = result.split(':')[1]
+    formvals['lan_dhcp_on'] = result.split(':')[1]
 
     # report the findings
-    sys.stdout.write(urlencode(metadata))
+    sys.stdout.write(urlencode(formvals))
     """
     s = ''
-    for key, value in metadata.iteritems():
+    for key, value in formvals.iteritems():
         if value:
             s += '%s%s=%s' % (['','&'][len(s) > 0], quote(key), quote(value))
     print s
