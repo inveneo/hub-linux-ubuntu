@@ -11,18 +11,18 @@ sys.path.append('/opt/inveneo/lib/python')
 
 class ConfigFileBase(object):
     """operations and data present in all config file managers"""
-    filepath = ''
-    lines = []
 
-    def __init__(self, filepath):
+    def __init__(self, filepath, uses_line_continuation = False):
         """initialize self from config file: simply read into memory"""
         self.filepath = filepath
+        self.lines = []
+
         fin = open(filepath, 'r')
         line_buffer = ''
         for line in fin.readlines():
             # see if this line is "to be continued..."
             rstripped_line = line.rstrip()
-            if rstripped_line.endswith('\\'):
+            if uses_line_continuation and rstripped_line.endswith('\\'):
                 line_buffer += rstripped_line[:-1] + ' '
             else:
                 line_buffer += line
@@ -46,17 +46,16 @@ class ConfigFileBase(object):
 
 class EtcWvdialConf(ConfigFileBase):
     """wvdial configuration"""
-    FILEPATH = '/etc/wvdial.conf.test'
-    KEYS = set(['modem', 'phone', 'username', 'password', 'baud', \
-            'idle seconds', 'init1', 'init2'])
-    metadata = {}
 
     def __init__(self):
         """initialize self from config file, parsing out metadata"""
-        ConfigFileBase.__init__(self, self.FILEPATH)
+        ConfigFileBase.__init__(self, '/etc/wvdial.conf.test')
+        self.metadata = {}
+
         for line in self.lines:
             (key, value) = self._parse_line(line)
-            if key in self.KEYS:
+            if key in ['modem', 'phone', 'username', 'password', 'baud', \
+                    'idle seconds', 'init1', 'init2']:
                 self.metadata[key] = value
 
     def _parse_line(self, line):
@@ -98,16 +97,9 @@ class EtcWvdialConf(ConfigFileBase):
 
 class EtcDhcp3DhcpConf(ConfigFileBase):
     """DHCP configuration"""
-    FILEPATH = '/etc/dhcp3/dhcpd.conf'
-    subnets = {}
 
     class SubnetSection(object):
         """helper class that encapsulates one subnet"""
-        subnet = None
-        netmask = None
-        start_ip = None
-        end_ip = None
-        options = {}
 
         # static methods
         def begins(line):
@@ -119,7 +111,7 @@ class EtcDhcp3DhcpConf(ConfigFileBase):
         def ends(line):
             """answer whether this line ends a section of interest"""
             tokens = line.split()
-            return '}' in set(tokens)
+            return '}' in tokens
         ends = staticmethod(ends)
 
         def get_key(line):
@@ -131,6 +123,12 @@ class EtcDhcp3DhcpConf(ConfigFileBase):
         # instance methods
         def __init__(self, line):
             """initialize from first line of section"""
+            self.subnet = None
+            self.netmask = None
+            self.start_ip = None
+            self.end_ip = None
+            self.options = {}
+
             self.add_line(line)
 
         def add_line(self, line):
@@ -158,9 +156,9 @@ class EtcDhcp3DhcpConf(ConfigFileBase):
             lines.append('subnet %s netmask %s {\n' % \
                     (self.subnet, self.netmask))
             if self.start_ip and self.end_ip:
-                lines.append('  range %s %s;\n' % (self.start_ip, self.end_ip))
+                lines.append('\trange %s %s;\n' % (self.start_ip, self.end_ip))
             for key, value in self.options.iteritems():
-                lines.append('  option %s %s;\n' % (key, value))
+                lines.append('\toption %s %s;\n' % (key, value))
             lines.append('}\n')
             return lines
 
@@ -170,7 +168,9 @@ class EtcDhcp3DhcpConf(ConfigFileBase):
 
     def __init__(self):
         """initialize self from config file, parsing out interesting content"""
-        ConfigFileBase.__init__(self, self.FILEPATH)
+        ConfigFileBase.__init__(self, '/etc/dhcp3/dhcpd.conf')
+        self.subnets = {}
+
         section = None
         for line in self.lines:
             if section:
@@ -179,6 +179,9 @@ class EtcDhcp3DhcpConf(ConfigFileBase):
                     section = None
             elif self.SubnetSection.begins(line):
                 section = self.SubnetSection(line)
+        if section:
+            section.add_line(line)
+            self.subnets[section.subnet] = section
 
     def _update_lines(self):
         """return copy of stored lines updated by metadata"""
@@ -222,18 +225,9 @@ class EtcDhcp3DhcpConf(ConfigFileBase):
 
 class EtcNetworkInterfaces(ConfigFileBase):
     """network interfaces definitions"""
-    FILEPATH = '/etc/network/interfaces'
-    autoset = set()
-    ifaces = {}
 
     class InterfaceStanza(object):
         """helper class that encapsulates one interface"""
-        iface = None
-        method = None
-        address = None
-        netmask = None
-        gateway = None
-        extras = {}
 
         # static methods
         def begins(line):
@@ -259,6 +253,13 @@ class EtcNetworkInterfaces(ConfigFileBase):
         # instance methods
         def __init__(self, line):
             """initialize from first line of stanza"""
+            self.iface = None
+            self.method = None
+            self.address = None
+            self.netmask = None
+            self.gateway = None
+            self.extras = []
+
             self.add_line(line)
 
         def add_line(self, line):
@@ -276,21 +277,21 @@ class EtcNetworkInterfaces(ConfigFileBase):
                 elif keyword == 'gateway':
                     self.gateway = tokens[1]
                 else:
-                    self.extras[keyword] = line
+                    self.extras.append(line)
+            else:
+                self.extras.append(line)
 
         def lines(self):
             """return list of config lines generated by this stanza"""
             lines = []
             lines.append('iface %s inet %s\n' % (self.iface, self.method))
             if self.address:
-                lines.append('  address %s\n' % (self.address))
+                lines.append('\taddress %s\n' % (self.address))
             if self.netmask:
-                lines.append('  netmask %s\n' % (self.netmask))
+                lines.append('\tnetmask %s\n' % (self.netmask))
             if self.gateway:
-                lines.append('  gateway %s\n' % (self.gateway))
-            for line in self.extras.values():
-                lines.append(line)
-            lines.append('}\n')
+                lines.append('\tgateway %s\n' % (self.gateway))
+            lines.append(string.join(self.extras, ''))
             return lines
 
         def __str__(self):
@@ -299,21 +300,27 @@ class EtcNetworkInterfaces(ConfigFileBase):
 
     def __init__(self):
         """initialize self from config file, parsing out interesting content"""
-        ConfigFileBase.__init__(self, self.FILEPATH)
+        ConfigFileBase.__init__(self, '/etc/network/interfaces', True)
+        self.autoset = set()
+        self.ifaces = {}
+
         stanza = None
         for line in self.lines:
             if stanza:
                 if not self.InterfaceStanza.ends(line):
                     stanza.add_line(line)
+                    continue
+                else:
                     self.ifaces[stanza.iface] = stanza
                     stanza = None
-                    continue
             if self.InterfaceStanza.begins(line):
                 stanza = self.InterfaceStanza(line)
             else:
                 tokens = line.split()
                 if tokens and tokens[0].lower() == 'auto':
                     self.autoset.update(tokens[1:])
+        if stanza:
+            self.ifaces[stanza.iface] = stanza
 
     def _update_lines(self):
         """return copy of stored lines updated by metadata"""
@@ -345,6 +352,7 @@ class EtcNetworkInterfaces(ConfigFileBase):
                         for iface in tokens[1:]:
                             if iface in self.autoset:
                                 newline += ' ' + iface
+                                found_auto.add(iface)
                         newlines.append(newline + '\n')
                     else:
                         # nope: just some random stuff to copy through
@@ -379,14 +387,14 @@ def main():
     print "==================================================="
     o = EtcWvdialConf()
     print "* Metadata =", o.metadata
-    print "* File contents:\n----------------------\n%s" % o
+    print "* File contents:\n----------------------\n%s" % str(o)
 
     print "==================================================="
     print "Parsing /etc/dhcp3/dhcp.conf"
     print "==================================================="
     o = EtcDhcp3DhcpConf()
     print "* Subnets =", o.subnets
-    print "* File contents:\n----------------------\n%s" % o
+    print "* File contents:\n----------------------\n%s" % str(o)
 
     print "==================================================="
     print "Parsing /etc/network/interfaces"
@@ -394,7 +402,7 @@ def main():
     o = EtcNetworkInterfaces()
     print "* Auto Start =", o.autoset
     print "* Interfaces =", o.ifaces
-    print "* File contents:\n----------------------\n%s" % o
+    print "* File contents:\n----------------------\n%s" % str(o)
 
 if __name__ == '__main__':
     main()
