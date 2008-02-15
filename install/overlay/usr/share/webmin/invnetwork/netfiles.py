@@ -18,7 +18,16 @@ class ConfigFileBase(object):
         """initialize self from config file: simply read into memory"""
         self.filepath = filepath
         fin = open(filepath, 'r')
-        self.lines = fin.readlines()
+        line_buffer = ''
+        for line in fin.readlines():
+            # see if this line is "to be continued..."
+            rstripped_line = line.rstrip()
+            if rstripped_line.endswith('\\'):
+                line_buffer += rstripped_line[:-1] + ' '
+            else:
+                line_buffer += line
+                self.lines.append(line_buffer)
+                line_buffer = ''
         fin.close()
 
     def write(self, makeBackup = True):
@@ -93,7 +102,7 @@ class EtcDhcp3DhcpConf(ConfigFileBase):
     subnets = {}
 
     class SubnetSection(object):
-        """helper class for EtcDhcp3DhcpConf"""
+        """helper class that encapsulates one subnet"""
         subnet = None
         netmask = None
         start_ip = None
@@ -114,18 +123,18 @@ class EtcDhcp3DhcpConf(ConfigFileBase):
         ends = staticmethod(ends)
 
         def get_key(line):
-            """return subnet parsed from first line of subnet section"""
+            """return subnet parsed from first line of section"""
             tokens = line.split()
             return tokens[1]
         get_key = staticmethod(get_key)
 
         # instance methods
         def __init__(self, line):
-            """initialize from first line of subnet section"""
+            """initialize from first line of section"""
             self.add_line(line)
 
         def add_line(self, line):
-            """add line of file to subnet section, return False on last line"""
+            """add line of file to section, return False on last line"""
             tokens = line.split()
             if tokens:
                 keyword = tokens[0].lower()
@@ -172,35 +181,34 @@ class EtcDhcp3DhcpConf(ConfigFileBase):
                 section = self.SubnetSection(line)
 
     def _update_lines(self):
-        """return original list of lines updated by metadata"""
+        """return copy of stored lines updated by metadata"""
         newlines = []
         found_keys = set()
 
-        # alter existing lines that have metadata overrides
-        subnet = None
+        # replace sections of interest with metadata (else remove)
+        subnet_name = None
         for line in self.lines:
-            if subnet:
+            if subnet_name:
                 # we are inside a section: are we done yet?
                 if self.SubnetSection.ends(line):
                     # insert metadata instead, if there is any
-                    if self.subnets.has_key(subnet):
-                        newlines.extend(self.subnets[subnet].lines())
-                        found_keys.add(subnet)
-                    subnet = None
+                    if self.subnets.has_key(subnet_name):
+                        newlines.extend(self.subnets[subnet_name].lines())
+                        found_keys.add(subnet_name)
+                    subnet_name = None
             else:
                 # not inside a section: is this the start of one?
                 if self.SubnetSection.begins(line):
                     # yes: pluck out its name
-                    subnet = self.SubnetSection.get_key(line)
+                    subnet_name = self.SubnetSection.get_key(line)
                 else:
                     # nope: just some random stuff to copy through
                     newlines.append(line)
 
-        # add lines for metadata not yet existing in file
+        # add lines for metadata not yet existing in stored lines
         keys = set(self.subnets.keys())
-        for key in keys.difference(found_keys):
-            newlines.extend(self.subnets[subnet].lines())
-
+        for subnet_name in keys.difference(found_keys):
+            newlines.extend(self.subnets[subnet_name].lines())
         return newlines
 
     def __str__(self):
@@ -218,21 +226,150 @@ class EtcNetworkInterfaces(ConfigFileBase):
     autoset = set()
     ifaces = {}
 
-    def __init__(self):
-        """initialize self from config file, parsing out interesting content"""
-        ConfigFileBase.__init__(self, self.FILEPATH)
-        for line in self.lines:
+    class InterfaceStanza(object):
+        """helper class that encapsulates one interface"""
+        iface = None
+        method = None
+        address = None
+        netmask = None
+        gateway = None
+        extras = {}
+
+        # static methods
+        def begins(line):
+            """answer whether this line begins a new stanza"""
+            tokens = line.split()
+            return tokens and tokens[0].lower() == 'iface'
+        begins = staticmethod(begins)
+
+        def ends(line):
+            """answer whether this line ends a stanza"""
+            tokens = line.split()
+            return tokens and ( \
+                    tokens[0].lower() in ['iface', 'mapping', 'auto'] or \
+                    tokens[0].lower().startswith('allow-'))
+        ends = staticmethod(ends)
+
+        def get_key(line):
+            """return interface parsed from first line of iface stanza"""
+            tokens = line.split()
+            return tokens[1]
+        get_key = staticmethod(get_key)
+
+        # instance methods
+        def __init__(self, line):
+            """initialize from first line of stanza"""
+            self.add_line(line)
+
+        def add_line(self, line):
+            """add line of file to stanza"""
             tokens = line.split()
             if tokens:
                 keyword = tokens[0].lower()
-                if keyword == 'auto':
+                if keyword == 'iface':
+                    self.iface = tokens[1]
+                    self.method = tokens[3]
+                elif keyword == 'address':
+                    self.address = tokens[1]
+                elif keyword == 'netmask':
+                    self.netmask = tokens[1]
+                elif keyword == 'gateway':
+                    self.gateway = tokens[1]
+                else:
+                    self.extras[keyword] = line
+
+        def lines(self):
+            """return list of config lines generated by this stanza"""
+            lines = []
+            lines.append('iface %s inet %s\n' % (self.iface, self.method))
+            if self.address:
+                lines.append('  address %s\n' % (self.address))
+            if self.netmask:
+                lines.append('  netmask %s\n' % (self.netmask))
+            if self.gateway:
+                lines.append('  gateway %s\n' % (self.gateway))
+            for line in self.extras.values():
+                lines.append(line)
+            lines.append('}\n')
+            return lines
+
+        def __str__(self):
+            """return single string representation of self"""
+            return string.join(self.lines(), '')
+
+    def __init__(self):
+        """initialize self from config file, parsing out interesting content"""
+        ConfigFileBase.__init__(self, self.FILEPATH)
+        stanza = None
+        for line in self.lines:
+            if stanza:
+                if not self.InterfaceStanza.ends(line):
+                    stanza.add_line(line)
+                    self.ifaces[stanza.iface] = stanza
+                    stanza = None
+                    continue
+            if self.InterfaceStanza.begins(line):
+                stanza = self.InterfaceStanza(line)
+            else:
+                tokens = line.split()
+                if tokens and tokens[0].lower() == 'auto':
                     self.autoset.update(tokens[1:])
-                elif keyword == 'iface':
-                    name = tokens[1]
-                    self.ifaces[name] = self.iface_params = {}
-                    self.iface_params['method'] = tokens[3]
-                elif keyword in ['address', 'netmask', 'gateway']:
-                    self.iface_params[keyword] = tokens[1]
+
+    def _update_lines(self):
+        """return copy of stored lines updated by metadata"""
+        newlines = []
+        found_keys = set()
+        found_auto = set()
+
+        # replace stanzas of interest with metadata (else remove them)
+        iface_name = None
+        for line in self.lines:
+            if iface_name:
+                # we are inside an interface stanza: are we done yet?
+                if self.InterfaceStanza.ends(line):
+                    # insert metadata instead, if there is any
+                    if self.ifaces.has_key(iface_name):
+                        newlines.extend(self.ifaces[iface_name].lines())
+                        found_keys.add(iface_name)
+                    iface_name = None
+            if not iface_name:
+                # not inside interface stanza: is this the start of one?
+                if self.InterfaceStanza.begins(line):
+                    # yes: pluck out its name
+                    iface_name = self.InterfaceStanza.get_key(line)
+                else:
+                    tokens = line.split()
+                    if tokens and tokens[0].lower() == 'auto':
+                        # this is an auto stanza
+                        newline = 'auto'
+                        for iface in tokens[1:]:
+                            if iface in self.autoset:
+                                newline += ' ' + iface
+                        newlines.append(newline + '\n')
+                    else:
+                        # nope: just some random stuff to copy through
+                        newlines.append(line)
+
+        # add lines for metadata not yet existing in stored lines
+        new_autos = self.autoset.difference(found_auto)
+        if len(new_autos):
+            newline = 'auto'
+            for iface in new_autos:
+                newline += ' ' + iface
+            newlines.append(newline + '\n')
+        keys = set(self.ifaces.keys())
+        for iface_name in keys.difference(found_keys):
+            newlines.extend(self.ifaces[iface_name].lines())
+        return newlines
+
+    def __str__(self):
+        """return entire config file as string, modified by parsed content"""
+        return string.join(self._update_lines(), '')
+
+    def write(self, makeBackup = True):
+        """rewrite the config file, perhaps making a backup of the old one"""
+        self.lines = self._update_lines()
+        ConfigFileBase.write(makeBackup)
 
 def main():
     """test these classes"""
@@ -241,25 +378,23 @@ def main():
     print "Parsing /etc/wvdial.conf"
     print "==================================================="
     o = EtcWvdialConf()
-    print "Metadata =", o.metadata
-    print o
+    print "* Metadata =", o.metadata
+    print "* File contents:\n----------------------\n%s" % o
 
     print "==================================================="
     print "Parsing /etc/dhcp3/dhcp.conf"
     print "==================================================="
     o = EtcDhcp3DhcpConf()
-    print "Subnets =", o.subnets
-    print o
+    print "* Subnets =", o.subnets
+    print "* File contents:\n----------------------\n%s" % o
 
-    '''
     print "==================================================="
     print "Parsing /etc/network/interfaces"
     print "==================================================="
     o = EtcNetworkInterfaces()
-    print "Auto Start =", o.autoset
-    print "Interfaces =", o.ifaces
-    print o
-    '''
+    print "* Auto Start =", o.autoset
+    print "* Interfaces =", o.ifaces
+    print "* File contents:\n----------------------\n%s" % o
 
 if __name__ == '__main__':
     main()
