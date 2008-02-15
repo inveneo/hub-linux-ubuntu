@@ -10,7 +10,8 @@ use Data::Dumper;
 use URI::Escape;
 
 # draw the page
-&ui_print_header(undef, $module_info{'desc'}, "", undef, 1, 1);     
+&ui_print_header(undef, $module_info{'desc'}, "");     
+
 $error_string = &get_cgi;
 if ($error_string eq "") {
 #    foreach $key (keys %in) {
@@ -21,6 +22,7 @@ if ($error_string eq "") {
     print "<font color='red'>Internal Error:</font><br>";
     print "<pre>" . $error_string . "</pre>";
 }
+
 &ui_print_footer("/", $text{'index'});
 exit;
 
@@ -54,251 +56,78 @@ sub get_cgi {
 
 sub draw_form {
     print &ui_form_start('processForm.cgi', 'post');
-    print &ui_table_start();
-    print "form here";
-    print &ui_table_end();
+    print &ui_columns_start(['Network', 'Settings']);
+    print &ui_columns_row(['WAN', &wan_stuff]);
+    print &ui_columns_row(['LAN', &lan_stuff]);
+    print &ui_columns_end();
     print &ui_submit('Submit');
     print &ui_form_end();
 }
 
-sub trim {
-    local($str) = @_;
-    $str =~ s/^\s+//;
-    $str =~ s/\s+$//;
-    return $str;
+sub wan_stuff {
+    return &ui_radio_table('wan_interface', $in{'wan_interface'},
+    [ [ 'off',      'Off',      '&nbsp;' ],
+      [ 'ethernet', 'Ethernet', &eth0_stuff ],
+      [ 'modem',    'Modem',    &modem_stuff ]
+      ]);
 }
 
-sub print_value_attr {
-    local($value) = @_;
-    print " value='" . $value . "'";
+sub eth0_stuff {
+    return &ui_radio_table('wan_method', $in{'wan_method'},
+    [ ['off',    'Off',         '&nbsp'],
+      ['dhcp',   'DHCP Client', '&nbsp'],
+      ['static', 'Static',      &eth0_static_stuff]
+      ]);
 }
 
-sub print_wan_static_stuff {
-    print <<EOF;
-        <table border='1'>
-        <tr>
-            <td align='right'>IP Address:</td>
-            <td><input type='text' name='wan_address'
-EOF
-    &print_value_attr($assoc{'wan_address'});
-    print <<EOF;
-            ></td>
-        </tr>
-        <tr>
-            <td align='right'>Netmask:</td>
-            <td><input type='text' name='wan_netmask'
-EOF
-    &print_value_attr($assoc{'wan_netmask'});
-    print <<EOF;
-            ></td>
-        </tr>
-        <tr>
-            <td align='right'>Gateway:</td>
-            <td><input type='text' name='wan_gateway'
-EOF
-    &print_value_attr($assoc{'wan_gateway'});
-    print <<EOF;
-            ></td>
-        </tr>
-        </table>
-EOF
+sub eth0_static_stuff {
+    return &ui_columns_start() .
+    &ui_columns_row(['IP Address:',
+        &ui_textbox('wan_address', $in{'wan_address'}, 20)]) .
+    &ui_columns_row(['Netmask:',
+        &ui_textbox('wan_netmask', $in{'wan_netmask'}, 20)]) .
+    &ui_columns_row(['Gateway:',
+        &ui_textbox('wan_gateway', $in{'wan_gateway'}, 20)]) .
+    &ui_columns_end();
 }
 
-sub print_wan_ethernet_stuff {
-    print <<EOF;
-        <table border='1'>
-        <tr>
-            <td><input type='radio' name='wan_method' value='dhcp'
-EOF
-    if ($assoc{'wan_method'} eq 'dhcp') { print ' checked'; }
-    print <<EOF;
-            >DHCP Client</td>
-            <td>&nbsp;</td>
-        </tr>
-        <tr>
-            <td><input type='radio' name='wan_method' value='static'
-EOF
-    if ($assoc{'wan_method'} eq 'static') { print ' checked'; }
-    print <<EOF;
-            >Static</td>
-            <td>
-EOF
-    &print_wan_static_stuff;
-    print <<EOF;
-            </td>
-        </tr>
-        </table>
-EOF
+sub modem_stuff {
+    return &ui_columns_start() .
+    &ui_columns_row(['Device:',
+        &ui_textbox('ppp_modem', $in{'ppp_modem'}, 20)]) .
+    &ui_columns_row(['Phone Number:',
+        &ui_textbox('ppp_phone', $in{'ppp_phone'}, 20)]) .
+    &ui_columns_row(['Username:',
+        &ui_textbox('ppp_username', $in{'ppp_username'}, 20)]) .
+    &ui_columns_row(['Password:',
+        &ui_password('ppp_password', $in{'ppp_password'}, 20)]) .
+    &ui_columns_row(['Baud:',
+        &ui_textbox('ppp_baud', $in{'ppp_baud'}, 20)]) .
+    &ui_columns_row(['Idle (secs):',
+        &ui_textbox('ppp_idle_seconds', $in{'ppp_idle_seconds'}, 20)]) .
+    &ui_columns_row(['Init1:',
+        &ui_textbox('ppp_init1', $in{'ppp_init1'}, 20)]) .
+    &ui_columns_row(['Init2:',
+        &ui_textbox('ppp_init2', $in{'ppp_init2'}, 20)]) .
+    &ui_columns_end();
 }
 
-sub print_ppp_stuff {
-    print <<EOF;
-        <table border='1'>
-        <tr>
-            <td align='right'>Device:</td>
-            <td><input type='text' name='ppp_modem'
-EOF
-    &print_value_attr($assoc{'ppp_modem'});
-    print <<EOF;
-            ></td>
-        </tr>
-        <tr>
-            <td align='right'>Phone Number:</td>
-            <td><input type='text' name='ppp_phone'
-EOF
-    &print_value_attr($assoc{'ppp_phone'});
-    print <<EOF;
-            ></td>
-        </tr>
-        <tr>
-            <td align='right'>Username:</td>
-            <td><input type='text' name='ppp_username'
-EOF
-    &print_value_attr($assoc{'ppp_username'});
-    print <<EOF;
-            ></td>
-        </tr>
-        <tr>
-            <td align='right'>Password:</td>
-            <td><input type='password' name='ppp_password'
-EOF
-    &print_value_attr($assoc{'ppp_password'});
-    print <<EOF;
-            ></td>
-        </tr>
-        <tr>
-            <td align='right'>Baud:</td>
-            <td><input type='text' name='ppp_baud'
-EOF
-    &print_value_attr($assoc{'ppp_baud'});
-    print <<EOF;
-            ></td>
-        </tr>
-        <tr>
-            <td align='right'>Idle (secs):</td>
-            <td><input type='text' name='ppp_idle_seconds'
-EOF
-    &print_value_attr($assoc{'ppp_idle_seconds'});
-    print <<EOF;
-            ></td>
-        </tr>
-        <tr>
-            <td align='right'>Init1:</td>
-            <td><input type='text' name='ppp_init1'
-EOF
-    &print_value_attr($assoc{'ppp_init1'});
-    print <<EOF;
-            ></td>
-        </tr>
-        <tr>
-            <td align='right'>Init2:</td>
-            <td><input type='text' name='ppp_init2'
-EOF
-    &print_value_attr($assoc{'ppp_init2'});
-    print <<EOF;
-            ></td>
-        </tr>
-        </table>
-EOF
-}
-
-sub print_wan_stuff {
-    print <<EOF;
-    <table border='1'>
-    <tr><th>Interface</th><th>&nbsp;</th></tr>
-    <tr>
-        <td><input type='radio' name='wan_interface' value='off'
-EOF
-    if ($assoc{'wan_interface'} eq 'off') { print ' checked'; }
-    print <<EOF;
-            >Off</td>
-        <td>&nbsp;</td>
-    </tr>
-    <tr>
-        <td><input type='radio' name='wan_interface' value=$WAN_INTERFACE
-EOF
-    if ($assoc{'wan_interface'} eq $WAN_INTERFACE) { print ' checked'; }
-    print <<EOF;
-            >Ethernet</td>
-        <td>
-EOF
-    &print_wan_ethernet_stuff;
-    print <<EOF;
-        </td>
-    </tr>
-    <tr>
-        <td><input type='radio' name='wan_interface' value='modem'
-EOF
-    if ($assoc{'wan_interface'} eq 'modem') { print ' checked'; }
-    print <<EOF;
-            >Modem</td>
-        <td>
-EOF
-    &print_ppp_stuff;
-    print <<EOF;
-        </td>
-    </tr>
-    </table>
-EOF
-}
-
-sub print_lan_stuff {
-    print <<EOF;
-    <table border='1'>
-    <tr>
-        <td align='right'>IP Address:</td>
-        <td><input type='text' name='lan_address'
-EOF
-    &print_value_attr($assoc{'lan_address'});
-    print <<EOF;
-            ><input type='hidden' name='lan_address_orig'
-EOF
-    &print_value_attr($assoc{'lan_address'});
-    print <<EOF;
-            ></td>
-    </tr>
-    <tr>
-        <td align='right'>Netmask:</td>
-        <td><input type='text' name='lan_netmask'
-EOF
-    &print_value_attr($assoc{'lan_netmask'});
-    print <<EOF;
-            ><input type='hidden' name='lan_netmask_orig'
-EOF
-    &print_value_attr($assoc{'lan_netmask'});
-    print <<EOF;
-            ></td>
-    </tr>
-    <tr>
-        <td align='right'>Gateway:</td>
-        <td><input type='text' name='lan_gateway'
-EOF
-    &print_value_attr($assoc{'lan_gateway'});
-    print <<EOF;
-            ><input type='hidden' name='lan_gateway_orig'
-EOF
-    &print_value_attr($assoc{'lan_gateway'});
-    print <<EOF;
-            ></td>
-    </tr>
-    <tr>
-        <td align='right'>DHCP Server On:</td>
-        <td><input type='checkbox' name='lan_dhcp_on'
-EOF
-    print $assoc{'lan_dhcp_on'} ? " checked" : "";
-    print <<EOF;
-            ></td>
-    </tr>
-    <tr>
-        <td align='right'>DHCP Address Range:</td>
-        <td><input type='text' name='lan_dhcp_range_start' size='3'
-EOF
-    &print_value_attr($assoc{'lan_dhcp_range_start'});
-    print "> to <input type='text' name='lan_dhcp_range_end' size='3'";
-    &print_value_attr($assoc{'lan_dhcp_range_end'});
-    print <<EOF;
-            ></td>
-    </tr>
-    </table>
-EOF
+sub lan_stuff {
+    return &ui_columns_start() .
+    &ui_columns_row(['IP Address:',
+        &ui_textbox('lan_address', $in{'lan_address'}, 20),
+        &ui_hidden('lan_address_orig', $in{'lan_address'})]) .
+    &ui_columns_row(['Netmask:',
+        &ui_textbox('lan_netmask', $in{'lan_netmask'}, 20),
+        &ui_hidden('lan_netmask_orig', $in{'lan_netmask'})]) .
+    &ui_columns_row(['Gateway:',
+        &ui_textbox('lan_gateway', $in{'lan_gateway'}, 20),
+        &ui_hidden('lan_gateway_orig', $in{'lan_gateway'})]) .
+    &ui_columns_row([
+        &ui_checkbox('lan_dhcp_on', $in{'lan_dhcp_on'}, 'DHCP Server On')]) .
+    &ui_columns_row(['DHCP Address Range Start:',
+        &ui_textbox('lan_dhcp_range_start', $in{'lan_dhcp_range_start'}, 3)]) .
+    &ui_columns_row(['DHCP Address Range End:',
+        &ui_textbox('lan_dhcp_range_end', $in{'lan_dhcp_range_end'}, 3)]) .
+    &ui_columns_end();
 }
