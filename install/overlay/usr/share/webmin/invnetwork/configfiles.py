@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-netfiles.py - classes that encapsulate various network config files
+configfiles.py - classes that encapsulate various system config files
 
 Copyright (c) 2007 Inveneo, inc. All rights reserved.
 """

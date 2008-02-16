@@ -13,7 +13,7 @@ from urllib import urlencode, quote
 from IPy import IP
 
 sys.path.append('/opt/inveneo/lib/python')
-import netfiles
+import configfiles
 
 CHKCONFIG = '/usr/sbin/sysv-rc-conf'
 DHCPD = 'dhcp3-server'
@@ -23,7 +23,7 @@ formvals = {}
 def main():
 
     # collect the interfaces
-    o = netfiles.EtcNetworkInterfaces()
+    o = configfiles.EtcNetworkInterfaces()
     wan = o.ifaces['eth0']
     lan = o.ifaces['eth1']
     ppp = o.ifaces['ppp0']
@@ -46,12 +46,12 @@ def main():
         formvals['wan_interface'] = 'modem'
 
     # collect the modem definitions
-    o = netfiles.EtcWvdialConf()
+    o = configfiles.EtcWvdialConf()
     for key, value in o.metadata.iteritems():
         formvals['ppp_%s' % key.replace(' ', '_')] = value
 
     # scan the DHCP daemon config
-    o = netfiles.EtcDhcp3DhcpConf()
+    o = configfiles.EtcDhcp3DhcpConf()
     for subnet, sobj in o.subnets.iteritems():
         ipnm = IP('%s/%s' % (subnet, sobj.netmask))
         if formvals['lan_address'] in ipnm:
@@ -69,14 +69,12 @@ def main():
     formvals['lan_dhcp_on'] = result.split(':')[1]
 
     # report the findings
-    sys.stdout.write(urlencode(formvals))
-    """
+    #sys.stdout.write(urlencode(formvals))
     s = ''
     for key, value in formvals.iteritems():
         if value:
             s += '%s%s=%s' % (['','&'][len(s) > 0], quote(key), quote(value))
     print s
-    """
 
 if __name__ == '__main__':
     main()

@@ -116,14 +116,11 @@ sub modem_stuff {
 sub lan_stuff {
     return &ui_columns_start() .
     &ui_columns_row(['IP Address:',
-        &ui_textbox('lan_address', $in{'lan_address'}, 20),
-        &ui_hidden('lan_address_orig', $in{'lan_address'})]) .
+        &ui_textbox('lan_address', $in{'lan_address'}, 20)]) .
     &ui_columns_row(['Netmask:',
-        &ui_textbox('lan_netmask', $in{'lan_netmask'}, 20),
-        &ui_hidden('lan_netmask_orig', $in{'lan_netmask'})]) .
+        &ui_textbox('lan_netmask', $in{'lan_netmask'}, 20)]) .
     &ui_columns_row(['Gateway:',
-        &ui_textbox('lan_gateway', $in{'lan_gateway'}, 20),
-        &ui_hidden('lan_gateway_orig', $in{'lan_gateway'})]) .
+        &ui_textbox('lan_gateway', $in{'lan_gateway'}, 20)]) .
     &ui_columns_row([
         &ui_checkbox('lan_dhcp_on', $in{'lan_dhcp_on'}, 'DHCP Server On')]) .
     &ui_columns_row(['DHCP Address Range Start:',
