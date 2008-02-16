@@ -16,10 +16,6 @@ lynx    install
 zip	install
 unzip	install
 
-# python libraries
-python-pexpect 	install
-python-ldap	install
-
 # printing
 cupsys          install
 cupsys-client   install
@@ -30,12 +26,12 @@ foo2zjs         install
 openprinting-ppds install
 
 # cd/dvd burning
-wodim	install
-genisoimage install
-icedax	    instll
-mkisofs	    install
-cdda2wav    install
-lame	    install
+wodim           install
+genisoimage     install
+icedax          instll
+mkisofs         install
+cdda2wav        install
+lame            install
 cdrecord	install
 cdrskin		install
 dvd+rw-tools	install
@@ -79,26 +75,29 @@ wvdial		install
 libpam-ldap	install
 ldap-utils	install
 smbldap-tools	install
-slapd	install
+slapd           install
 libnss-ldap	install
-phpldapadmin install
+phpldapadmin    install
 libnet-ldap-perl install
 
 # sqlite3
-sqlite3		 install 
-libsqlite3-0	 install
+sqlite3         install 
+libsqlite3-0    install
 
 # python
-python-pylons	 install
-python-pysqlite2 	 install
-python-sqlalchemy install
-libapache2-mod-python install
-python-mysqldb	      install
+python-pexpect          install
+python-ldap             install
+python-pylons           install
+python-pysqlite2        install
+python-sqlalchemy       install
+libapache2-mod-python   install
+python-mysqldb          install
+python-ipy              install
 
 
 
 # dev, not needed in production but not a bad idea to have...
 subversion	install
 build-essential install
-patch	install
+patch           install
 
