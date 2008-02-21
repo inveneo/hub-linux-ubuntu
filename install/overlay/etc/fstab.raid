@@ -1,11 +1,18 @@
 # /etc/fstab: static file system information.
 #
 # <file system> <mount point>   <type>  <options>       <dump>  <pass>
+
+# kernel info
 proc            /proc           proc    defaults        0       0
-# /dev/md0
+
+# OS/apps
 /dev/md0	 /               ext3    defaults,errors=remount-ro 0       1
-# /dev/md1
-/dev/md1 	/srv            ext3    defaults        0       2
-# /dev/md2
+
+# data
+/dev/md1 	/srv            ext3    defaults,sync,noexec        0       2
+
+# swap
 /dev/md2	 none            swap    sw              0       0
+
+# optical drive
 /dev/hdb        /media/cdrom0   udf,iso9660 user,noauto,exec 0       0
