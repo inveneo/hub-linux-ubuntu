@@ -120,7 +120,7 @@ class EtcWvdialConf(ConfigFileBase):
     def write(self, makeBackup = True):
         """Rewrite the config file, perhaps making a backup of the old one."""
         self.lines = self._update_lines()
-        ConfigFileBase.write(makeBackup)
+        ConfigFileBase.write(self, makeBackup)
 
 class EtcDhcp3DhcpConf(ConfigFileBase):
     """DHCP configuration.
@@ -254,7 +254,7 @@ class EtcDhcp3DhcpConf(ConfigFileBase):
     def write(self, makeBackup = True):
         """Rewrite the config file, perhaps making a backup of the old one."""
         self.lines = self._update_lines()
-        ConfigFileBase.write(makeBackup)
+        ConfigFileBase.write(self, makeBackup)
 
 class EtcNetworkInterfaces(ConfigFileBase):
     """Represents network interfaces definitions.
@@ -417,7 +417,7 @@ class EtcNetworkInterfaces(ConfigFileBase):
     def write(self, makeBackup = True):
         """Rewrite the config file, perhaps making a backup of the old one."""
         self.lines = self._update_lines()
-        ConfigFileBase.write(makeBackup)
+        ConfigFileBase.write(self, makeBackup)
 
 if __name__ == '__main__':
     """Test these classes."""
