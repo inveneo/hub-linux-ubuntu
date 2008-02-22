@@ -208,13 +208,13 @@ class EtcDhcp3DhcpConf(ConfigFileBase):
         for line in self.lines:
             if section:
                 if not section.add_line(line):
-                    self.subnets[section.subnet] = section
+                    self.subnets[section.subnet.strNormal()] = section
                     section = None
             elif self.SubnetSection.begins(line):
                 section = self.SubnetSection(line)
         if section:
             section.add_line(line)
-            self.subnets[section.subnet] = section
+            self.subnets[section.subnet.strNormal()] = section
 
     def _update_lines(self):
         """Return copy of stored lines updated by current metadata."""
