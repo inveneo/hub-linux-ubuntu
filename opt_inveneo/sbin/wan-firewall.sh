@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# wan-firewall.sh
+
 # set a reasonable path
 PATH=/bin:/sbin:/usr/bin:/usr/sbin
 
@@ -15,8 +17,7 @@ PATH=/bin:/sbin:/usr/bin:/usr/sbin
 # 53 (dns)
 # 5353 (mDns)
 
-#BLOCK_PORTS="80 443 10000 8008 8088 631 3128 389 53 5353"
-BLOCK_PORTS="80 443 8088 631 3128 389 53 5353"
+BLOCK_PORTS="80 443 10000 8008 8088 631 3128 389 53 5353"
 
 do_wall_up() {
     IFACE=$1
