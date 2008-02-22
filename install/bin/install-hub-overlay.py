@@ -252,5 +252,5 @@ if __name__ == '__main__':
     # sanitize PATH
     os.environ['PATH'] = '/bin:/sbin:/usr/bin:/usr/sbin'
     sys.exit(main())
-    
+
 
