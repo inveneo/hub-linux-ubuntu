@@ -122,7 +122,8 @@ sub lan_stuff {
     &ui_columns_row(['Gateway:',
         &ui_textbox('lan_gateway', $in{'lan_gateway'}, 20)]) .
     &ui_columns_row([
-        &ui_checkbox('lan_dhcp_on', $in{'lan_dhcp_on'}, 'DHCP Server On')]) .
+        &ui_checkbox('lan_dhcp_on', $in{'lan_dhcp_on'}, 'DHCP Server On',
+            $in{'lan_dhcp_on'})]) .
     &ui_columns_row(['DHCP Address Range Start:',
         &ui_textbox('lan_dhcp_range_start', $in{'lan_dhcp_range_start'}, 3)]) .
     &ui_columns_row(['DHCP Address Range End:',
