@@ -89,7 +89,7 @@ o.write()
 
 # XXX probably need to start/restart DHCP now, eh?
 
-# redirect back to index
+# XXX redirect back to index, include all form values, plus error/info messages
 query_string = "message=Not+Implemented"
 print "Location: /invnetwork/index.cgi?%s" % query_string
 print
