@@ -28,7 +28,7 @@ openprinting-ppds install
 # cd/dvd burning
 wodim           install
 genisoimage     install
-icedax          instll
+icedax          install
 mkisofs         install
 cdda2wav        install
 lame            install
