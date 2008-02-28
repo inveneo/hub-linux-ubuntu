@@ -3,4 +3,4 @@
 # This will load...
 import os
 
-execfile(os.path.realpath('../../../lib/bash/constants.sh'))
+execfile('/opt/inveneo/lib/bash/constants.sh')
