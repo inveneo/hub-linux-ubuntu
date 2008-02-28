@@ -1,29 +1,24 @@
+#!/usr/bin/env python
+
 import smtplib
 import socket
 import sys
-SMTP_USERNAME='inveneo.smtp@gmail.com'
-SMTP_PASSWORD='1qaz2wsx'
-SMTP_HOSTNAME='smtp.gmail.com'
-SMTP_PORT=587
-SMTP_TLS=1
-SMTP_SENDER='inveneo.smtp@gmail.com'
-SMTP_RECIPIENT='' #icip address
-SMTP_DEFAULT_MESSAGE="Host has a failed disk drive:"
-SMTP_DEFAULT_SUBJECT="Subject: Disk failed"
-def send_notice(subject=SMTP_DEFAULT_SUBJECT, message=SMTP_DEFAULT_MESSAGE + " " + 
+import constants
+
+def send_notice(subject=constants.INV_MONITOR_SMTP_DEFAULT_SUBJECT, message=constants.INV_MONITOR_SMTP_DEFAULT_MESSAGE + " " + 
 socket.gethostname()):
-	if SMTP_RECIPIENT == '':
+	if constants.INV_MONITOR_SMTP_RECIPIENT == '':
 		print 'unable to send message, please set recipient email'
 		sys.exit(1)
 	message = subject + "\n\n" + message
 	try:
-		s = smtplib.SMTP(SMTP_HOSTNAME, SMTP_PORT)
+		s = smtplib.SMTP(constants.INV_MONITOR_SMTP_HOSTNAME, constants.INV_MONITOR_SMTP_PORT)
 		s.set_debuglevel(1)
 		s.ehlo()
 		s.starttls()
 		s.ehlo()
-		s.login(SMTP_USERNAME, SMTP_PASSWORD)
-		s.sendmail(SMTP_SENDER, SMTP_RECIPIENT, message)
+		s.login(constants.INV_MONITOR_SMTP_USERNAME, constants.INV_MONITOR_SMTP_PASSWORD)
+		s.sendmail(constants.INV_MONITOR_SMTP_SENDER, constants.INV_MONITOR_SMTP_RECIPIENT, message)
 		s.noop()
 		s.rset()
 		s.quit()
