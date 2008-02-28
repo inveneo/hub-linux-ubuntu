@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
 import sys
+import os
+
+sys.path.append(os.path.realpath('/opt/inveneo/bin'))
 
 from notification_decider import *
 from command_line_notifier import *
