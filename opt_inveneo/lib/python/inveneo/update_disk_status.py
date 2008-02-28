@@ -13,6 +13,10 @@ DISK_STATUS_FILE='/etc/inveneo/disk_status_count'
 
 earlier_disks = -1
 
+if os.path.exists(DISK_STATUS_FILE):
+    with open(DISK_STATUS_FILE) as f:
+        earlier_disks = int(f.read)
+
 output = ''
 try:
     mdadm_command = os.popen('mdadm --detail /dev/md0')
@@ -26,8 +30,11 @@ finally:
 find_working = re.compile(r'Working Devices\s+:\s+(\d)')
 result = find_working.findall(output)
 
-if result:
-    earlier_disks = int(result[0])
+detected_disks = -1
 
-with open(DISK_STATUS_FILE, 'w') as f:
-    print >>f, earlier_disks
+if result:
+    detected_disks = int(result[0])
+
+if (earlier_disks < detected_disks):
+    with open(DISK_STATUS_FILE, 'w') as f:
+        print >>f, earlier_disks
