@@ -1,11 +1,11 @@
-
+#!/usr/bin/env python
 
 class NotificationDecider:
     def isThisAnError(self,message,numDrives):
-        if message == "Added":
+        if (message == "SpareActive" or message == "RebuildFinished"):
             return False
         else:
-            return numDrives == 2
+            return (message == "Fail" or message == "DegradedArray") and numDrives == 2
 
     def shouldChangeStateInformation(self,message,numDrives):
-        return message == "Added" and numDrives == 1
+        return (message == "SpareActive" or message == "RebuildFinished") and numDrives == 1

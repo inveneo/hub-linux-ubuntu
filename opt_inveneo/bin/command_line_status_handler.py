@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import sys
 import os
 
@@ -7,10 +9,13 @@ class CommandLineStatusHandler:
         self.update_program = update_program
 
     def getCurrentStatus(self):
-        fp = os.popen(self.status_program)
-        out = fp.read()
-        fp.close()
-        return int(out)
+        if os.path.exists(self.status_program):
+            fp = os.popen(self.status_program)
+            out = fp.read()
+            fp.close()
+            return int(out)
+        else:
+            raise StandardError, "Status program " + self.status_program + " does not exist"
 
     def updateCurrentStatus(self):
         os.system(self.update_program)
