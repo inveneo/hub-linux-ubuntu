@@ -12,8 +12,6 @@ SMTP_DEFAULT_MESSAGE="Host has a failed disk drive:"
 SMTP_DEFAULT_SUBJECT="Subject: Disk failed"
 def send_notice(subject=SMTP_DEFAULT_SUBJECT, message=SMTP_DEFAULT_MESSAGE + " " + 
 socket.gethostname()):
-#	message = SMTP_DEFAULT_MESSAGE + str(socket.gethostname)
-# get the email message from a file
 	message = subject + "\n\n" + message
 	try:
 		s = smtplib.SMTP(SMTP_HOSTNAME, SMTP_PORT)
