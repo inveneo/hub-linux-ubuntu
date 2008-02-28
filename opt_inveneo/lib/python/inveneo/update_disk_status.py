@@ -15,7 +15,7 @@ earlier_disks = -1
 
 if os.path.exists(DISK_STATUS_FILE):
     with open(DISK_STATUS_FILE) as f:
-        earlier_disks = int(f.read)
+        earlier_disks = int(f.read())
 
 output = ''
 try:
