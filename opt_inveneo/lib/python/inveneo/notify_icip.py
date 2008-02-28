@@ -7,11 +7,14 @@ SMTP_HOSTNAME='smtp.gmail.com'
 SMTP_PORT=587
 SMTP_TLS=1
 SMTP_SENDER='inveneo.smtp@gmail.com'
-SMTP_RECIPIENT='sammy.zahabi@gmail.com' #icip address
+SMTP_RECIPIENT='' #icip address
 SMTP_DEFAULT_MESSAGE="Host has a failed disk drive:"
 SMTP_DEFAULT_SUBJECT="Subject: Disk failed"
 def send_notice(subject=SMTP_DEFAULT_SUBJECT, message=SMTP_DEFAULT_MESSAGE + " " + 
 socket.gethostname()):
+	if SMTP_RECIPIENT == '':
+		print 'unable to send message, please set recipient email'
+		sys.exit(1)
 	message = subject + "\n\n" + message
 	try:
 		s = smtplib.SMTP(SMTP_HOSTNAME, SMTP_PORT)
@@ -26,7 +29,7 @@ socket.gethostname()):
 		s.quit()
 		s.close()
 	except Exception, e:
-		print "network down"
+		print "unable to send message"
 
 if __name__ == '__main__':
 	if len(sys.argv) == 1:
