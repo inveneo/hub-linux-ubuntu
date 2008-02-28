@@ -34,15 +34,19 @@ INV_CONFIG_SERVICE_SAVE_USER_CONFIG_COMMAND="save_user_config"
 INV_CONFIG_SERVICE_GET_VERSION_COMMAND="version"
 
 # Constants for use on server
+INV_MONITOR_BEEP_ALERT='beep -f 1000 -n -f 1200 -n -f 1500 -n -f 1700 -n -f 1950 -n -f 2200 -n -f 2400 -n -f 2700'
+
 INV_MONITOR_SMTP_USERNAME='inveneo.smtp@gmail.com'
 INV_MONITOR_SMTP_PASSWORD='1qaz2wsx'
 INV_MONITOR_SMTP_HOSTNAME='smtp.gmail.com'
 INV_MONITOR_SMTP_PORT=587
 INV_MONITOR_SMTP_TLS=1
 INV_MONITOR_SMTP_SENDER='inveneo.smtp@gmail.com'
-INV_MONITOR_SMTP_RECIPIENT='' 						#YOU MUST SET THIS FOR NOTIFICATION TO WORK
 INV_MONITOR_SMTP_DEFAULT_MESSAGE="Host has a failed disk drive:"
-INV_MONITOR_SMTP_DEFAULT_SUBJECT="Subject: Disk failed"
-INV_MONITOR_BEEP_ALERT='beep -f 1000 -n -f 1200 -n -f 1500 -n -f 1700 -n -f 1950 -n -f 2200 -n -f 2400 -n -f 2700'
+INV_MONITOR_SMTP_DEFAULT_SUBJECT="Subject: CRITICAL PROBLEM: A hard disk has failed"
+
+# If you have email notifications, we recommend you change the sleep to 720 minutes (12 hours)
 INV_MONITOR_DEGRADE_ACTIONS_SLEEP_MINUTES=30
 
+# You must provide an email address for email notifications to work
+INV_MONITOR_SMTP_RECIPIENT=''
