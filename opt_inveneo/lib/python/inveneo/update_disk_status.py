@@ -37,4 +37,4 @@ if result:
 
 if (earlier_disks < detected_disks):
     with open(DISK_STATUS_FILE, 'w') as f:
-        print >>f, earlier_disks
+        print >>f, detected_disks
