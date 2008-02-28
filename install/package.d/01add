@@ -60,6 +60,8 @@ avahi-utils	install
 mysql-server-5.0 install
 webmin	        install
 asterisk	install
+asterisk-web-vmail	install
+python-asterisk		install
 zaptel		install
 zaptel-modules-2.6.22-14-generic	install
 
