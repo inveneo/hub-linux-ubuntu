@@ -31,5 +31,11 @@ def send_notice(subject=SMTP_DEFAULT_SUBJECT, message=SMTP_DEFAULT_MESSAGE + " "
 	except Exception, e:
 		print "network down"
 
-send_notice()
-sys.exit()
+if __name__ == '__main__':
+	if len(sys.argv) == 1:
+		send_notice()
+	if len(sys.argv) > 1:	
+		send_notice(sys.argv[1], sys.argv[2])
+
+sys.exit(main())
+
