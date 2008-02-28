@@ -1,7 +1,6 @@
 import smtplib
 import socket
 import sys
-
 SMTP_USERNAME='inveneo.smtp@gmail.com'
 SMTP_PASSWORD='1qaz2wsx'
 SMTP_HOSTNAME='smtp.gmail.com'
@@ -11,8 +10,8 @@ SMTP_SENDER='inveneo.smtp@gmail.com'
 SMTP_RECIPIENT='sammy.zahabi@gmail.com' #icip address
 SMTP_DEFAULT_MESSAGE="Host has a failed disk drive:"
 SMTP_DEFAULT_SUBJECT="Subject: Disk failed"
-
-def send_notice(subject=SMTP_DEFAULT_SUBJECT, message=SMTP_DEFAULT_MESSAGE + " " + socket.gethostname()):
+def send_notice(subject=SMTP_DEFAULT_SUBJECT, message=SMTP_DEFAULT_MESSAGE + " " + 
+socket.gethostname()):
 #	message = SMTP_DEFAULT_MESSAGE + str(socket.gethostname)
 # get the email message from a file
 	message = subject + "\n\n" + message
@@ -36,6 +35,5 @@ if __name__ == '__main__':
 		send_notice()
 	if len(sys.argv) > 1:	
 		send_notice(sys.argv[1], sys.argv[2])
-
-sys.exit(main())
+	sys.exit()
 
