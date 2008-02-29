@@ -9,6 +9,7 @@ sysv-rc-conf    install
 ntp             install
 network-manager install
 mdadm           install
+rssh		install
 
 # useful utilities
 screen  install
