@@ -12,10 +12,10 @@ socket.gethostname()):
         
         syslog.openlog('inv-notify-icip', 0, syslog.LOG_LOCAL5)
 
-        for key in os.environ.keys():
-            line = key + "=" + os.environ[key]
-            syslog.syslog(line)
-            print line
+#        for key in os.environ.keys():
+#            line = key + "=" + os.environ[key]
+#            syslog.syslog(line)
+#            print line
 
 	if constants.INV_MONITOR_SMTP_RECIPIENT == '':
                 syslog.syslog("Recipient email not set. Exiting.")
