@@ -16,6 +16,12 @@ Copyright (c) 2008 Inveneo, inc. All rights reserved.
 
 import sys, traceback, string, os
 from IPy import IP
+from urllib import quote
+
+def appendQueryString(qs, key, value):
+    """Helper for building up properly quoted query string."""
+    sep = ['','&'][len(qs) > 0]
+    return qs + '%s%s=%s' % (sep, quote(key), quote(value))
 
 class ConfigFileBase(object):
     """Operations and data present in all config file managers.
