@@ -14,6 +14,7 @@ from IPy import IP
 sys.path.append('/opt/inveneo/lib/python/inveneo')
 import configfiles
 
+error_strings = []
 form = cgi.FieldStorage()
 # debug output 
 #print "Content-Type: text/html"
@@ -90,7 +91,18 @@ o.write()
 # XXX probably need to start/restart DHCP now, eh?
 
 # XXX redirect back to index, include all form values, plus error/info messages
-query_string = "message=Not+Implemented"
-print "Location: /invnetwork/index.cgi?%s" % query_string
+qs = ''
+for key in form.keys():
+    qs = configfiles.appendQueryString(qs, key, form[key].value)
+
+if len(error_strings) == 0:
+    qs = configfiles.appendQueryString(qs, 'message', 'OK')
+else:
+    count = 0
+    for error in error_strings:
+        count += 1
+        qs = configfiles.appendQueryString(qs, 'message%d' % count, error)
+
+print "Location: /invnetwork/index.cgi?%s" % qs
 print
 

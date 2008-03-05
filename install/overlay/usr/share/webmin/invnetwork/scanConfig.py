@@ -9,7 +9,6 @@ Copyright (c) 2007 Inveneo, inc. All rights reserved.
 
 import os, sys, traceback
 from subprocess import Popen, PIPE
-from urllib import urlencode, quote
 from IPy import IP
 
 sys.path.append('/opt/inveneo/lib/python/inveneo')
@@ -75,9 +74,9 @@ formvals['lan_dhcp_on'] = level2.split(':')[1]
 
 # report the findings
 #sys.stdout.write(urlencode(formvals))
-s = ''
+qs = ''
 for key, value in formvals.iteritems():
     if value:
-        s += '%s%s=%s' % (['','&'][len(s) > 0], quote(key), quote(value))
-print s
+        qs = configfiles.appendQueryString(qs, key, value)
+print qs
 
