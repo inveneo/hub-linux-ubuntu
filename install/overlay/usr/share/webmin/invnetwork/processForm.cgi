@@ -14,7 +14,8 @@ from IPy import IP
 sys.path.append('/opt/inveneo/lib/python/inveneo')
 import configfiles
 
-error_strings = []
+ERR_PREFIX = 'err_'
+errors = {}
 form = cgi.FieldStorage()
 # debug output 
 #print "Content-Type: text/html"
@@ -47,6 +48,22 @@ lan_dhcp_range_start = form.getfirst("lan_dhcp_range_start", "100")
 lan_dhcp_range_end   = form.getfirst("lan_dhcp_range_end", "200")
 
 # XXX validate the submitted form values!!!
+errors['wan_address'] = 'wan_address'
+errors['wan_netmask'] = 'wan_netmask'
+errors['wan_gateway'] = 'wan_gateway'
+errors['ppp_modem'] = 'ppp_modem'
+errors['ppp_phone'] = 'ppp_phone'
+errors['ppp_username'] = 'ppp_username'
+errors['ppp_password'] = 'ppp_password'
+errors['ppp_baud'] = 'ppp_baud'
+errors['ppp_idle_seconds'] = 'ppp_idle_seconds'
+errors['ppp_init1'] = 'ppp_init1'
+errors['ppp_init2'] = 'ppp_init2'
+errors['lan_address'] = 'lan_address'
+errors['lan_netmask'] = 'lan_netmask'
+errors['lan_gateway'] = 'lan_gateway'
+errors['lan_dhcp_range_start'] = 'lan_dhcp_range_start'
+errors['lan_dhcp_range_end'] = 'lan_dhcp_range_end'
 
 lan_network = IP(lan_address.int() & lan_netmask.int())
 lan_network_range = IP('%s/%s' % (lan_network, lan_netmask))
@@ -95,13 +112,14 @@ qs = ''
 for key in form.keys():
     qs = configfiles.appendQueryString(qs, key, form[key].value)
 
-if len(error_strings) == 0:
-    qs = configfiles.appendQueryString(qs, 'message', 'OK')
+if len(errors) == 0:
+    qs = configfiles.appendQueryString(qs, 'message', \
+            'Your settings have been saved.')
 else:
-    count = 0
-    for error in error_strings:
-        count += 1
-        qs = configfiles.appendQueryString(qs, 'message%d' % count, error)
+    for key, value in errors.iteritems():
+        qs = configfiles.appendQueryString(qs, ERR_PREFIX + key, value)
+        qs = configfiles.appendQueryString(qs, 'message', \
+            'There were errors...')
 
 print "Location: /invnetwork/index.cgi?%s" % qs
 print
