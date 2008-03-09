@@ -9,6 +9,8 @@ do '../ui-lib.pl';
 use Data::Dumper;
 use URI::Escape;
 
+$ERR_PREFIX = 'err_';
+
 # draw the page
 &ui_print_header(undef, $module_info{'desc'}, "");     
 
@@ -20,12 +22,20 @@ if ($error_string eq "") {
     print "<font color='orange'>" . $in{'message'} . "</font>";
     &draw_form;
 } else {
-    print "<font color='red'>Internal Error:</font><br>";
+    print &in_red('Internal Error:') . "<br>";
     print "<pre>" . $error_string . "</pre>";
 }
 
 &ui_print_footer("/", $text{'index'});
 exit;
+
+sub in_red {
+    return "<font color='red'>" . $_[0] . "</font>";
+}
+
+sub error_text {
+    return &in_red($in{$ERR_PREFIX . $_[0]});
+}
 
 # fill global %in with CGI parameters, else from output of scanConfig.py
 # returns "" on success, else an error string
@@ -83,50 +93,83 @@ sub eth0_stuff {
 
 sub eth0_static_stuff {
     return &ui_columns_start() .
-    &ui_columns_row(['IP Address:',
-        &ui_textbox('wan_address', $in{'wan_address'}, 20)]) .
-    &ui_columns_row(['Netmask:',
-        &ui_textbox('wan_netmask', $in{'wan_netmask'}, 20)]) .
-    &ui_columns_row(['Gateway:',
-        &ui_textbox('wan_gateway', $in{'wan_gateway'}, 20)]) .
+    &ui_columns_row(
+        ['IP Address:',
+        &ui_textbox('wan_address', $in{'wan_address'}, 20),
+        &error_text('wan_address')]) .
+    &ui_columns_row(
+        ['Netmask:',
+        &ui_textbox('wan_netmask', $in{'wan_netmask'}, 20),
+        &error_text('wan_netmask')]) .
+    &ui_columns_row(
+        ['Gateway:',
+        &ui_textbox('wan_gateway', $in{'wan_gateway'}, 20),
+        &error_text('wan_gateway')]) .
     &ui_columns_end();
 }
 
 sub modem_stuff {
     return &ui_columns_start() .
-    &ui_columns_row(['Device:',
-        &ui_textbox('ppp_modem', $in{'ppp_modem'}, 20)]) .
-    &ui_columns_row(['Phone Number:',
-        &ui_textbox('ppp_phone', $in{'ppp_phone'}, 20)]) .
-    &ui_columns_row(['Username:',
-        &ui_textbox('ppp_username', $in{'ppp_username'}, 20)]) .
-    &ui_columns_row(['Password:',
-        &ui_password('ppp_password', $in{'ppp_password'}, 20)]) .
-    &ui_columns_row(['Baud:',
-        &ui_textbox('ppp_baud', $in{'ppp_baud'}, 20)]) .
-    &ui_columns_row(['Idle (secs):',
-        &ui_textbox('ppp_idle_seconds', $in{'ppp_idle_seconds'}, 20)]) .
-    &ui_columns_row(['Init1:',
-        &ui_textbox('ppp_init1', $in{'ppp_init1'}, 20)]) .
-    &ui_columns_row(['Init2:',
-        &ui_textbox('ppp_init2', $in{'ppp_init2'}, 20)]) .
+    &ui_columns_row(
+        ['Device:',
+        &ui_textbox('ppp_modem', $in{'ppp_modem'}, 20),
+        &error_text('ppp_modem')]) .
+    &ui_columns_row(
+        ['Phone Number:',
+        &ui_textbox('ppp_phone', $in{'ppp_phone'}, 20),
+        &error_text('ppp_phone')]) .
+    &ui_columns_row(
+        ['Username:',
+        &ui_textbox('ppp_username', $in{'ppp_username'}, 20),
+        &error_text('ppp_username')]) .
+    &ui_columns_row(
+        ['Password:',
+        &ui_password('ppp_password', $in{'ppp_password'}, 20),
+        &error_text('ppp_password')]) .
+    &ui_columns_row(
+        ['Baud:',
+        &ui_textbox('ppp_baud', $in{'ppp_baud'}, 20),
+        &error_text('ppp_baud')]) .
+    &ui_columns_row(
+        ['Idle (secs):',
+        &ui_textbox('ppp_idle_seconds', $in{'ppp_idle_seconds'}, 20),
+        &error_text('ppp_idle_seconds')]) .
+    &ui_columns_row(
+        ['Init1:',
+        &ui_textbox('ppp_init1', $in{'ppp_init1'}, 20),
+        &error_text('ppp_init1')]) .
+    &ui_columns_row(
+        ['Init2:',
+        &ui_textbox('ppp_init2', $in{'ppp_init2'}, 20),
+        &error_text('ppp_init2')]) .
     &ui_columns_end();
 }
 
 sub lan_stuff {
     return &ui_columns_start() .
-    &ui_columns_row(['IP Address:',
-        &ui_textbox('lan_address', $in{'lan_address'}, 20)]) .
-    &ui_columns_row(['Netmask:',
-        &ui_textbox('lan_netmask', $in{'lan_netmask'}, 20)]) .
-    &ui_columns_row(['Gateway:',
-        &ui_textbox('lan_gateway', $in{'lan_gateway'}, 20)]) .
+    &ui_columns_row(
+        ['IP Address:',
+        &ui_textbox('lan_address', $in{'lan_address'}, 20),
+        &error_text('lan_address')]) .
+    &ui_columns_row(
+        ['Netmask:',
+        &ui_textbox('lan_netmask', $in{'lan_netmask'}, 20),
+        &error_text('lan_netmask')]) .
+    &ui_columns_row(
+        ['Gateway:',
+        &ui_textbox('lan_gateway', $in{'lan_gateway'}, 20),
+        &error_text('lan_gateway')]) .
     &ui_columns_row([
         &ui_checkbox('lan_dhcp_on', $in{'lan_dhcp_on'}, 'DHCP Server On',
-            $in{'lan_dhcp_on'})]) .
-    &ui_columns_row(['DHCP Address Range Start:',
-        &ui_textbox('lan_dhcp_range_start', $in{'lan_dhcp_range_start'}, 3)]) .
-    &ui_columns_row(['DHCP Address Range End:',
-        &ui_textbox('lan_dhcp_range_end', $in{'lan_dhcp_range_end'}, 3)]) .
+            $in{'lan_dhcp_on'}),
+        "&nbsp;"]) .
+    &ui_columns_row(
+        ['DHCP Address Range Start:',
+        &ui_textbox('lan_dhcp_range_start', $in{'lan_dhcp_range_start'}, 3),
+        &error_text('lan_dhcp_range_start')]) .
+    &ui_columns_row(
+        ['DHCP Address Range End:',
+        &ui_textbox('lan_dhcp_range_end', $in{'lan_dhcp_range_end'}, 3),
+        &error_text('lan_dhcp_range_end')]) .
     &ui_columns_end();
 }
