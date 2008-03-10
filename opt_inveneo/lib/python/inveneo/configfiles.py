@@ -102,19 +102,15 @@ class EtcResolvConf(ConfigFileBase):
         
         Returns a list of lines that probably have newlines at the end."""
         newlines = []
-        found_values = set()
 
-        # alter existing lines that have metadata overrides
+        # write out non-nameserver lines first
         for line in self.lines:
             (key, value) = self._parse_line(line)
-            if key == 'nameserver' and value in self.nameservers:
-                line = "nameserver %s\n" % value
-                found_values.add(value)
-            newlines.append(line)
+            if key != 'nameserver':
+                newlines.append(line)
 
-        # add lines for metadata not yet existing in file
-        servers = set(self.nameservers)
-        for value in servers.difference(found_values):
+        # add nameservers at the end
+        for value in self.nameservers:
             newlines.append("nameserver %s\n" % value)
         return newlines
 
