@@ -43,6 +43,13 @@ if lan:
 if 'ppp0' in o.autoset:
     formvals['wan_interface'] = 'modem'
 
+# collect the DNS servers
+o = configfiles.EtcResolvConf()
+count = 0
+for value in o.nameservers:
+    formvals['dns_%d' % count] = value
+    count += 1
+
 # collect the modem definitions
 o = configfiles.EtcWvdialConf()
 for key, value in o.metadata.iteritems():

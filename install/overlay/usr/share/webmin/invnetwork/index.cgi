@@ -71,8 +71,7 @@ sub draw_form {
     print &ui_form_start('processForm.cgi', 'post');
     print &ui_columns_start(['Network', 'Settings']);
     print &ui_columns_row(['WAN', &wan_stuff], ['align="center"', '']);
-    print &ui_columns_row(['LAN', &lan_stuff],
-        ['align="center"', 'align="left"']);
+    print &ui_columns_row(['LAN', &lan_stuff], ['align="center"', '']);
     print &ui_columns_end();
     print &ui_submit('Submit');
     print &ui_form_end();
@@ -110,6 +109,16 @@ sub eth0_static_stuff {
         ['Gateway:',
         &ui_textbox('wan_gateway', $in{'wan_gateway'}, 20),
         &error_text('wan_gateway')],
+        ['align="right"', '', '']) .
+    &ui_columns_row(
+        ['Primary DNS:',
+        &ui_textbox('dns_0', $in{'dns_0'}, 20),
+        &error_text('dns_0')],
+        ['align="right"', '', '']) .
+    &ui_columns_row(
+        ['Secondary DNS:',
+        &ui_textbox('dns_1', $in{'dns_1'}, 20),
+        &error_text('dns_1')],
         ['align="right"', '', '']) .
     &ui_columns_end();
 }
@@ -160,7 +169,7 @@ sub modem_stuff {
 }
 
 sub lan_stuff {
-    return &ui_columns_start([], 50) .
+    return &ui_columns_start() .
     &ui_columns_row(
         ['IP Address:',
         &ui_textbox('lan_address', $in{'lan_address'}, 20),

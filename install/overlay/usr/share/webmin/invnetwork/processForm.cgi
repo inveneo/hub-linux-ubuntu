@@ -46,6 +46,17 @@ try:
     ip_wan_gateway = IP(wan_gateway)
 except:
     errors['wan_gateway'] = 'Invalid gateway address'
+dns_0 = form.getfirst("dns_0", None)
+try:
+    ip_dns_0 = IP(dns_0)
+except:
+    errors['dns_0'] = 'Invalid IP address'
+dns_1 = form.getfirst("dns_1", None)
+if dns_1:
+    try:
+        ip_dns_1 = IP(dns_1)
+    except:
+        errors['dns_1'] = 'Invalid IP address'
 
 ppp_modem    = form.getfirst("ppp_modem", "/dev/modem")
 ppp_phone    = form.getfirst("ppp_phone", "")
@@ -103,7 +114,24 @@ try:
 except:
     errors['lan_network_range'] = 'Invalid network range'
 
-# write /etc/wvdial.conf
+# write /etc/resolv.conf if no errors
+valset = set(['dns_0', 'dns_1'])
+if len(valset.intersection(set(errors.keys()))) == 0:
+    o = configfiles.EtcResolvConf()
+    dns_0 = ip_dns_0.strNormal()
+    if len(o.nameservers) > 0:
+        o.nameservers[0] = dns_0
+    else:
+        o.nameservers.append(dns_0)
+    if dns_1:
+        dns_1 = ip_dns_1.strNormal()
+        if len(o.nameservers) > 1:
+            o.nameservers[1] = dns_1
+        else:
+            o.nameservers.append(dns_1)
+    o.write()
+
+# write /etc/wvdial.conf if no errors
 valset = set(['ppp_modem', 'ppp_phone', 'ppp_username', 'ppp_password', \
         'ppp_baud', 'ppp_idle_seconds', 'ppp_init1', 'ppp_init2'])
 if len(valset.intersection(set(errors.keys()))) == 0:
@@ -118,7 +146,7 @@ if len(valset.intersection(set(errors.keys()))) == 0:
     o.metadata['init2']        = ppp_init2
     o.write()
 
-# write /etc/dhcp3/dhcp.conf
+# write /etc/dhcp3/dhcp.conf if no errors
 # XXX assumes subnets already exist: need method for creating them
 valset = set(['lan_address', 'lan_netmask', 'lan_network', \
         'lan_dhcp_range_start', 'lan_dhcp_range_end'])
@@ -133,7 +161,7 @@ if len(valset.intersection(set(errors.keys()))) == 0:
     dhcp.options['domain-name-servers'] = ip_lan_address.strNormal()
     o.write()
 
-# write /etc/network/interfaces
+# write /etc/network/interfaces if no errors
 # XXX assumes interfaces already exist: need method for creating them
 valset = set(['wan_method', 'wan_address', 'wan_netmask', 'wan_gateway', \
         'lan_address', 'lan_netmask', 'lan_gateway'])
