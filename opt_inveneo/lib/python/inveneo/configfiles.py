@@ -71,6 +71,62 @@ class ConfigFileBase(object):
         fout.writelines(self.lines)
         fout.close()
 
+class EtcResolvConf(ConfigFileBase):
+    """DNS configuration.
+    
+    This file is easy: mostly just key/values."""
+
+    def __init__(self):
+        """Initialize self from config file, parsing out metadata."""
+        ConfigFileBase.__init__(self, '/etc/resolv.conf')
+        self.nameservers = []
+
+        for line in self.lines:
+            (key, value) = self._parse_line(line)
+            if key == 'nameserver':
+                self.nameservers.append(value)
+
+    def _parse_line(self, line):
+        """Parse out the interesting bits of one line.
+        
+        Returns a (key, value) tuple, else (None, None)."""
+        list = line.split()
+        if len(list) > 1:
+            key = list[0].lower()
+            value = list[1]
+            return (key, value)
+        return (None, None)
+
+    def _update_lines(self):
+        """Return original list of lines updated by current metadata.
+        
+        Returns a list of lines that probably have newlines at the end."""
+        newlines = []
+        found_values = set()
+
+        # alter existing lines that have metadata overrides
+        for line in self.lines:
+            (key, value) = self._parse_line(line)
+            if key == 'nameserver' and value in self.nameservers:
+                line = "nameserver %s\n" % value
+                found_values.add(value)
+            newlines.append(line)
+
+        # add lines for metadata not yet existing in file
+        servers = set(self.nameservers)
+        for value in servers.difference(found_values):
+            newlines.append("nameserver %s\n" % value)
+        return newlines
+
+    def __str__(self):
+        """Return entire config file as string, modified by current metadata."""
+        return string.join(self._update_lines(), '')
+
+    def write(self, makeBackup = True):
+        """Rewrite the config file, perhaps making a backup of the old one."""
+        self.lines = self._update_lines()
+        ConfigFileBase.write(self, makeBackup)
+
 class EtcWvdialConf(ConfigFileBase):
     """Wvdial configuration.
     
@@ -449,3 +505,11 @@ if __name__ == '__main__':
     print "* Auto Start =", o.autoset
     print "* Interfaces =", o.ifaces
     print "* File contents:\n----------------------\n%s" % str(o)
+
+    print "==================================================="
+    print "Parsing /etc/resolv.conf"
+    print "==================================================="
+    o = EtcResolvConf()
+    print "* Nameservers =", o.nameservers
+    print "* File contents:\n----------------------\n%s" % str(o)
+
