@@ -8,7 +8,7 @@ import sys
 import os
 import re
 
-PROP_PARSER=re.compile("^\s*(?!#)(\S+)\s*=\s*(.+)$")
+PROP_PARSER=re.compile("^\s*(?!#)(\S+)\s*=\s*[\"\']?(.+?)[\"\']?$")
             
 class ConfigFileDict(object):
     def __init__(self,filepath):
@@ -25,7 +25,7 @@ class ConfigFileDict(object):
     def save_config(self):
         with open(self.config_file,'w') as f:
             for key,value in self.dict.items():
-                f.write("%s=%s\n" % (str(key),str(value)))
+                f.write("%s=\"%s\"\n" % (str(key),str(value)))
                 
     
 

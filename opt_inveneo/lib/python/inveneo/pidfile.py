@@ -19,7 +19,7 @@ class PIDFile(object):
     def __init__(self, pname):
         self.pname=pname
         self.my_pid=os.getpid()
-        self.pid_file=os.path.join(PID_DIR,self.pname)
+        self.pid_file=os.path.join(PID_DIR,self.pname)+".pid"
         self.pid_file_pid=-1
         
 	# See if there is a PID file
@@ -47,23 +47,29 @@ class PIDFile(object):
     def pid_is_this_process(self):
         return self.pid_file_pid == self.my_pid
     
-    def remove(self):
+    def remove_pid_file(self):
         """Blows away PID file regardless of whether the PID matches this process.
         Does not kill process.
         Allows any file excpetions to bubble up."""
 
         os.remove(self.pid_file)
     
-    def kill_process_and_remove(self):
+    def kill_process_and_remove_pid_file(self):
         success=True
-        try:
-            os.kill(self.pid_file_pid, signal.SIGKILL)
-        except:
-            success=False
-        else:
-            self.remove()
+
+        if self.is_running():
+            try:
+                os.kill(self.pid_file_pid, signal.SIGKILL)
+            except:
+                success=False
+
+        if success:
+            self.remove_pid_file()
 
         return success
+
+    def is_running(self):
+        return str(self.get_pid()) in os.listdir('/proc')
 
     def get_pid(self):
         return self.pid_file_pid
@@ -71,6 +77,7 @@ class PIDFile(object):
     def get_pid_file_name(self):
         return self.pid_file
 
+    
 
 # a main for testing
 if __name__ == "__main__":
@@ -84,7 +91,7 @@ if __name__ == "__main__":
     sys.stdout.write("PID file: %s, PID: %d\n" % (p.get_pid_file_name(), p.get_pid()))
 
     if not p.pid_is_this_process():
-        if not p.kill_process_and_remove(): p.remove()
+        if not p.kill_process_and_remove_pid_file(): p.remove_pidfile()
         p=PIDFile('foo')
         sys.stdout.write("NOW PID file: %s, PID: %d\n" % (p.get_pid_file_name(), p.get_pid()))
     while True:
