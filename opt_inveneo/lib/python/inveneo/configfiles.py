@@ -307,8 +307,8 @@ class EtcDhcp3DhcpConf(ConfigFileBase):
 
     def add_subnet(self, network, netmask):
         """Create a new network segment with minimal info."""
-        section = self.SubnetSection("subnet %s netmask %s {\n" % \
-                (network, netmask))
+        line = "subnet %s netmask %s {\n" % (network, netmask)
+        section = self.SubnetSection(line)
         self.subnets[section.subnet.strNormal()] = section
         return section
 
@@ -474,6 +474,13 @@ class EtcNetworkInterfaces(ConfigFileBase):
         for iface_name in keys.difference(found_keys):
             newlines.extend(self.ifaces[iface_name].lines())
         return newlines
+
+    def add_iface(self, iface, method):
+        """Create a new network interface stanza with minimal info."""
+        line = "iface %s inet %s\n" % (iface, method)
+        stanza = self.InterfaceStanza(line)
+        self.ifaces[stanza.iface] = stanza
+        return section
 
     def __str__(self):
         """Return entire config file as string, modified by current metadata."""
