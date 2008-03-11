@@ -305,6 +305,13 @@ class EtcDhcp3DhcpConf(ConfigFileBase):
             newlines.extend(self.subnets[subnet_name].lines())
         return newlines
 
+    def add_subnet(self, network, netmask):
+        """Create a new network segment with minimal info."""
+        section = self.SubnetSection("subnet %s netmask %s {\n" % \
+                (network, netmask))
+        self.subnets[section.subnet.strNormal()] = section
+        return section
+
     def __str__(self):
         """Return entire config file as string, modified by current metadata."""
         return string.join(self._update_lines(), '')
@@ -478,7 +485,7 @@ class EtcNetworkInterfaces(ConfigFileBase):
         ConfigFileBase.write(self, makeBackup)
 
 if __name__ == '__main__':
-    """Test these classes."""
+    """Test these classes in a limited way."""
 
     print "==================================================="
     print "Parsing /etc/wvdial.conf"
