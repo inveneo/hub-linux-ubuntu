@@ -147,18 +147,23 @@ if len(valset.intersection(set(errors.keys()))) == 0:
     o.write()
 
 # write /etc/dhcp3/dhcp.conf if no errors
-# XXX assumes subnets already exist: need method for creating them
 valset = set(['lan_address', 'lan_netmask', 'lan_network', \
         'lan_dhcp_range_start', 'lan_dhcp_range_end'])
 if len(valset.intersection(set(errors.keys()))) == 0:
     o = configfiles.EtcDhcp3DhcpConf()
-    dhcp = o.subnets[ip_lan_network.strNormal()]
+    lan_network = ip_lan_network.strNormal()
+    lan_netmask = ip_lan_netmask.strNormal()
+    if o.subnets.has_key(lan_network):
+        dhcp = o.subnets[lan_network]
+    else:
+        dhcp = o.add_subnet(lan_network, lan_netmask)
     dhcp.subnet   = ip_lan_network
     dhcp.netmask  = ip_lan_netmask
     dhcp.start_ip = ip_lan_network_range[int(lan_dhcp_range_start)]
     dhcp.end_ip   = ip_lan_network_range[int(lan_dhcp_range_end)]
-    dhcp.options['routers'] = ip_lan_address.strNormal()
-    dhcp.options['domain-name-servers'] = ip_lan_address.strNormal()
+    dhcp.options['routers'] = ip_lan_network_range[1]
+    dhcp.options['domain-name'] = '"local"'
+    dhcp.options['domain-name-servers'] = ip_lan_network_range[1]
     o.write()
 
 # write /etc/network/interfaces if no errors
