@@ -1,10 +1,33 @@
 #!/usr/bin/env python     
 # -*- coding: utf-8 -*-
 
+from __future__ import with_statement
 import StringIO
 import mmap
 import sys
 import os
+import re
+
+PROP_PARSER=re.compile("^\s*(?!#)(\S+)\s*=\s*(.+)$")
+            
+class ConfigFileDict(object):
+    def __init__(self,filepath):
+        self.config_file=os.path.abspath(filepath)
+        self.dict={}
+        if os.path.isfile(self.config_file):
+            with open(self.config_file,'r') as f:
+                for line in f.readlines():
+                    m=PROP_PARSER.match(line)
+                    if m:
+                        key,value=m.groups()
+                        self.dict[key]=value
+
+    def save_config(self):
+        with open(self.config_file,'w') as f:
+            for key,value in self.dict.items():
+                f.write("%s=%s\n" % (str(key),str(value)))
+                
+    
 
 def replace_in_file(t, r, fn):
     """ Args are: token, replacement, file """
