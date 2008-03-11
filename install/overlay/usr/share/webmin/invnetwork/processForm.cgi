@@ -167,20 +167,29 @@ if len(valset.intersection(set(errors.keys()))) == 0:
     o.write()
 
 # write /etc/network/interfaces if no errors
-# XXX assumes interfaces already exist: need method for creating them
 valset = set(['wan_method', 'wan_address', 'wan_netmask', 'wan_gateway', \
         'lan_address', 'lan_netmask', 'lan_gateway'])
 if len(valset.intersection(set(errors.keys()))) == 0:
     o = configfiles.EtcNetworkInterfaces()
-    wan = o.ifaces['eth0']
+    if o.ifaces.has_key('eth0'):
+        wan = o.ifaces['eth0']
+    else:
+        wan = o.add_iface('eth0', wan_method)
+        wan.extras = ['  pre-up /opt/inveneo/sbin/wan-firewall.sh eth0 up', \
+                      '  post-down /opt/inveneo/sbin/wan-firewall.sh eth0 down']
     wan.iface = 'eth0'
     wan.method = wan_method
     if wan.method == 'static':
         wan.address = ip_wan_address
         wan.netmask = ip_wan_netmask
         wan.gateway = ip_wan_gateway
-    lan = o.ifaces['eth1']
+
+    if o.ifaces.has_key('eth1'):
+        lan = o.ifaces['eth1']
+    else:
+        lan = o.add_iface('eth1', 'static')
     lan.iface = 'eth1'
+    lan.method = 'static'
     lan.address = ip_lan_address
     lan.netmask = ip_lan_netmask
     lan.gateway = ip_lan_gateway
