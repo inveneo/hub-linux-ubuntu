@@ -39,6 +39,11 @@ sub error_text {
     return &in_red($in{$ERR_PREFIX . $key});
 }
 
+sub in_a_box {
+    local ($html) = @_;
+    return '<div style="border: double;">' . $html . '</div>';
+}
+
 # fill global %in with CGI parameters, else from output of scanConfig.py
 # returns "" on success, else an error string
 sub get_cgi {
@@ -71,7 +76,8 @@ sub draw_form {
     print &ui_form_start('processForm.cgi', 'post');
     print &ui_columns_start(['Network', 'Settings']);
     print &ui_columns_row(['WAN', &wan_stuff], ['align="center"', '']);
-    print &ui_columns_row(['LAN', &lan_stuff], ['align="center"', '']);
+    print &ui_columns_row(['LAN', &in_a_box(&lan_stuff)],
+        ['align="center"', '']);
     print &ui_columns_end();
     print &ui_submit('Submit');
     print &ui_form_end();
@@ -81,15 +87,14 @@ sub wan_stuff {
     return &ui_radio_table('wan_interface', $in{'wan_interface'},
     [ [ 'off',      'Off',      '&nbsp;' ],
       [ 'ethernet', 'Ethernet', &eth0_stuff ],
-      [ 'modem',    'Modem',    &modem_stuff ]
+      [ 'modem',    'Modem',    &in_a_box(&modem_stuff) ]
       ]);
 }
 
 sub eth0_stuff {
     return &ui_radio_table('wan_method', $in{'wan_method'},
-    [ ['off',    'Off',         '&nbsp'],
-      ['dhcp',   'DHCP Client', '&nbsp'],
-      ['static', 'Static',      &eth0_static_stuff]
+    [ ['dhcp',   'DHCP Client', '&nbsp'],
+      ['static', 'Static', &in_a_box(&eth0_static_stuff)]
       ]);
 }
 
