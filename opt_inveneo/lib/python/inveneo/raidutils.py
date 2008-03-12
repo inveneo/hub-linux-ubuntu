@@ -5,6 +5,7 @@ import sys
 import re
 import syslog
 import socket
+import smtplib
 import subprocess as sp
 sys.path.append('/opt/inveneo/lib/python')
 import constants
@@ -23,7 +24,14 @@ def num_active_drives_in_array(array_dev):
     return int(m.groups()[0])
 
 def sound_audio_notice(config):
-    sp.call(config.dict['BEEP_CMD'].split())
+    success=True
+    try:
+        sp.call(config.dict['BEEP_CMD'].split())
+    except:
+        success=False
+
+    return success
+  
 
 def send_email_notice(config, subject='', message=''):
     syslog.openlog('raidutils send_email_notice', 0, syslog.LOG_LOCAL5)

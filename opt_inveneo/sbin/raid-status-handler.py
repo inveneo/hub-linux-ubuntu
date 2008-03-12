@@ -60,18 +60,21 @@ class RaidEventHandler:
         # Now for the actual notifications. This will be a check status->notify->sleep loop.
         
         # 1. check that things haven't improved, we can do this in while condition
-        sleep_interval=5 
+        sleep_interval=10 
         sleep_count=0
         email_interval=int(config.dict['EMAIL_INTERVAL'])
+	email_last_fail=False
         beep_interval=int(config.dict['BEEP_INTERVAL'])
+	beep_last_fail=False
         while current_drives < expected_drives:
-            if ((sleep_count * sleep_interval) % email_interval) < sleep_interval:
-                raidutils.send_email_notice(config)
+            if email_last_fail or ((sleep_count * sleep_interval) % email_interval) < sleep_interval:
+                email_last_fail = not raidutils.send_email_notice(config)
 
-            if ((sleep_count * sleep_interval) % beep_interval) < sleep_interval:
-                raidutils.sound_audio_notice(config)
+            if beep_last_fail or ((sleep_count * sleep_interval) % beep_interval) < sleep_interval:
+                beep_last_fail = not raidutils.sound_audio_notice(config)
 
             sleep(sleep_interval * 60)
+	    sleep_count+=1
             current_drives = raidutils.num_active_drives_in_array(device)
 
 
