@@ -105,5 +105,6 @@ python-ipy              install
 # dev, not needed in production but not a bad idea to have...
 subversion	install
 build-essential install
+libncurses5-dev	install
 patch           install
 
