@@ -1,29 +1,28 @@
 .comboMainDiv{
-	padding		: 2px 2px 2px 2px;
-	border-style 	: none solid solid none;
-	border-color	: #4d7891;
-	border-width	: 0px 1px 1px 0px;
-	background-color	: #ccdfeb;
-	width		: 450px;
-	height		: 160px;
-	overflow		: auto;
-	position		:absolute;
-	z-index		: 10000;
+	padding         : 2px 2px 2px 2px;
+	border-style    : none solid solid none;
+	border-color    : #4d7891;
+	border-width    : 0px 1px 1px 0px;
+	background-color        : #ccdfeb;
+	width           : 450px;
+	height          : 160px;
+	overflow                : auto;
+	position                :absolute;
+	z-index         : 10000;
 }
 
 .comboMainDiv div {
-	padding		: 0px 0px 2px 5px;
-	border-width	: 0px 0px 0px 0px;
-	font-family 	: Trebuchet MS, Arial, Helvetica, sans-serif;
-	font-size        	: 115%;
-	/*color		: #0c5584;*/
-	color		: #0000CC;
+	padding         : 0px 0px 2px 5px;
+	border-width    : 0px 0px 0px 0px;
+	font-family     : Trebuchet MS, Arial, Helvetica, sans-serif;
+	font-size               : 115%;
+	/*color         : #0c5584;*/
+	color           : #0000CC;
 }
 
 .comboMainDiv div:hover {
 	background: #9ac2db;
 }
-
 
 div.accordionTabTitleBar {
 	font-size : 12.5px;

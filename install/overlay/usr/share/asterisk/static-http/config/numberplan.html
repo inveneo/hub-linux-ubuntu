@@ -41,17 +41,29 @@ var np_oldselect;
 function update_parkedcalls() {
 	var _exten = _$('extensions').innerHTML;
 	var _context = _$('extensions').value;
+
+	_$('message_text').innerHTML = "Updating ... ";
+	var _bg_s = _$('bg_transparent').style ;
+	var _sm_s = _$('status_message').style ;
+	_sm_s.zIndex = _bg_s.zIndex + 1;
+	_bg_s.display = '' ;
+	_sm_s.display = '' ;
+
+
 	if(_$("parked").checked) {
 		gui_feedback("Parking lots now added for Dialplan: " + _exten + " context: " + _context, 'blue');
 		var uri = build_action('append', 0, _exten, "include", "parkedcalls");   	
 		makerequest('u', 'extensions.conf', uri, function(t) { return true;});
+		setTimeout( function(){ _bg_s.display = 'none'; _sm_s.display = 'none'; } , 1000 ); // add an unnecessary delay - for user perception, BE-335
 	} 
 	if(!_$("parked").checked) {
 		gui_feedback("Parking lots now deleted for Dialplan: " + _exten + " context: " + _context);
 		var uri = build_action('delete', 0, _exten, "include", "", "parkedcalls");   	
 		makerequest('u', 'extensions.conf', uri, function(t) { return true;});
+		setTimeout( function(){ _bg_s.display = 'none'; _sm_s.display = 'none'; } , 1000 ); // add an unnecessary delay - for user perception, BE-335
 	}
 }
+
 function basicpattern(){
 	iscustom = false;
 	_$('define_advanced').style.display="none";
@@ -140,7 +152,14 @@ function add_rule_fromeditform( this_priority, oncomplete ){
 	var _tv = _$('trunks').value ;
 	var _sv = _$('strip').value ;
 	var _pv = _$('prepend').value ;
-	var rule_string = _ptv + ',' + this_priority + ',Macro(trunkdial,${' + _tv + '}/'+ _pv +'${EXTEN:' + _sv + '})' ;
+	var provider_name;
+	config2json('users.conf', 1, function(b) { 
+        var c = b ;
+       	provider_name = (c[_tv]['provider']) ? unescape(c[_tv]['provider']) : _tv;
+
+	if( provider_name == 'bandwidth' && _pv.indexOf('+') != 0 ){ _pv = "+" + _pv ; }
+	var rule_string = _ptv + ',' + this_priority + ',Macro(trunkdial,${' + _tv + '}/'+ _pv +'${EXTEN:' + _sv + '},${'+_tv +"_cid})";
+
 	var uri = build_action('append', 0 , _extv ,"exten", rule_string );
 	commentstring = _ptv + ',' + this_priority + ',' + _rnv + "," + commentstring ;
 	uri += build_action('append', 1 , _extv ,"comment", commentstring );
@@ -160,6 +179,7 @@ function add_rule_fromeditform( this_priority, oncomplete ){
 			oncomplete(); 
 		}
 	);
+	});
 }
 
 function saverule(){
@@ -220,6 +240,7 @@ function parse_nprulesAndnpcomments(){
 			if ( typeof y[temp[0]] == 'undefined' ) {
 				y[temp[0]] = { };
 			}
+
 			y[temp[0]][temp[1]] = new ruleinanpdata(temp[4], temp[5],temp1c[0]);
 		}
 		for ( k =0 ; k < z['npcomments'].length ; k++ ){
@@ -376,7 +397,17 @@ function delete_callingrule(a,b,oncomplete){ // a is pattern, b is priority
 	var _extv = $('extensions').value ;
 	var m = numberplansdata[_extv]['npdata'];
 	var commentstring = (m[a][b].ruledesc == 'custom') ? "custom" : "standard" ;
-	var rule_string = a + ',' + b + ',Macro(trunkdial,${' + m[a][b].trunk + '}/'+ m[a][b].prepend + '${EXTEN:' + m[a][b].digits2strip + '})' ;
+
+	var foo = m[a][b].prepend;
+	if(m[a][b].trunk && trunks_desc[m[a][b].trunk] && trunks_desc[m[a][b].trunk].provider.toLowerCase() == "bandwidth" && foo.indexOf('+') != 0 ) {
+		foo = "+" + foo;
+	}
+
+	if( m[a][b].trunk ){
+		var rule_string = a + ',' + b + ',Macro(trunkdial,${' + m[a][b].trunk + '}/'+ foo + '${EXTEN:' + m[a][b].digits2strip + '},${' + m[a][b].trunk  + '_cid})';
+	}else{
+		var rule_string = a + ',' + b + ',Macro(trunkdial,${}/' + foo + '${EXTEN:' + m[a][b].digits2strip + '})';
+	}
 	var uri = build_action('delete', 0, _extv ,"exten", "", rule_string ); 
 	commentstring = a + ',' + b + ',' + m[a][b].rulename + ',' + commentstring ;
 	uri += build_action('delete', 1 , _extv ,"comment","", commentstring );
@@ -412,7 +443,12 @@ function editcallingrule(a,b){	// a is pattern, b is priority
 	}
 	_$('pattern').value = a;
 	_$('strip').value = m[a][b].digits2strip;
-	_$('prepend').value = m[a][b].prepend;
+	if( m[a][b].trunk && trunks_desc[m[a][b].trunk] && trunks_desc[m[a][b].trunk].provider.toLowerCase() == "bandwidth" ){ 
+		if( m[a][b].prepend.indexOf("+") ==0 ) { _$('prepend').value = m[a][b].prepend.substr(1); }else{ _$('prepend').value = m[a][b].prepend; }
+	}else{
+		_$('prepend').value = m[a][b].prepend;
+	}
+
 	_$('save_a').disabled = 1;
 	if( m[a][b].ruledesc == 'custom' || !m[a][b].ruledesc ){
 		// if this is a custom pattern then donot try to parse the pattern
@@ -490,11 +526,18 @@ numplan_callbacks.newcategory = function() {
 	np_oldselect = _extns.selectedIndex ;
 	_$('include').value = "default";
 	var c = 1 ;
+	var sortNumbers =function(a,b){return a - b};
+	var tmp_arr = [];
 	for(var u =0 ; u < _extns.length ; u++ ){
-		var tmp =  _extns.options[u].value.split("-") ;
-		if( c < tmp[2] ){ break; }
+		tmp_arr.push( Number(_extns.options[u].value.split("-")[2]) );
+	}
+	tmp_arr.sort(sortNumbers);
+
+	for(var u =0 ; u < tmp_arr.length ; u++ ){
+		if( c < tmp_arr[u] ){ break; }
 		c++ ;
 	}
+
 	var nnp = {};
 	nnp.name = "numberplan-custom-" + c ;
 	nnp.fieldbyname = {};
@@ -542,7 +585,7 @@ function localajaxinit(){
 		widgets[fieldnames[x]].disabled = true;
 	}
 
-	_$('message_text').innerHTML ="Saving Changes...";
+	_$('message_text').innerHTML ="Applying Changes...";
 
 	config2json('users.conf', 1, trunks_loaded ) ;
 	//parent.astmanEngine.config2list("users.conf", $('trunks'), new Array(), trunkcallbacks);
@@ -551,23 +594,37 @@ function localajaxinit(){
 function trunks_loaded(b){
 	var c = b ;
 	for( var d in c ){
-		if ( c.hasOwnProperty(d) && c[d]['context'] && (c[d]['context'] == asterisk_guiTDPrefix + d ) && c[d]['fxochannels'] ) {
-			continue;
-		}
 		if ( c.hasOwnProperty(d) && c[d]['context'] && (c[d]['context'] == asterisk_guiTDPrefix + d ) ) {
 			trunks_desc[d] = new Object();
 			trunks_desc[d].comment = (c[d]['trunkname']) ? unescape(c[d]['trunkname']) : d ;
-			var New_OPTION = document.createElement('option');
-			New_OPTION.text =  unescape(trunks_desc[d].comment) ;
-			New_OPTION.value =d ;
-			try {
-				_$('trunks').add(New_OPTION, null); // W3C way
-			}catch(ex) {
-				_$('trunks').add(New_OPTION); // IE way
-			}
+			trunks_desc[d].provider = (c[d]['provider']) ? unescape(c[d]['provider']) : '' ;
+			ASTGUI.selectbox.append(_$('trunks'), unescape(trunks_desc[d].comment) , d); 
 		}
 	}
-	parent.astmanEngine.config2list("extensions.conf", _$('extensions'), widgets , numplan_callbacks);
+	load_mISDNtrunks();
+}
+
+function load_mISDNtrunks(){
+	var parseUsersConf = function(n){
+		try{
+		if( n == "ERROR: CONFIG FILE NOT FOUND"){// misdn.conf not found
+			
+		}
+
+		for( var l in n ){ 
+			if( n.hasOwnProperty(l) && l.beginsWith('trunk_m') && n[l]['hasmisdn'] =='yes' ){
+				trunks_desc[l] = new Object();
+				trunks_desc[l].comment = (n[l]['trunkname']) ? unescape(n[l]['trunkname']) : l ;
+				ASTGUI.selectbox.append(_$('trunks'), trunks_desc[l].comment , l);
+			}
+		};
+		}catch(err){
+
+		}finally{
+			parent.astmanEngine.config2list("extensions.conf", _$('extensions'), widgets , numplan_callbacks);
+		}
+	};
+	config2json("misdn.conf", 1, parseUsersConf);
 }
 
 function select_differentplan(){
@@ -587,24 +644,21 @@ function newnumberplan(){
 
 function delete_numberplan(){	_$('delete').click();	}
 
-function addthe_default_callingplan(a){
-	if(!a){
-		_$('message_text').innerHTML = "A default DialPlan is not found !! "
-		+ "<BR><BR> <A href=\"#\" class=\"splbutton\" onclick=\"addthe_default_callingplan(1)\">click here</A> to create a default DialPlan";
-		var _bg_s = _$('bg_transparent').style ;
-		var _sm_s = _$('status_message').style ;
-		_sm_s.left = 120 ;
-		_sm_s.zIndex = _bg_s.zIndex + 1;
-		_bg_s.display = '' ;
-		_sm_s.display = "" ;
-		return true;
-	}
+function addthe_default_callingplan(){
+	_$('message_text').innerHTML = "A default DialPlan is not found !! " + "<BR><BR> Creating default DialPlan";
+	var _bg_s = _$('bg_transparent').style ;
+	var _sm_s = _$('status_message').style ;
+	_sm_s.left = 120 ;
+	_sm_s.zIndex = _bg_s.zIndex + 1;
+	_bg_s.display = '' ;
+	_sm_s.display = "" ;
+
 	var default_planname = 'numberplan-custom-1' ;
 	var uri = build_action('newcat', 0, default_planname ,"", "");
-	uri += build_action('append', 1, default_planname,"plancomment", "DialPlan1"); 
+	uri += build_action('append', 1, default_planname,"plancomment", "Default DialPlan"); 
 	uri += build_action('append', 2, default_planname,"include", "default"); 
 	uri += build_action('append', 3, default_planname,"include", "parkedcalls"); 
-	makerequest('u','extensions.conf', uri, function(t){gui_feedback("Created Default DialPlan",'green'); location.reload(); }   );
+	makerequest('u','extensions.conf', uri, function(t){gui_feedback("Created a Default DialPlan",'green',3000); location.reload(); }   );
 }
 
 

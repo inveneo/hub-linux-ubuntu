@@ -21,21 +21,25 @@
 
 var sc_displaytime = 1000;
 var asterisk_guipingerror = "Message: Authentication Required";
-var asterisk_guiappname =  "Asterisk GUI (Beta)";
+var asterisk_guiappname =  "Asterisk GUI";
 var asterisk_guitools = "asterisk_guitools";
 var asterisk_guitoolsversion = "0.7";
-var asterisk_guiversion = "$Revision: 1669 $";
+var asterisk_guiversion = "$Revision: 2124 $";
 var asterisk_guifbt = 3000; // Feedback msg time
-var asterisk_scriptsFolder = "/usr/share/asterisk/scripts/" ; /* Directory for gui scripts (graphs.sh, for example) */
-var asterisk_ConfigBkpPath = "/usr/share/asterisk/gui_configbackups/" ;
-var asterisk_Sounds_path = "/usr/share/asterisk/sounds/";
+var asterisk_scriptsFolder = "/var/lib/asterisk/scripts/" ; /* Directory for gui scripts (listfiles, for example) */
+var asterisk_guiNetworkSettings = "sh " + asterisk_scriptsFolder + "networking.sh";
+var asterisk_ConfigBkpPath = "/var/lib/asterisk/gui_configbackups/" ;
+var asterisk_Sounds_path = "/var/lib/asterisk/sounds/";
 var asterisk_menusRecord_path = asterisk_Sounds_path + "record/";
 var asterisk_guiSysInfo = "sh " + asterisk_scriptsFolder + "gui_sysinfo" ;
 var asterisk_guiSysInfo_output = "./sysinfo_output.html";
-var asterisk_guiZapscan = "/sbin/zapscan.bin" ;
-var asterisk_guiZtscan = "/sbin/ztscan";
+var asterisk_guiZtscan = "ztscan > /etc/asterisk/ztscan.conf";
+var asterisk_guiMisdn = "misdn-init";
+var asterisk_guiMisdn_scan = "misdn-init scan > /var/lib/asterisk/static-http/config/scan.html";
 var asterisk_guiEditZap = "sh " + asterisk_scriptsFolder + "editzap.sh";
 var asterisk_rawmanPath = "../../rawman" ;
+var asterisk_guirPath = false;
+var asterisk_guiANOW = false;
 var asterisk_guiConfigFile = "guipreferences.conf"; // will be created in asterisk_configfolder, if the file does not exist 
 var asterisk_configfolder = "/etc/asterisk/";
 var asterisk_guiListFiles = "sh " + asterisk_scriptsFolder + "listfiles" ;
@@ -45,6 +49,52 @@ var asterisk_guiTDPrefix = "DID_";
 var TIMERULES_CATEGORY = 'timebasedrules';
 var isIE = false;
 if(document.attachEvent){ isIE= true; }
+
+var listOfActions = function(){
+	this.current_batch = 1 ;
+	this.current_batch_actionnumber = 0;
+	this.actions = {};
+};
+
+listOfActions.prototype.filename= function(fn){
+	this.filename = fn;
+};	
+listOfActions.prototype.getacn = function(nc){
+	return this.current_batch_actionnumber;
+};
+listOfActions.prototype.addNewChange = function(nc){
+	var t = 'act_' + this.current_batch;
+	if(!this.current_batch_actionnumber){
+		this.actions[t] = nc;
+	}else{
+		this.actions[t] = this.actions[t] + nc;
+	}
+	if( this.current_batch_actionnumber == 5 ){
+		this.current_batch++;
+		this.current_batch_actionnumber = 0;
+	}else{
+		this.current_batch_actionnumber++;
+	}
+};
+listOfActions.prototype.build_action = function(a,x,b,c,d,e){
+	var z = this.getacn();
+	var nc = e?build_action(a, z, b, c, d, e):build_action(a, z, b, c, d) ;
+	this.addNewChange(nc);
+};
+listOfActions.prototype.callActions= function(callback){
+		var pre_uri = "action=updateconfig&srcfilename=" + encodeURIComponent(this.filename) + "&dstfilename=" + encodeURIComponent(this.filename);
+		var treq = this.actions;
+		var start_sqreqs = function(st){
+			var f = treq[ 'act_' + st ];
+			if(f){
+				setTimeout( function(){ makerequest("","",pre_uri + f,  start_sqreqs(st+1) ); }, 500 );
+			}else{
+				setTimeout( callback , 600 ) ;
+			}
+		};
+		start_sqreqs(1);
+};
+
 
 /* Some useful functions */
 function isset(obj) {
@@ -59,10 +109,18 @@ function trim(str) {
 	return str.replace(/^[\s]+/, "").replace(/[\s]+$/, "");
 }
 
+Array.prototype.firstAvailable = function(start) {
+	if(!start){ start = 1; }else{ start = Number( start ); }
+	i=0;
+	while( i < 1 ){
+		if( this.contains(start) ){ start++; }else{ return start; }
+	}
+}
+
 Array.prototype.contains = function(str) {
-	for (var i in this)
-		if(str == this[i])
-			return true;
+	for(var i=0; i < this.length; i++ ){
+		if( this[i] === str )return true;
+	}
 	return false;
 }
 
@@ -210,7 +268,7 @@ var ASTGUI = { // the idea is to eventually move all the global variables and fu
 		},
 
 		clear_table: function(h){
-			for( var i=0; i <  h.rows.length; ){ _bft.deleteRow(i); }
+			for( var i=0; i <  h.rows.length; ){ h.deleteRow(i); }
 		}
 	},
 
@@ -319,7 +377,6 @@ var ASTGUI = { // the idea is to eventually move all the global variables and fu
 	},
 
 	COMBOBOX: function (a,w){		// Usage - ASTGUI.COMBOBOX.call( element , OptionsArray, width(Optional)  );
-		// a is the element, not the element ID. eg: _$('element_name') not 'element_name'
 		// this.comboDiv - the div element created
 		// this.comboOptions - the array of options
 		var k = document.createElement('DIV');
@@ -388,7 +445,8 @@ var ASTGUI = { // the idea is to eventually move all the global variables and fu
 			};
 			setTimeout( sf, 300 );
 		};
-		this.comboOptions = (w) ? w.sort() : '';
+	
+		this.comboOptions = a.sort();
 		ASTGUI.events.add( this, 'focus' , creatediv ) ;
 		ASTGUI.events.add( this, 'keyup' , updateDivAndShow ) ;
 	}
@@ -577,7 +635,7 @@ function showdiv_statusmessage(){
 	_hs.borderColor= "#7E5538";
 	_hs.borderStyle= "solid";
 	h.innerHTML = '<BR><BR><TABLE border=0 cellpadding=0 cellspacing=3 align=center>' +
-			'<TR><TD><img src="/asterisk/static/config/images/loading.gif"></TD>' +
+			'<TR><TD><img src="images/loading.gif"></TD>' +
 			'<TD valign=middle align=center>&nbsp;&nbsp;<div id=message_text></div></TD></TR></TABLE>';
 	document.body.appendChild(h);
 }
@@ -1806,7 +1864,7 @@ function Astman() {
 	};
 	this.doConfig = function(t, box) {
 		if( t[0].headers['message'] && t[0].headers['message'] == "Config file not found" ){
-			if( box.config_file == "zapscan.conf" || box.config_file == "contactinfo.conf" || box.config_file == "jingle.conf" || box.config_file == "providers.conf" ){
+			if( box.config_file == "contactinfo.conf" || box.config_file == "providers.conf" ){
 				parent.astmanEngine.run_tool("/bin/touch /etc/asterisk/"+box.config_file, function(){ window.location.href = window.location.href ; } );
 				return ;
 			} else {

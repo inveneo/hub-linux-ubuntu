@@ -17,366 +17,61 @@
  * the GNU General Public License Version 2. See the LICENSE file
  * at the top of the source tree.
  *
--->
+ *
+ * // see if the GUI-CDR configuration requirements are met
+ * //   Just see if there is a [csv] section in cdr.conf
+ * //   and see if [general]->enable is yes
+ * //
+ * //       if enable=yes is not found add enable=yes in general
+ * //       if [csv] is not found, add [csv] 
+ * //        Reload asterisk
+ * //
+ * // ln -s /var/log/asterisk/cdr-csv/Master.csv /var/lib/asterisk/static-http/Master.csv
+ * // redirect to the cdr.html 
+ -->
 <script type="text/javascript" src="scripts/prototype.js"></script>
 <script type="text/javascript" src="scripts/astman.js"></script>
-<script type="text/javascript" src="scripts/tooltip.js"></script>
 <link href="stylesheets/schwing.css" media="all" rel="Stylesheet" type="text/css" />
-<style type="text/css">
-	#page_header {
-		font-size : 12px;
-		padding : 4px 6px 4px 6px;
-		border-style : solid none solid none;
-		border-top-color : #BDC7E7;
-		border-bottom-color : #182052;
-		border-width : 1px 0px 1px 0px;
-		background-color : #ef8700;
-		color : #ffffff;
-	}
-
-	#dialog {
-		border: 1px solid blue;
-		background-color: #0000af;
-		text-indent: 20px;
-		position: absolute;
-		z-index: 50;
-		top: 0px;
-		left: 0px;
-	}
-
-	.header {
-		color: #6b79a5;
-		font-family: Arial;
-		font-weight: bold;
-		font-size: 25px;
-	}
-
-	.header a {
-		text-decoration: underline;
-		font-weight: normal;
-		font-size: 10px;
-	}
-
-	.header a:hover {
-		text-decoration: none;
-	}
-
-	.mainTable_top {
-		border-top: 1px groove gray;
-		border-left: 1px groove gray;
-		border-right: 1px groove gray;
-		border-bottom: none;
-
-		position: relative;
-		left: 20px;
-		width: 444px;
-
-		margin-top: 10px;
-		margin-bottom: 0px;
-	}
-
-	.mainTable_middle {
-		border-top: none;
-		border-bottom: none;
-		border-left: 1px groove gray;
-		border-right: 1px groove gray;
-
-		position: relative;
-		left: 20px;
-		width: 444px;
-
-		margin: 0 0 0 0;
-	}
-
-	.mainTable_bottom {
-		border-top: none;
-		border-left: 1px groove gray;
-		border-bottom: 1px groove gray;
-		border-right: 1px groove gray;
-
-		position: relative;
-		left: 20px;
-		width: 444px;
-
-		margin-top: 0;
-		margin-bottom: 10px;
-	}
-
-	input {
-		width: 50px;
-	}
-</style>
 <script type="text/javascript">
-//<![CDATA[
-	var needssetup = false;
+var symlink_csv = 'touch /var/log/asterisk/cdr-csv/Master.csv && ln -s /var/log/asterisk/cdr-csv/Master.csv /var/lib/asterisk/static-http/Master.csv';
 
-	var configObjs = [
-		"enable", 
-		"batch",
-		"size",
-		"time",
-		"safeshutdown",
-		"csv_enable",
-		"csv_usegmtime",
-		"csv_loguniqueid",
-		"csv_loguserfield"
-	];
+var redirect_ToCdr = function(){
+	parent.astmanEngine.run_tool(symlink_csv, function(t) {
+		setTimeout( function(){ window.location.href="cdr.html";},1000);
+	});
+};
 
-	var cdrconfig = {
-		enable : true,
-		batch : false,
-		size : 100,
-		time : 300,
-		scheduleronly : false,
-		safeshutdown : true,
-		endbeforehexten : false,
-		csv_enable : false,
-		csv_usegmtime : true,
-		csv_loguniqueid : true,
-		csv_loguserfield : true,
-	};
+function get_cdrConfig(){
+		var parse_cdrconf = function(n){
 
-	function showBackendConfig(backend) {
-		var divs = document.getElementsByName("div");
-
-		for(var i=0;i<divs.length;i++) {
-			if (divs[i].id.match("_config$"))
-				divs[i].style.display = "none";
-		}
-
-		if (isset(_$(backend + "_config"))) {
-			_$(backend + "_config").display = "block";
-			return;
-		}
-
-		gui_alert("CDR backend \"" + backend +"\" does not have a config section.");
-		_$("backends").options[0].selected = true;
-	}
-
-	window.onload = function() {
-		parent._$("mainscreen").width = 798;
-
-		setWindowTitle("CDR Configuration");
-
-		ASTGUI.events.add(document, "mouseover", show_tooltip);
-
-		if (this.location.href.match("needssetup"))
-			needssetup = true;
-
-		loadCDRs();
-
-		parent.loadscreen(this);
-	}
-
-	function loadConfigToHTML() {
-		for (var i in configObjs) {
-			if (!configObjs.propertyIsEnumerable(i))
-				continue;
-			if (!isset(cdrconfig[configObjs[i]]) || !(_$(configObjs[i]))) {
-				gui_alert("Warning: config variable \"" + i + "\" " +
-						  "configured, but does exist in either cdrconfig or html.");
-				configObjs.splice(i, 1);
-				continue;
+			var c = 0, uri='';
+				
+			if( n.hasOwnProperty('general') &&  n['general']['enable']=='no'  ){ // cdr module is diabled 
+				uri += build_action('update' , c , 'general' , "enable" , "yes") ; c++ ;
 			}
 
-			if (_$(configObjs[i]).options)
-				_$(configObjs[i]).options[!cdrconfig[configObjs[i]]].selected = true;
-			else
-				_$(configObjs[i]).value = parseInt(cdrconfig[configObjs[i]]);
-
-			if (isset(tooltips["cdr"].en[i]))
-				_$(configObjs[i]).setAttribute("tip", "en,cdr," + i);
-
-			_$(configObjs[i]).disabled = false;
-		}
-
-		if (cdrconfig.batch)
-			_$("batch_options").style.display = "block";
-
-		_$("backends").disabled = false;
-	}
-
-	function readConfigFromHTML() {
-		for (var i in configObjs) {
-			if (!configObjs.propertyIsEnumerable(i))
-				continue;
-			if (configObjs[i].options)
-				cdrconfig[configObjs[i]] = ast_true(_$(configObjs[i]).value);
-			else
-				cdrconfig[configObjs[i]] = parseInt(_$(configObjs[i]).value);
-		}
-	}
-
-	function applyChanges() {
-		readConfigFromHTML();
-
-		if (cdrconfig.enable)
-			needssetup = false;
-
-		for (var i in cdrconfig) {
-			var context = "general";
-
-			if (!cdrconfig.propertyIsEnumerable(i))
-				continue;
-
-			if ((i = i.split("_"))[1]) {
-				context = i[0];
-				i = i[1];
+			if( !n.hasOwnProperty('csv') ){ // [csv] context is not found in cdr.conf
+				uri += build_action('newcat', c, 'csv' , "", ""); c++;
 			}
 
-			makerequest(
-				"u", "cdr.conf", 
-				build_action("append", 0, context, i, cdrconfig[configObjs[i]].toString()),
-				function(ignore) { return true; }
-			);
-		}
-	}
-
-	function viewCDRs() {
-		if (needssetup) {
-			gui_alert("You don't have CDRs setup yet, you might want to enable that first.");
-			return;
-		}
-
-		this.location.href = 'cdr.html';
-	}
-
-	function loadCDRs() {
-		config2json("cdr.conf", 1, function(config) {
-			if (isset(config.general.enable))
-				cdrconfig.enable = ast_true(config.general.enable);
-			if (isset(config.general.batch))
-				cdrconfig.batch = ast_true(config.general.batch);
-			if (isset(config.general.size))
-				cdrconfig.size = parseInt(config.general.size);
-			if (isset(config.general.time))
-				cdrconfig.time = parseInt(config.general.time);
-			if (isset(config.general.sceduleronly))
-				cdrconfig.scheduleronly = ast_true(config.general.scheduleronly);
-			if (isset(config.general.safeshutdown))
-				cdrconfig.safeshutdown = ast_true(config.general.safeshutdown);
-			if (isset(config.general.endbeforehexten))
-				cdrconfig.endbeforehexten = ast_true(config.generael.endbeforehexten);
-
-			if (isset(config.csv)) {
-				cdrconfig.cvs_enable = true;
-
-				if (config.csv.usegmtime)
-					cdrconfig.csv_usegmtime = ast_true(config.csv.usegmtime);
-				if (config.csv.loguniqueid)
-					cdrconfig.csv_loguniqueid = ast_true(config.csv.loguniqueid);
-				if (config.csv.loguserfield)
-					cdrconfig.csv_loguserfield = ast_true(config.csv.loguserfield);
+			if(uri.length){ 
+				makerequest('u', "cdr.conf", uri, function(t){ 
+					redirect_ToCdr();
+				}); 
+			}else{
+				redirect_ToCdr();
 			}
+		};
 
-			loadConfigToHTML();
-		});
-	}
-//]]>
+		config2json("cdr.conf", 1, parse_cdrconf);
+}
+
 </script>
-<body id="foo">
-  <div id="page_header">
-    <span style="margin-left: 4px;"><strong>CDR Configuration</strong></span>
-    <span style="cursor: pointer;">
-      <img src="images/refresh.png" alt=" Refresh " onclick="window.location.href = window.location.href;" />
-    </span>
-  </div>
+<body id="foo" onload="get_cdrConfig()">
+	<div id="page_header">
+		<span style="margin-left: 4px;"><strong>CDR Configuration</strong></span>
+	</div>
   <div class="mainscreenContentBox" style="width: 500px; margin-left: 20px;">
-    <div class="header">
-      CDR Configuration options 
-      <a href="#" onclick="javascript: viewCDRs();">(View CDRs)</a>
-    </div>
-    <table class="mainTable_top" cellpadding="2">
-      <tr>
-        <td width="130px">Enabled: </td>
-        <td>
-          <select id="enable" disabled>
-            <option value="true">Yes</option>
-            <option value="false">No</option>
-          </select>
-        </td>
-      </tr>
-      <tr>
-        <td>Batch mode: </td>
-        <td>
-          <select id="batch" disabled onchange="javascript: _$('batch_options').style.display = (ast_true(this.value)) ? 'block':'none';">
-            <option value="true">Yes</option>
-            <option value="false" selected>No</option>
-          </select>
-        </td>
-      </tr>
-    </table>
-    <table class="mainTable_middle" id="batch_options" style="display: none">
-      <tr>
-        <td width="130px">&nbsp; Batch <small>(max queue size)</small>: </td>
-        <td><input type="text" id="size" disabled></td>
-      </tr>
-      <tr>
-          <td>&nbsp; Batch <small>(max queue time)</small>: </td>
-          <td><input type="text" id="time" disabled></td>
-      </tr>
-    </table>
-    <table class="mainTable_middle">
-      <tr>
-        <td width="130px">Backends: </td>
-        <td>
-          <select id="backends" onchange="javascript: if(this.value.length) showBackendConfig(this.value);">
-            <option value=""></option>
-            <option value="csv">csv</option>
-          </select>
-        </td>
-      </tr>
-    </table>
-    <table class="mainTable_middle" id="csv_config" style="display: none;">
-      <tr>
-        <td width="130px">Enabled: </td>
-        <td>
-          <select id="csv_enable" disabled>
-            <option value="true">Yes</option>
-            <option value="false">No</option>
-          </select>
-        </td>
-      </tr>
-      <tr>
-        <td>Use GMT: </td>
-        <td>
-          <select id="csv_usegmtime" disabled>
-            <option value="true">Yes</option>
-            <option value="false">No</option>
-          </select>
-        </td>
-      </tr>
-      <tr>
-        <td>Log unique id: </td>
-        <td>
-          <select id="csv_loguniqueid" disabled>
-            <option value="true">Yes</option>
-            <option value="false">No</option>
-          </select>
-        </td>
-      </tr>
-      <tr>
-        <td>Log user field: </td>
-        <td>
-           <select id="csv_loguserfield" disabled>
-            <option value="true">Yes</option>
-            <option value="false">No</option>
-          </select>
-        </td>
-      </tr>
-    </table>
-    <table class="mainTable_bottom">
-      <tr>
-        <td width="130px">Safe shutdown: </td>
-        <td>
-          <select id="safeshutdown" disabled>
-            <option value="true">Yes</option>
-            <option value="false">No</option>
-          </select>
-        </td>
-      </tr>
-    </table>
-    <button onclick="javascript: applyChanges();">Apply Changes</button>
-	<button onclick="javascript: viewCDRs();">View CDRs</button>
+		
   </div>
 </body>

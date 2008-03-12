@@ -123,10 +123,11 @@ callbacks.newsubitem = function() {
 	var x;
 	var gen = _$('hiddenusers').stored_config.catbyname['general'];
 	var _ext = $('extensions') ;
+	try{
 	if (gen){
-		x = gen.fieldbyname['userbase'];
+		x = (gen.fieldbyname['userbase'])?gen.fieldbyname['userbase']:6000;
 		for( var f=0; f < _ext.options.length ; f++ ){
-			if( x < _ext.options[f].innerHTML.split(' -- ')[0] ){ break; }
+			if( x < Number(_ext.options[f].innerHTML.split(' -- ')[0]) ){ break; }
 			x++;
 		}
 	}else{
@@ -136,6 +137,7 @@ callbacks.newsubitem = function() {
 			x = 6000; // a default value if one is not defined in users.conf's general context
 		}
 	}
+	}catch(err){x=6000;}
 	_$('pin').value = '';
 	_$('pinadmin').value = '';
 	enable_disable_fields(1);

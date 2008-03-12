@@ -154,7 +154,8 @@
 
 		config2json("cdr.conf", 1, function(config) {
 			if (isset(config.enable) && !ast_true(config.enable))
-				this.location.href = "cdr_conf.html?needssetup";
+				this.location.href = "cdr_conf.html";
+				return false;
 		});
 
 		var adjust_toScreen = function(){
@@ -165,7 +166,7 @@
 		top._$('mainscreen').width= 798;
 
 		parent.astmanEngine.run_tool("sh " + asterisk_scriptsFolder + "mastercsvexists", function (){
-			new Ajax.Request("/asterisk/static/Master.csv", {
+			new Ajax.Request("/static/Master.csv", {
 				method : "get",
 				asynchronous : true,
 				onComplete : function(c) {
@@ -175,8 +176,7 @@
 					loadRecords();
 				},
 				onFailure : function() {
-					gui_alert("Sorry, it appears that you're not using > version 1.4 of asterisk, " +
-							  "or you're on an appliance. Only configuring CDRs is available at this time.");
+					gui_alert("Error: Cannot find Master.csv !! ");
 					this.location.href = "cdr_conf.html";
 				}
 			});

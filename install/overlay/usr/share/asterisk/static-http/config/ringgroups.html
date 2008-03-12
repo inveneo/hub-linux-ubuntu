@@ -321,9 +321,13 @@ function localajaxinit(){
 	//
 	// so we need to load users.conf and extensions.conf
 	//
-	//config2json('users.conf', 1, get_users) ;
-	config2json('zapscan.conf', 1, read_zapchannels) ;
+	
+	parent.FXS_PORTS_DETECTED.each( function(y) {
+		LISTOFCHANNELS['Zap/' + y] = {};
+		LISTOFCHANNELS['Zap/' + y]['ChannelName'] = 'Analog Phone ' + y;
+	});
 
+	config2json('users.conf', 1, get_users) ;
 	parent.loadscreen(this);
 }
 
@@ -407,20 +411,10 @@ function read_extensions(n){
 
 	clear_table();
 	showlist_of_rules();
-	//config2json('zapscan.conf', 1, read_zapchannels) ;
 }
 
 
-function read_zapchannels(c){
-	for( var d in c ){
-		if ( c.hasOwnProperty(d) && c[d]['port'] && (c[d]['port'] == 'fxo' ) ) {
-			LISTOFCHANNELS['Zap/'+d] = {};
-			LISTOFCHANNELS['Zap/'+d]['ChannelName'] = 'Analog Phone ' + d;
-		}
-	}
 
-	config2json('users.conf', 1, get_users) ;
-}
 
 
 function parse_addtoringgroups(u, v){

@@ -4,9 +4,8 @@
 ####	Copyright Brandon Kruse <bkruse@digium.com> && Digium	####
 ####################################################################
 
-# Quick script for applying zaptel settings from the GUI.
+# Quick script for applying misdn settings from the GUI.
 
-ZAPCONF="/etc/zaptel.conf"
-FILENAME="/etc/asterisk/applyzap.conf"
-grep -v '\;' ${FILENAME} | sed 's/\[general\]//g' > ${ZAPCONF}
-
+MISDNCONF="/etc/misdn-init.conf"
+MISDNFILE="/etc/asterisk/applymisdn.conf"
+grep -v "\[general\]" ${MISDNFILE} | grep -v "\;" > ${MISDNCONF}

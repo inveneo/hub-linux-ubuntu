@@ -21,7 +21,6 @@
 -->
 <script src="scripts/prototype.js"></script>
 <script src="scripts/astman.js"></script>
-<script src="scripts/lang.js"></script>
 <script src="scripts/tooltip.js"></script>
 <link href="stylesheets/schwing.css" media="all" rel="Stylesheet" type="text/css" />
 <script>
@@ -30,11 +29,25 @@ var widgets = new Object;
 var callbacks = new Object;
 var extencallbacks = new Object;
 var allcodecs = new Array;
-var fieldnames = ['callwaiting' ,'cancel' ,'cid_number' ,'context' ,'delete' ,'email' ,'fullname' ,'group' ,'hasagent' ,'hasdirectory' ,'hasiax' ,'hasmanager' ,'hassip' ,'hasvoicemail' ,'deletevoicemail' ,'host' ,'mailbox' ,'name' ,'new' ,'save' ,'secret' ,'threewaycalling' ,'vmsecret' ,'zapchan', 'registeriax', 'registersip','canreinvite','nat','dtmfmode', 'disallow','allow'];
+var fieldnames = ['callwaiting' ,'cancel' ,'cid_number' ,'context' ,'delete' ,'email' ,'fullname' ,'group' ,'hasagent' ,'hasdirectory' ,'hasiax' ,'hasmanager' ,'hassip' ,'hasvoicemail' ,'deletevoicemail' ,'host' ,'mailbox' ,'name' ,'new' ,'save' ,'secret' ,'threewaycalling' ,'vmsecret' ,'zapchan', 'registeriax', 'registersip','macaddress','autoprov','label','canreinvite','nat','dtmfmode', 'disallow','allow', 'insecure'];
 
 var localextenlength = 4;
 var allow_aliasextns = "no";
 var allow_an_extns = "no" ;
+
+var USER_ZAPCHAN = '' ; // this global variable is used to know if the selected user's zapchan is changed between
+// callbacks.postselect and callbacks.savechanges, if it is changed we set parent.REQUIRE_RESTART to true;
+// and if parent.REQUIRE_RESTART is true - we nolonger care about updating/keeping track of this variable anyway.
+
+function load_customerinfo(){
+	parent.$('buynow_div').innerHTML = "Need a phone, some software, or something else?<BR> Click on the 'Where to Buy' button to get directly to products.<BR/><BR/><input type=\"button\" id=\"buynow_button\" value=\"Where to Buy\">";
+
+	parent.$('buynow_button').onclick = function(){	 
+		win=window.open('','myWin');
+		document.buynow_form.target='myWin';
+		document.buynow_form.submit();
+	}
+}
 
 extencallbacks.format = function(t, x) {
 	if ((t.name != specialcontext)){ return null; }
@@ -44,6 +57,7 @@ extencallbacks.format = function(t, x) {
 extencallbacks.loaded = function() {
 	merge_extensions(_$('devices'), _$('extensions'));
 	parent.loadscreen(this);
+	load_customerinfo();
 }
 
 extencallbacks.eachline = true;
@@ -79,10 +93,12 @@ callbacks.format = function(t) {
 		return null;
 	}
 	
-	if ( t.fieldbyname['context'] == asterisk_guiTDPrefix + t.name ) {
-		if(t.name.beginsWith('span_')){
-			if(t.fieldbyname['fxochannels']){ add_DigitalChannels( t.fieldbyname['fxochannels'] ); }
-		}
+	if ( t.name.beginsWith('span_') && t.fieldbyname['signalling'].beginsWith('fxo') && t.fieldbyname['zapchan'] ) {
+		add_DigitalChannels(t.fieldbyname['zapchan']);
+		return null;
+	}
+
+ 	if ( t.fieldbyname['context'] == asterisk_guiTDPrefix + t.name ) {
 		return null;
 	}
 	
@@ -109,6 +125,15 @@ callbacks.sortfunc = function(a,b) {
 callbacks.checkparams = function(box) {
 	_$('mailbox').value = _$('name').value;
 	_$('group').value = '';
+
+        if($('macaddress').value.length > 0) {
+                $('autoprov').value = "yes";
+                $('label').value = $('name').value;
+        } else {
+                $('autoprov').value = "no";
+                $('label').value = "";
+        }
+
 	return false;
 }
 callbacks.newcategory = function() {
@@ -118,7 +143,9 @@ callbacks.newcategory = function() {
 	gen = _devices.stored_config.catbyname['general'];
 	gen.fieldbyname['allow'] = 'all';
 	gen.fieldbyname['disallow'] = 'all';
+
 	tmp = objcopy(gen);
+	try{
 	if (gen){
 		x = gen.fieldbyname['userbase'];
 		for( var f=0; f < _devices.options.length ; f++ ){
@@ -132,6 +159,8 @@ callbacks.newcategory = function() {
 			x = 6000; // a default value if one is not defined in users.conf's general context
 		}
 	}
+	if(isNaN(x)){x=6000;}
+	}catch(err){ x = 6000; }
 	tmp.name = x
 	return tmp;
 }
@@ -155,6 +184,12 @@ callbacks.beforeSaving = function(){
 	if (!check_patternonfields( ['name', 'fullname', 'secret','email', 'cid_number'] ) ){
 		return false;
 	}
+
+        if( _$('macaddress').value.length != 12 && _$('macaddress').value.length != 0 ) {
+                alert("Sorry, Phone Serial must be 12 characters !");
+                _$('macaddress').focus();
+                return false;
+        }
 
 	if(allow_aliasextns == "no"){	// check whether the selected analog line is assigned to another user extension
 		var tmp_usedanaloglines = [] ;
@@ -218,26 +253,21 @@ callbacks.postselect = function(box, val) {
 	showhide();
 	/* check to see if we need to display out email/voicemail settings. */
 	_$('codecs_text').innerHTML = 'disallow: '+ _$('disallow').value + ' <BR> allow:' + _$('allow').value ;
+
+	USER_ZAPCHAN = _$('zapchan').value ;
 }
+
 
 callbacks.savechanges = function(){
-	
-}
-
-function analoglines_loaded(b){
-	var c = b ;
-	var _zapchan = _$('zapchan') ;
-
-	for( var d in c ){
-		if ( c.hasOwnProperty(d) && c[d]['port'] && (c[d]['port'] == 'fxo' ) ) {
-			ASTGUI.selectbox.append(_zapchan,"Analog Port #" + d, d);
-		}
+	if( parent.REQUIRE_RESTART == false && _$('zapchan').value != USER_ZAPCHAN ){
+		parent.REQUIRE_RESTART = true;
 	}
 
-	ASTGUI.selectbox.insert_before(_zapchan,"None", "", 0);
-	config2json('extensions.conf', 1, dialplans_loaded ) ;
-	//parent.astmanEngine.config2list("extensions.conf", _$('context'), new Array(), numcallbacks);
+	var y =  _$('name').value ;
+	var uri1 = build_action('update', 0 , y , 'signalling', 'fxo_ks');  // set the signalling to fxo_ks
+	makerequest( 'u', 'users.conf' , uri1 , function(t){ } );
 }
+
 
 function dialplans_loaded(b){
 	var c =  b ;
@@ -266,23 +296,8 @@ function localajaxinit() {
 		}
 	}
 	*/
-	apply_lang('en');
-	setWindowTitle("User Extensions");
 
-	//var _features = _$('features'); 
-	/*
-	if( navigator.userAgent.indexOf("MSIE") != -1){
-		togglefeatures = function(){ } ;
-		_features.style.display = "";
-		_features.style.height=160;
-	}else{
-		_features.style.overflow = "hidden";
-		_features.style.height = 1;
-		_$('devices').style.height = "415px";
-	}
-	*/
-	//_features.style.width = 302;
-	adstatus = "hidden";
+	setWindowTitle("User Extensions");
 	_$('devices').contentEditable = 'false';
 	for (var x =0; x < fieldnames.length; x++ ) {
 		widgets[fieldnames[x]] = _$(fieldnames[x]);
@@ -303,20 +318,33 @@ function load_codecs_fromast() {
 		for(var i=0; resp[i] != undefined; i++) {
 			resp[i] = resp[i].split("_");
 			if(resp[i][1]) {
-				resp[i][1] = resp[i][1].split("."); 
+				resp[i][1] = resp[i][1].split(/[. ]/); 
 				if(resp[i][1][0]) {
 					if(resp[i][1][0] == "a") {
 						continue; /* codec is a_mu, alaw to mulaw direct codec/decoder, not a codec preference. */
 					}
 						allcodecs[i] = resp[i][1][0];
 				}
+				if(resp[i][1][0] == "g729a") { 
+					resp[i][1][0] = "g729"; 
+				}
 			}
 		}
-		config2json('zapscan.conf', 1, analoglines_loaded ) ;
+		var _zapchan = _$('zapchan') ;
+		parent.FXS_PORTS_DETECTED.each( function(y) {
+			ASTGUI.selectbox.append( _zapchan,"Analog Port #" + y , y );
+		});
+
+		ASTGUI.selectbox.insert_before(_zapchan,"None", "", 0);
+		config2json('extensions.conf', 1, dialplans_loaded ) ;
 		return true;
 	});
 }
+
+
 function free_mem(){
+	parent.$('buynow_button').onclick = null;
+	parent.$('buynow_div').innerHTML = "";
 	if( navigator.userAgent.indexOf("MSIE") == -1 ){ return true; }
 	try{
 		widgets['save'].hostselectbox = null ;
@@ -326,19 +354,6 @@ function free_mem(){
 		purge( document.body );
 	} catch(e){ }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 CODECSETTINGS = {
@@ -472,7 +487,7 @@ function showhide() {
 </script>
 <body id="foo" onload="localajaxinit()"  bgcolor="#EFEFEF" onunload="free_mem()">
 <div class="mainscreenTitleBar">
-	<span style="margin-left: 4px;font-weight:bold;"><span class="lclzn">users,0</span></span>
+	<span style="margin-left: 4px;font-weight:bold;">User and Phone Configuration</span>
 	<span style="cursor: pointer; cursor: hand;" onclick="window.location.href=window.location.href;" >&nbsp;<img src="images/refresh.png" title=" Refresh " border=0 >&nbsp;</span>
 </div>
 <div class="mainscreenContentBox" id="userscontent">
@@ -497,6 +512,13 @@ function showhide() {
 				<tr><td class="field_text" tip="en,users,5">Analog Phone:</td><td><select size="1" id='zapchan' style='width:140px' class="input8"></select>
 				<span id="noanaloglines" style="display:none" class="field_text"><I>&nbsp;No Analog lines detected.</I></span></td></tr>
 				<tr><td class="field_text" tip="en,users,6">Dial Plan:</td><td><select size='1' id='context' style='width:120px' class="input8"></select></td></tr>
+
+                                <tr>    <td class="field_text" tip="en,users,99">Phone Serial:</td>
+                                        <td>    <input size='14' id='macaddress' pattern='^[0-9a-f]*$' class="input8">
+                                                <input type='hidden' id='autoprov'><input type='hidden' id='label'>
+                                        </td>
+                                </tr>
+
 				<tr><td colspan='2' align='center'><input type='hidden' id='mailbox'><input type='hidden' id='group'><input type='checkbox' id='registersip' style="display:none"><input type='checkbox' id='registeriax' style="display:none"></td></tr>
 				</table>
 			</td>
@@ -547,10 +569,13 @@ function showhide() {
 					<td align=right><input type='checkbox' id='nat'></td>
 					<td class="field_text" tip="en,users,22">NAT</td>
 				</tr>
-
 				<tr>
 					<td align=right colspan=3><input id="dtmfmode" size=10 class="input8" dfalt="rfc2833"></td>
 					<td class="field_text" tip="en,users,23">DTMFMode</td>
+				</tr>
+				<tr>
+					<td align=right colspan=3><input id="insecure" size=10 class="input8"></td>
+					<td class="field_text" tip="en,users,26">Insecure</td>
 				</tr>
 				</table>
 				</fieldset>
@@ -570,6 +595,10 @@ function showhide() {
 				<td align='center'><input type='button' id='save' value='Save'  class="buttonbold">&nbsp;&nbsp;<input type='button' id='cancel' value='Cancel' class="buttonbold"></td>
 		</tr>
 </table>
+</div>
+<div style="display:none">
+<form name="buynow_form" id="buynow_form" action="http://www.digium.com/en/ecosystem/partners/partners.php" method="post">
+</form>
 </div>
 <!-- Codecs content DIV -->
 <div id="codecs_content" STYLE="display:none; position: absolute; left: 20; top: 125; width:350; height:245;  background-color:#F4EFE5;   border-width: 1px; border-color: #7E5538; border-style: solid;z-index:5">

@@ -218,6 +218,17 @@ def make_links(dest):
         pass
 
     os.symlink(path.join(dest,'boot','grub',grub), target)
+
+    # make link for ast-gui
+    target=path.join(dest,'var','lib','asterisk')
+    try:
+        if os.islink(target): 
+            os.remove(target)
+        else:
+            os.rmdir(target)
+    except:
+        pass
+    os.symlink(path.join(dest,'usr','share','asterisk'),target)
         
 def main():
     syslog.openlog('install-hub-overlay', 0, syslog.LOG_LOCAL5)

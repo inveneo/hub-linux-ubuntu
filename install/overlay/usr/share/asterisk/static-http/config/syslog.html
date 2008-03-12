@@ -34,6 +34,11 @@ function thisday_log(){
 	parent.astmanEngine.run_tool( tmp_command , onSuccess = function() { _$('status_message').style.display='none'; load_todayslog(); } );
 }
 
+function touch_todayslog(){
+	parent.astmanEngine.run_tool( 'touch /var/lib/asterisk/static-http/config/today_log.html',onSuccess = function(){ thisday_log();});
+}
+
+
 function load_todayslog(){
 	_$('status_message').style.display= "" ;	
 	
@@ -72,7 +77,7 @@ function localajaxinit(){
 	_$('status_message').style.display="block";
 	_$('message_text').innerHTML = "Loading system Information ...";
 	parent.loadscreen(this);
-	load_todayslog();
+	touch_todayslog();
 }
 
 function free_mem(){

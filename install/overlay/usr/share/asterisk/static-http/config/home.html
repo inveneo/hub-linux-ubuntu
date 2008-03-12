@@ -32,13 +32,14 @@ function updateButtons(){
 	_$('username').disabled = (f)?1:0;
 	_$('secret').disabled = (f)?1:0;
 	_$('logoff').disabled = (f)?0:1;
+	_$('reboot').disabled = (f)?0:1;
 	_$('login').disabled = (f)?1:0;
 	if(!f){ try{ _$('username').focus();}catch(err){ } }
 }
 
 function localinit() {
 	showdiv_statusmessage();
-	top.document.title = "Asterisk GUI (Beta) -- Home";
+	top.document.title = "Asterisk GUI -- Home";
 	var tmp;
 	var opt = {
 		method: 'get',
@@ -87,22 +88,23 @@ function loggedOn() {
 		checkessentials();
 	}
 
-	parent.setLoggedOn(1);
-	parent.loggedon = 1;
-	localloggedon = 1;
-	_$('username').className  = "input9_disabled";
-	_$('secret').className  = "input9_disabled";
-	updateButtons();
-	_$('statusbar').innerHTML = "<img src='images/tick.gif'><i>Connected!</i>";
-	var _rc = parent._$('reloadconfig'); 
-	_rc.innerHTML = "Activate Changes";
-	_rc.onclick = parent.reloadConfig ;
-	_rc.style.display = "" ;
-	var _ll = parent._$('logoutlink'); 
-	_ll.innerHTML = "Logout";
-	_ll.onclick = parent.Logoff ;
-	_ll.style.display = "" ;
-
+	setTimeout( function(){
+		parent.setLoggedOn(1);
+		parent.loggedon = 1;
+		localloggedon = 1;
+		_$('username').className  = "input9_disabled";
+		_$('secret').className  = "input9_disabled";
+		updateButtons();
+		_$('statusbar').innerHTML = "<img src='images/tick.gif'><i>Connected!</i>";
+		var _rc = parent._$('reloadconfig'); 
+		_rc.innerHTML = "Activate Changes";
+		_rc.onclick = parent.reloadConfig ;
+		_rc.style.display = "" ;
+		var _ll = parent._$('logoutlink'); 
+		_ll.innerHTML = "Logout";
+		_ll.onclick = parent.Logoff ;
+		_ll.style.display = "" ;
+	}, 1000 );
 }
 
 function loggedOff() {
@@ -117,7 +119,6 @@ function loggedOff() {
 	_$('logoff').disabled = 1;
 	_$('login').disabled = 0;
 }
-
 
 function doLogin() {
 	if( _$('username').value == "" ){
@@ -136,47 +137,12 @@ function doLogin() {
 	parent.astmanEngine.sendRequest('action=login&username=' + encodeURIComponent( _$('username').value ) + "&secret=" + encodeURIComponent(_$('secret').value), afterlogin);
 }
 
-function check_digital(n) {
-
-	var l, h;
-	for( l in n ){	if(n.hasOwnProperty(l)){
-		if( l =='general') { 
-			if(n[l]['continue'] == "no") {
-				has_digital = 0; /* ztscan.conf was NOT found */
-				/* Maybe check to see if isnew is set to one, then redirect them on a setup wizard about modprobing the drivers and what not */
-				return false;
-			}
-			if(n[l]['continue'] == "yes") {
-				has_digital = 1;
-				var tot_spans = n[l]['totalspans'];
-				if(n[l]['isnew'] == "yes") {
-					_$('status_message').style.display="block";
-					_$('status_message').innerHTML = '<TABLE border=0 cellpadding=0 cellspacing=4 align=center>' +
-		                        '<TR><TD><img src="/asterisk/static/config/images/loading.gif"></TD>' +
-		                        '<TD><div id=message_text></div></TD></TR></TABLE>';
-					_$('message_text').innerHTML = "Time: <div id='counter'>10</div> Digital Cards Detected! Total Spans: " + tot_spans + "<BR>Options:<br>1. <A href=\"#\" class=\"splbutton\" onclick=\"_$('status_message').style.display='none'; parent._$('mainscreen').src = 'digital.html';\">Digital Card Setup Wizard</A><br>2. <A href=\"#\" class=\"splbutton\" onclick=\"_$('status_message').style.display='none';>Continue<br></a>";
-					setTimeout("_$('status_message').style.display='none';", 10000);
-					int_handle = setInterval("_$('counter').innerHTML = (_$('counter').innerHTML - 1);", 1000);
-					setTimeout("clearInterval(int_handle);", 10000);
-					return true;
-				}
-			}
-		} 
-
-	}}
-	return true;
-
-}
-
 afterlogin = function(msgs) {
 	_$('statusbar').innerHTML = msgs[0].headers['message'];
 	if ( msgs[0].headers['response'] == "Success" ){
 		parent.gui_feedback("Login Successful",'blue',6000);
 		_$('statusbar').innerHTML = "<img src='images/tick.gif'><i>Connected!</i>";
 		//parent.astmanEngine.pollEvents();
-		if(!config2json("ztscan.conf", 1, check_digital)) {
-			has_digital = 0; /* ztscan.conf was NOT found */
-		}
 		loggedOn();
 	}else if( msgs[0].headers['message'] == "Authentication failed" ){
 		parent.gui_feedback("Invalid Username/Password",'default',6000);
@@ -203,29 +169,65 @@ function submitOnEnter(e){
 function checkessentials(){
 	// see if asterisk_guitools exists in extensions.conf
 	//if everything ok set  asterisk_guitools_inextconf = 1;
-	var opt = { method: 'get', asynchronous: true, onComplete: checkExtconfig };
-	opt.parameters="action=getconfig&filename=extensions.conf" ;
-	var tmp = new Ajax.Request(asterisk_rawmanPath , opt);
-}
+	var mtd = 'macro-trunkdial';
+	var updateTrunkDial = function(){
+		parent.ABOUT_TORELOAD_GUI = true;
+		var after = function(){ // then reload asterisk
+			parent.astmanEngine.cliCommand('dialplan reload', function(t){ gui_feedback("Restarted Asterisk !!",'blue'); 
+				top.window.location.reload(); // at this point ztscan call was failed as it needs this context to run, so reload
+			}); 
+		};
+		var chs = new listOfActions(); 
+		chs.filename('extensions.conf'); var c = 0;
+		chs.build_action ( 'delcat', c , mtd, '', '');
+		chs.build_action ( 'newcat', c , mtd, '', '');
 
+		chs.build_action ( 'append', c , mtd, 'exten', 's,1,set(CALLERID(all)=${IF($["${LEN(${CALLERID(num)})}" > "6"]?${CALLERID(all)}:${ARG2})})' );
+		chs.build_action ( 'append', c , mtd, 'exten', 's,n,Dial(${ARG1})' );
+		chs.build_action ( 'append', c , mtd, 'exten', 's,n,Goto(s-${DIALSTATUS},1)' );
+		chs.build_action ( 'append', c , mtd, 'exten', 's-NOANSWER,1,Hangup' );
+		chs.build_action ( 'append', c , mtd, 'exten', 's-BUSY,1,Hangup' );
+		chs.build_action ( 'append', c , mtd, 'exten', '_s-.,1,NoOp' );
+		chs.callActions(after);
+	};
+	var installguitools = function(){
+		parent.ABOUT_TORELOAD_GUI = true;
+		var after = function(){ // then reload asterisk
+			parent.astmanEngine.cliCommand('dialplan reload', function(t){ gui_feedback("Restarted Asterisk !!",'blue'); 
+				top.window.location.reload(); // at this point ztscan call was failed as it needs this context to run, so reload
+			}); 
+		};
+		var chs = new listOfActions(); 
+		chs.filename('extensions.conf'); var c = 0;
+		chs.build_action ( 'newcat', c , asterisk_guitools, '', '');
+		chs.build_action ( 'append', c , asterisk_guitools, 'exten', 'executecommand,1,System(${command})' );
+		chs.build_action ( 'append', c , asterisk_guitools, 'exten', 'executecommand,n,Hangup()' );
+		chs.build_action ( 'append', c , asterisk_guitools, 'exten', 'record_vmenu,1,Answer' );
+		chs.build_action ( 'append', c , asterisk_guitools, 'exten', 'record_vmenu,n,Playback(vm-intro)' );
+		chs.build_action ( 'append', c , asterisk_guitools, 'exten', 'record_vmenu,n,Record(${var1})' );
+		chs.build_action ( 'append', c , asterisk_guitools, 'exten', 'record_vmenu,n,Playback(vm-saved)' );
+		chs.build_action ( 'append', c , asterisk_guitools, 'exten', 'record_vmenu,n,Playback(vm-goodbye)' );
+		chs.build_action ( 'append', c , asterisk_guitools, 'exten', 'record_vmenu,n,Hangup' );
+		chs.build_action ( 'append', c , asterisk_guitools, 'exten', 'play_file,1,Answer' );
+		chs.build_action ( 'append', c , asterisk_guitools, 'exten', 'play_file,n,Playback(${var1})' );
+		chs.build_action ( 'append', c , asterisk_guitools, 'exten', 'play_file,n,Hangup' );
+		chs.callActions(after);
+	};
 
-function checkExtconfig(originalRequest){
-	var lines = originalRequest.responseText.split("\n");
-	for( var i=0 ; i < lines.length ; i++){
-		if ( lines[i].substr(0,9) == "Category-"  ){
-			var tmp = lines[i].split(": ");
-			if( tmp[1].match(asterisk_guitools) ){
-				parent.asterisk_guitools_inextconf = 1;
-				break;
-			}
+	var checkExtconfig = function (op){
+		if( !op.hasOwnProperty(mtd) || (op[mtd] && !op[mtd][0].beginsWith('exten=s,1,set')) ){
+			updateTrunkDial();
+			return;
 		}
-	}
-	
-	if(parent.asterisk_guitools_inextconf == 0 ){	// if no context by name asterisk_guitools 
-		parent.window.location.href = "./setup/install.html";
-	}
-
+		if( !op.hasOwnProperty(asterisk_guitools) ){	// if no context by name asterisk_guitools 
+			installguitools();
+		}else{
+			parent.asterisk_guitools_inextconf = 1;
+		}
+	};
+	config2json('extensions.conf',0,checkExtconfig);
 }
+
 
 </script>
 <body id="foo" onload="localinit()" topmargin=0  bgcolor="EFEFEF">
@@ -254,6 +256,8 @@ function checkExtconfig(originalRequest){
 				<input type="submit" id="login" value="Login" onClick="doLogin()" class="input">
 				&nbsp;&nbsp;&nbsp;&nbsp;
 				<input type="submit" id="logoff" value="Logoff" disabled=1 onClick="doLogoff()" class="input">
+				&nbsp;&nbsp;&nbsp;&nbsp;
+				<input type="submit" id="reboot" value="Reboot" disabled=1 onClick='parent.reboot()' class="input">
 			</td>
 		</tr>
 		</table>

@@ -30,16 +30,23 @@ var didtrunks = new Object;
 var old_incomingrule, old_fromprovider ;
 var editstatus , edit_pattern, edit_DIDtrunk, edit_action, edit_priority ;
 
+var sbcid_1 = 's,1,ExecIf($[ "${CALLERID(num)}"="" ],SetCallerPres,unavailable)';
+var sbcid_2 = 's,2,ExecIf($[ "${CALLERID(num)}"="" ],Set,CALLERID(all)=unknown <0000000>)';
+
 function add_toext(a,b){ // a is value, b is text
 	ASTGUI.selectbox.append(_$('toextension'),b,a);
 }
 
 user_callbacks.format = function(t, x) {
-	var tmp = asterisk_guiTDPrefix + t.name ;
-	if (t.fieldbyname['fxochannels']){ return false; }
+	var tmp = asterisk_guiTDPrefix + t.name ; 
 	if ( ( t.fieldbyname['context'] == tmp ) && x == undefined ) {
 		didtrunks[tmp] = new Object();
 		didtrunks[tmp].trunkname = t.fieldbyname['trunkname'] ; 
+		didtrunks[tmp].provname = (t.fieldbyname['provider']) ? t.fieldbyname['provider'] : "unknown" ;
+		didtrunks[tmp].isanalog = 'no';
+		try{
+			if( t.fieldbyname['zapchan'] && ( t.fieldbyname['trunkstyle'] == 'analog' ) ){ didtrunks[tmp].isanalog = 'yes'; }
+		}catch(err){}
 		return t.name;
 	}
 	if (t.fieldbyname['fullname'] && t.fieldbyname['fullname'].length && x == undefined && t.name != "general" ) {
@@ -88,13 +95,16 @@ numplan_callbacks.format = function(t, x) {
 		return false;
 	}
 
+
 	if( (t.name == TIMERULES_CATEGORY && x != undefined )) {
+		return null ; // disable time based rules
 		if (!t.fields[x].match('NoOp')){ return false; }
 		var m = t.fields[x].split('NoOp')[1].substr(1);
 		    m = m.substr(0, m.length-1);
-		add_toext("Goto("+TIMERULES_CATEGORY+"|" + t.fields[x].split(',')[0] + "|1)", m + " -- Time Based Rule" );
+		//add_toext("Goto("+TIMERULES_CATEGORY+"|" + t.fields[x].split(',')[0] + "|1)", m + " -- Time Based Rule" );
 		return false;
 	}
+
 
 	if(( t.name.substr(0,17) == 'voicemenu-custom-' && x== undefined )){
 		add_toext( 'Goto(' + t.name + '|s|1)' , t.fieldbyname['comment'] + ' -- VoiceMenu');
@@ -110,9 +120,30 @@ numplan_callbacks.loaded = function() {
 		ASTGUI.selectbox.append(_$('fromprovider'),didtrunks[t].trunkname, t);
 	}}
 	// load the object didtrunks into the table callingRulesTable
-	refreshtable();
-	parent.loadscreen(this);
+	load_mISDNtrunks();
 }
+
+function load_mISDNtrunks(){
+	var parseUsersConf = function(n){
+		try{
+			if( n == "ERROR: CONFIG FILE NOT FOUND"){ } // misdn.conf not found
+			for( var l in n ){ 
+				if( n.hasOwnProperty(l) && l.beginsWith('trunk_m') && n[l]['hasmisdn'] =='yes' ){
+					didtrunks[l] = new Object();
+					didtrunks[l].trunkname = n[l]['trunkname']; 
+				}
+			};
+		}catch(err){
+
+		}finally{
+			// load the object didtrunks into the table callingRulesTable
+			refreshtable();
+			parent.loadscreen(this);
+		}
+	};
+	config2json("misdn.conf", 1, parseUsersConf);
+}
+
 
 numplan_callbacks.eachline = true;
 numplan_callbacks.includecats = true;
@@ -126,7 +157,10 @@ function refreshtable(){
 			for(var j in didtrunks[i]){ // for each pattern of the trunk
 				if( didtrunks[i].hasOwnProperty(j) ){ 
 					if( j == "trunkname"){ continue;}
+					if(didtrunks[i][j].action){
+						if(j.substring(0,1) == "+") {continue;}
 					addrowtotable( j, i, didtrunks[i][j].action, didtrunks[i][j].priority);
+					}
 				}
 			}
 		}
@@ -137,7 +171,7 @@ function refreshtable(){
 		var newRow = crt.insertRow(-1);
 		var newCell0 = newRow.insertCell(0);
 		newCell0 .align = "center";
-		newCell0 .innerHTML = "<BR>An <I>incoming Calling Rule</I> is not defined<BR><BR> Please click on 'Add a Incoming Rule' button<BR> to add a new incoming call rule.<BR><BR>" ;
+		newCell0 .innerHTML = "<BR>An <I>incoming Calling Rule</I> is not defined<BR><BR> Please click on 'Add an Incoming Rule' button<BR> to add a new incoming call rule.<BR><BR>" ;
 		return true;
 	}
 
@@ -176,7 +210,7 @@ function convert_tohuman(a,b,c) { // a is pattern, b is DID_trunk, c is action,
 		}
 	}
 
-	if( a == "_X."){ // handling all unmatched 
+	if( a == "_X." || a == "_+X."){ // handling all unmatched 
 		return " Route all unmatched incoming calls from provider '" + didtrunks[b].trunkname + "' to '" + x + "'" ; 
 	}
 	return " Route incoming calls from provider '" + didtrunks[b].trunkname + "' that match pattern '" + a + "' to '" + x + "'"  ; 
@@ -204,7 +238,7 @@ function edit_incomingrule(a,b,c,d){// a is pattern, b is DID_trunk, c is action
 	edit_priority=d ;
 
 	editstatus = "EDIT";
-	if(a == "_X."){
+	if(a == "_X." || a == "_+X."){
 		_$('incomingrule').selectedIndex = 0;
 		_$('thatmatch').style.display = "none" ;
 		old_incomingrule = "allunmatched";
@@ -254,17 +288,25 @@ function save_new_incomingrule(){
 	var ir = _$('incomingrule').value ;
 	var te = _$('toextension') ;
 
+	if( fpv.selectedIndex == -1 ){
+		gui_feedback("Please select a service provider !");
+		fpv.focus();
+		return false;
+	}
+
+	if( didtrunks[_$('fromprovider').value].isanalog =='yes' && ir != 'allunmatched' ){
+		gui_feedback("You can not define a custom pattern for Analog trunks!");
+		_$('incomingrule').focus();
+		return false;
+	}
+
 	if( ir == "frompattern" && fp.value == "" ){
 		gui_feedback("Please define an incoming call pattern !");
 		fp.focus();
 		fp.select();
 		return false;
 	}
-	if( fpv.selectedIndex == -1 ){
-		gui_feedback("Please select a service provider !");
-		fpv.focus();
-		return false;
-	}
+
 	if( te.selectedIndex == -1 ){
 		gui_feedback("Please select an extension to which<BR> an incoming call should be routed to !");
 		te.focus();
@@ -272,27 +314,60 @@ function save_new_incomingrule(){
 	}
 
 	if(ir == "frompattern" && fp.value.substr(0,1) != "_" ){ fp.value = "_" + fp.value ; }
-
+	var provname = didtrunks[_$('fromprovider').value].provname ;
 	// create an entry under the selected trunk
 	// $('incomingrule') == "allunmatched" or "frompattern" , $('frompattern'), $('fromprovider'), $('toextension')
+	
 	if (ir == "allunmatched" ){
 		var newpattern = "_X." ;
+		if(provname == "bandwidth") {
+			var newpattern = "_+X." ;	
+		} else {
+			var newpattern = "_X." ;
+		}
 		var temp_provider = fpv.value;
 		var temp_priority = "1";
 		var temp_action = te.value;
 		var new_exten = newpattern  + "," + temp_priority + "," + temp_action;
-		var new_exten2 = "s,1," + temp_action;
+
+		var new_exten2_0 = sbcid_1;
+		var new_exten2_1 = sbcid_2;
+		var new_exten2_2 = "s,3," + temp_action;
+
 		var uri = build_action('append', 0, temp_provider ,"exten", new_exten);
-		uri += build_action('append', 1, temp_provider ,"exten", new_exten2);
+		uri += build_action('append', 1, temp_provider ,"exten", new_exten2_0);
+		uri += build_action('append', 2, temp_provider ,"exten", new_exten2_1);
+		uri += build_action('append', 3, temp_provider ,"exten", new_exten2_2);
+
 	}else{
-		var newpattern = fp.value ;
+		/* If our provider is bandwidth.com, take off the leading underscore(_) */
+		if(provname == "bandwidth" && fp.value.indexOf('_') == 0 ) {
+			var newpattern = fp.value.substring(1) ;
+		} else {
+			var newpattern = fp.value ;
+		}
 		var temp_provider = fpv.value ;
 		var temp_action = te.value;
 		var temp_priority = "1";
-		var new_exten = newpattern  + "," + temp_priority + "," + temp_action;
-		var uri = build_action('append', 0, temp_provider ,"exten", new_exten ); 
-	}
+		var pnp = newpattern;
 
+		if(provname == "bandwidth") {
+		/* Since its bandwidth.com, we are going to add a GOTO to match the +number bandwidth.com is sending. */
+		/* For example, they will send +2564286000 and we need to match 2564286000, so we goto that extension, instead of the one with the plus */
+			if( pnp.indexOf('+') !=0 ) {
+				pnp = '+' + pnp;
+			}else{
+				newpattern=newpattern.substr(1);
+			}
+		}
+		var new_exten = newpattern  + "," + temp_priority + "," + temp_action;
+		var uri = build_action('append', 0, temp_provider ,"exten", new_exten );
+		if(provname == "bandwidth") {
+			var new_exten2 = pnp + "," + temp_priority + "," + 'Goto(${EXTEN:1}|1)';
+			uri += build_action('append', 1, temp_provider,"exten", new_exten2);
+		}
+	}
+	
 	// check whether there is an existing entry with this pattern 
 	if( typeof didtrunks[temp_provider][newpattern] != "undefined" ){
 		gui_feedback("An incoming call rule is already defined <BR> on this trunk for the selcted pattern !! ");
@@ -328,6 +403,13 @@ function update_incomingrule(){
 		fp.select();
 		return false;
 	}
+	
+	if( didtrunks[_$('fromprovider').value].isanalog =='yes' && ir != 'allunmatched' ){
+		gui_feedback("You can not define a custom pattern for Analog trunks!");
+		_$('incomingrule').focus();
+		return false;
+	}
+
 	if( te.selectedIndex == -1 ){
 		gui_feedback("Please select an extension to which<BR> an incoming call should be routed to !");
 		te.focus();
@@ -343,22 +425,60 @@ function update_incomingrule(){
 	var temp_action = te.value;
 	var temp_priority = "1";
 	var tmp_old_string = edit_pattern  + "," + edit_priority + "," + edit_action;
+
 	uri += build_action('delete', p, edit_DIDtrunk ,"exten", "", tmp_old_string); p++;
-	if(edit_pattern == "_X." ){
-		var tmp2_old_string = "s," + edit_priority + "," + edit_action ;
+
+	if(didtrunks[edit_DIDtrunk].provname == "bandwidth"){
+		var tmp_old_string2_bw = "+" + edit_pattern  + "," + edit_priority + "," + 'Goto(${EXTEN:1}|1)';
+		uri += build_action('delete', p, edit_DIDtrunk ,"exten", "", tmp_old_string2_bw); p++;
+	}
+
+	if(edit_pattern == "_X." || edit_pattern == "_+X."){
+		var tmp2_old_string = "s,3," + edit_action ;
+		uri += build_action('delete', p, edit_DIDtrunk ,"exten", "", sbcid_1); p++;
+		uri += build_action('delete', p, edit_DIDtrunk ,"exten", "", sbcid_2); p++;
 		uri += build_action('delete', p, edit_DIDtrunk ,"exten", "", tmp2_old_string); p++;
 	}
 
 	if ( ir == "allunmatched" ){
-		var newpattern = "_X." ;
+
+		var temp_provider = _$('fromprovider').value ;
+		var newpattern = (didtrunks[temp_provider].provname == "bandwidth")? "_+X.":"_X.";
+
 		var new_exten = newpattern  + "," + temp_priority + "," + temp_action;
-		var new_exten2 = "s," + temp_priority + "," + temp_action;
+
+		var new_exten2_0 = sbcid_1;
+		var new_exten2_1 = sbcid_2;
+		var new_exten2_2 = "s,3," + temp_action;
+
 		uri += build_action('append', p , temp_provider ,"exten", new_exten ); p++ ;
-		uri += build_action('append', p , temp_provider ,"exten", new_exten2 ); p++ ;
+		uri += build_action('append', p , temp_provider ,"exten", new_exten2_0 ); p++ ;
+		uri += build_action('append', p , temp_provider ,"exten", new_exten2_1 ); p++ ;
+		uri += build_action('append', p , temp_provider ,"exten", new_exten2_2 ); p++ ;
+
 	}else{
-		var newpattern = fp.value ;
-		var new_exten = newpattern  + "," + temp_priority + "," + temp_action;
-		uri += build_action('append', p , temp_provider ,"exten", new_exten ); p++ ;
+		if( didtrunks[temp_provider].provname == "bandwidth" && fp.value.indexOf('_') == 0 ) {
+			var newpattern = fp.value.substring(1) ;
+		} else {
+			var newpattern = fp.value ;
+		}
+		var pnp = newpattern;
+
+		if(didtrunks[temp_provider].provname == "bandwidth" ) {
+			if( pnp.indexOf('+') !=0 ) {
+				pnp = '+' + pnp;
+			}else{
+				newpattern=newpattern.substr(1);
+			}
+		}
+
+		var new_exten = newpattern  + "," + temp_priority + "," + temp_action ;
+		uri += build_action( 'append', p , temp_provider ,"exten", new_exten ) ; p++ ;
+
+		if( didtrunks[temp_provider].provname == "bandwidth" ) {
+			var new_exten2 = pnp + "," + temp_priority + "," + 'Goto(${EXTEN:1}|1)';
+			uri += build_action('append', p, temp_provider,"exten", new_exten2); p++;
+		}
 	}
 
 	if( typeof didtrunks[temp_provider][newpattern] != "undefined" && ( temp_provider != edit_DIDtrunk || newpattern != edit_pattern ) ){
@@ -410,12 +530,25 @@ function enablesave(){
 
 
 function delete_incomingrule(a,b,c,d){ // a is pattern, b is DID_trunk, c is action, d is priority
+
+	var provname = didtrunks[b].provname;
 	if( !confirm("Are you sure you want to delete this Incoming Calling Rule?") ){ return true; }
-	var tmp_match = a+","+d+","+c ;
-	var uri = build_action('delete',0, b, "exten" ,"", tmp_match);
-	if( a == "_X." ){
-		var tmp2_match = "s," + d + "," + c ;
-		uri += build_action('delete',1,b,"exten","", tmp2_match);
+	if(provname == "bandwidth") {
+		var tmp_match = a+","+d+","+c ;  /* Lets take off the leading _ if its bandwidth.com */
+	} else {
+		var tmp_match = a+","+d+","+c ;
+	}
+	var p=0;
+
+	var uri = build_action('delete', p, b, "exten" ,"", tmp_match); p++;
+	if(provname == "bandwidth") {
+		uri += build_action('delete',p,b, "exten", "", '+' + String(a) + ',1,Goto(${EXTEN:1}|1)'); p++;
+	}
+	if( a == "_X." || a == "_+X." ){
+		var tmp2_match = "s,3," + c ;
+		uri += build_action('delete',p,b,"exten","", sbcid_1); p++;
+		uri += build_action('delete',p,b,"exten","", sbcid_2); p++;
+		uri += build_action('delete',p,b,"exten","", tmp2_match); p++;
 	}
 	makerequest('u','extensions.conf', uri,
 		function(t){
@@ -462,7 +595,7 @@ function free_mem( ){
 	<div id="callingRulesTable_div" style="height:250px;width=100%; overflow :auto; padding : 0px 0px 0px 0px;">
 		<table id="callingRulesTable" cellpadding=2 cellspacing=1 border=0 align=center width=500></table>
 	</div>
-	<center><input type="button" id="adddid" value="Add a Incoming Rule" onclick="add_incomingrule();" tip="en,incoming,0"></center>
+	<center><input type="button" id="adddid" value="Add an Incoming Rule" onclick="add_incomingrule();" tip="en,incoming,0"></center>
 	<div id="userscontent" STYLE="display:none; position: absolute; left: 20; top: 40; width:475; height:190; background-color:#F4EFE5; border-width: 1px; border-color: #7E5538; border-style: solid;z-index:5">
 	<table width="100%" cellpadding=0 cellspacing=0 onmousedown="ASTGUI.startDrag(event , 'userscontent');">
 		<TR bgcolor="#7E5538"  style="background-image:url('images/title_gradient.gif');">

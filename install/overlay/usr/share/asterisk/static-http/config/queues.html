@@ -95,6 +95,7 @@ function save_queue(){
 		$('fullname').focus();
 		return;
 	}
+	if(isNaN(localextenlength)){localextenlength = 4;}
 	if( localextenlength !=0 && (localextenlength != $('name').value.length) ) {
 		gui_alert("Sorry, An Extension must be "+ localextenlength  + " digits !");
 		$('name').focus();
@@ -228,7 +229,7 @@ callbacks.postselect = function (){	 }
 callbacks.format = function (t,x){
 	if ((t.name == 'general')){
 		if ( t.fieldbyname['localextenlength'] && t.fieldbyname['localextenlength'].length){ localextenlength =  parseInt(t.fieldbyname['localextenlength']) ; }
-		if ( t.fieldbyname['userbase'] && t.fieldbyname['userbase'].length){ userbase =  t.fieldbyname['userbase'] ; }
+		userbase = ( t.fieldbyname['userbase'] && t.fieldbyname['userbase'].length ) ?  t.fieldbyname['userbase'] : 6000 ;
 		return null;
 	}
 	//if (t.name.substring(0,6) == 'trunk_')
@@ -302,19 +303,21 @@ queuecallbacks.loaded = function() { 	parent.astmanEngine.config2list("users.con
 queuecallbacks.newcategory = function(t) {
 	var tmp = null;
 	$('save_q').disabled=false;
+	try{
 	if ($('queues').stored_config.catbyname['general']){ 
 		tmp = objcopy($('queues').stored_config.catbyname['general']);	
-		x = userbase ; 
+		var x = userbase ; 
 		for( var f=0; f < $('queues').options.length ; f++ ){
 			if( x < $('queues').options[f].innerHTML.split(' -- ')[0] )
 				break;
 			x++;
-		}				
-		tmp.name = x;
+		}			
 	}else{
-		tmp.name = 6000 ;	// a default value if one is not defined in users.conf's general context
+		var x = 6000 ;	// a default value if one is not defined in users.conf's general context
 	}
+	}catch(err){ var x = 6000 ; }
 
+	tmp.name = x;
 	$('testmulti').innerHTML ="";
 	for (k=0;k< $('agents').length ;k++ ){
 		selectedagent = "selectedagent" + k;

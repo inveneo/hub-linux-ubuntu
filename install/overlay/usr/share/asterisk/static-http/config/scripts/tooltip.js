@@ -1,6 +1,6 @@
 
 
-
+var lang = 'en';
 var tooltips = new Object;
 
 function show_tooltip(event){
@@ -43,6 +43,7 @@ function show_tooltip(event){
 	tooltips['users'] .en[23] = "<B>DTMFMode:</B> Set default dtmfmode for sending DTMF. Default: rfc2833 <BR><B>Other options:</B><BR>info : SIP INFO messages<BR>inband : Inband audio (requires 64 kbit codec -alaw, ulaw)<BR>auto : Use rfc2833 if offered, inband otherwise";
 	tooltips['users'] .en[24] = "<B>Codecs:</B> Click to select the codecs that asterisk has to offer, for the particular user.";
 	tooltips['users'] .en[25] = "<B>Email Only:</B> Send Voicemail to email only, do not store in the mailbox.";
+	tooltips['users'] .en[26] = "<B>Insecure:</B> Matching of IP for a peer without matching port, do not require authentication of invites.<br><br>Options are:<br><ul><li>Port</li><li>Invite</li><li>port,invite</li></ul>";
 	tooltips['users'] .en[99] = "<B>Phone Serial:</B> Enter the serial number of a Polycom phone to enable phone provisioning." ;
 
 // Tooltips for Conferencing (meetme)
@@ -258,7 +259,9 @@ function show_tooltip(event){
 	tooltips['trunks'].en[3] = "<B>Username:</B> The username for your account with the provider - please contact your provider if you do not know it.";
 	tooltips['trunks'].en[4] = "<B>Password:</B> The password for your account with the provider - please contact your provider if you do not know it.";
 	tooltips['trunks'].en[5] = "<B>Digital Cards:</B> Digital Card trunking setup includes TExxxx based cards. Anything that is based from zaptel.conf and zapata.conf is readily availible to be configured as a trunk.";
-	 
+	tooltips['trunks'].en[6] = "<B>Provider:</B> Digium Certified Internet Service Providers. Custom integrated into the GUI for simple setup";
+	tooltips['trunks'].en[7] = "<B>Ngt Host:</B> This is the IP of the SIP server provided by NGT for your specific user account.";
+
 	// Tooltips for Voicemenus (menus)
 	tooltips['menus']= new Object;
 	tooltips['menus'].en = new Array;
@@ -328,11 +331,6 @@ function show_tooltip(event){
 	tooltips['cdr'].en = new Array;
 	tooltips['cdr'].en[0] = "<B>View:</B> Select how many call detail records to read at once.." ;
 
-//	Tooltips for the sample development page.
-	tooltips['sample'] = new Object;
-	tooltips['sample'].en = new Array;
-	tooltips['sample'].en[0] = "<b>Button Click:</b> Click this button to go to another tab, this is a tooltip example";
-
 //	Tooltips for the Digital Card page.
 	tooltips['digital'] = new Object;
 	tooltips['digital'].en = new Array;
@@ -347,3 +345,5 @@ function show_tooltip(event){
 	tooltips['digital'].en['Line Build Out:'] = "<B>Line Build Out:</B> The current LBO (Line Build Out) of the span.";
 	tooltips['digital'].en['Sync Source:'] = "<B>Sync Source:</B> Your Zaptel Sync Source. Can be one of any spans, or 0 for non master";
 	tooltips['digital'].en['Options:'] = "<B>Options:</B> Span Related Options, including Signalling, Switchtype, Channels, etc";
+
+	

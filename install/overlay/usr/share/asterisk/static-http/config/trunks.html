@@ -1,23 +1,17 @@
 <!--
- * Asterisk-GUI	-	an Asterisk configuration interface
+ * Configuration for "Service Providers (trunks)"
  *
- * Create/Manage Service Providers (trunks)
- *
- * Copyright (C) 2006-2007, Digium, Inc.
+ * Copyright (C) 2006 - 2007, Digium, Inc.
  *
  * Mark Spencer <markster@digium.com>
  * Pari Nannapaneni <pari@digium.com>
  * Brandon Kruse <bkruse@digium.com>
  *
- * See http://www.asterisk.org for more information about
- * the Asterisk project. Please do not directly contact
- * any of the maintainers of this project for assistance;
- * the project provides a web site, mailing lists and IRC
- * channels for your use.
+ * All Rights Reserved.
  *
- * This program is free software, distributed under the terms of
- * the GNU General Public License Version 2. See the LICENSE file
- * at the top of the source tree.
+ * Distribution of this file is subject to the license
+ * agreement you accepted when obtained and/or activated
+ * the Digium product containing this file.
  *
 -->
 <script src="scripts/prototype.js"></script>
@@ -29,19 +23,48 @@ var origwidth;
 var widgets = {};
 var provwidgets = {};
 var callbacks = new Object;
-var phonecallbacks = new Object;
 var providercallbacks = new Object;
 var globalvars = new Object;
-var fieldnames =[ 'disallow','allow','callerid','cancel','contact','context','delete','dialformat','fromdomain','fromuser','group','hasexten','hasiax','hassip','host','insecure',
+var GROUPS = [];
+var NEWGROUPNUMBER;
+var fieldnames =[ 'disallow','allow','signalling','callerid','cancel','contact','context','delete','dialformat','fromdomain','fromuser','canreinvite','group','hasexten','hasiax','hassip','host','insecure',
 		'name','new','port','provider','registeriax','registersip','save','secret','trunkname','trunkstyleanalog','trunkstylecustomvoip',
 		'trunkstylevoip','username','zapchan'];
 var provfieldnames = ['providerdesc', 'providerlogo'];
+var opt_userandpass = ['voip_user', 'voip_pass', 'username', 'secret'];
+var opt_userandip = ['voip_user', 'voip_ip', 'username', 'ip'];
 var isnewtrunk;
 var dids_array = [];
 var old_trunkname;
 var used_fxos = {};
 used_fxos.oldvalue = "";
 used_fxos.newvalue = "";
+
+var PORTS_toCALIBRATE = {} ;
+var AUDIO_LEVELS = [];
+var PRITRUNKS = [];
+var MISDNTRUNKS = [];
+
+function load_mISDNtrunks(){
+	var parseMisdnConf = function(n){
+		try{
+			if( n == "ERROR: CONFIG FILE NOT FOUND"){ } // misdn.conf not found
+			for( var l in n ){ 
+				if( n.hasOwnProperty(l) && l.beginsWith('trunk_m') && n[l]['hasmisdn'] =='yes' ){
+					var y = ( n[l]['trunkname'] ) ? n[l]['trunkname'] : l ;
+					MISDNTRUNKS.push( y );
+				}
+			};
+		}catch(err){
+
+		}finally{
+			parent.astmanEngine.config2list("extensions.conf", _$('hiddenglobals'), new Array, globalvars);
+		}
+	};
+	config2json("misdn.conf", 1, parseMisdnConf);
+}
+
+
 
 function add_didcontext(trunk){
 	var didcontext = asterisk_guiTDPrefix + trunk ;
@@ -54,6 +77,14 @@ function update_didcontext(old_trunk, new_trunk){
 	var old_didcontext = asterisk_guiTDPrefix + old_trunk  ;
 	var new_didcontext = asterisk_guiTDPrefix + new_trunk  ;
 	var uri = build_action('renamecat', 0, old_didcontext ,"", new_didcontext );
+	makerequest('u','extensions.conf', uri, function(t){ callbacks_savechanges_step2(); }  );
+}
+
+function update_didcontext_andcid(old_trunk, new_trunk){
+	var old_didcontext = asterisk_guiTDPrefix + old_trunk  ;
+	var new_didcontext = asterisk_guiTDPrefix + new_trunk  ;
+	var uri = build_action('renamecat', 0, old_didcontext ,"", new_didcontext );
+	uri += build_action('renamecat', 1, old_didcontext + "_cid", "", new_didcontext + "_cid" );
 	makerequest('u','extensions.conf', uri, function(t){ callbacks_savechanges_step2(); }  );
 }
 
@@ -91,13 +122,32 @@ globalvars.format = function(t) {
 globalvars.loaded = function() {
 	parent.astmanEngine.config2list("users.conf", _$('devices'), widgets, callbacks);
 }
+			
 
 providercallbacks.loaded = function() {
 	var p = _$('provider');
-	parent.astmanEngine.config2list("extensions.conf", _$('hiddenglobals'), new Array, globalvars);
+	load_mISDNtrunks();
 }
 
 callbacks.format = function(t) {
+
+	//if( t.fieldbyname['group'] && t.fieldbyname['zapchan']){
+	if( t.fieldbyname['group'] && t.name !='general' ){
+		if(GROUPS.contains(Number(t.fieldbyname['group']) )){
+			// what the hell, duplicate group ??? 
+			// we wish to address this situation in future
+		}else{
+			GROUPS.push( Number(t.fieldbyname['group']) );
+		}
+	}
+
+	if(t.name.beginsWith('span_') && t.fieldbyname['signalling'].beginsWith('pri') ){
+		PRITRUNKS.push(t.name);
+		return null;
+	}
+
+	if( t.name.beginsWith('span_') ){ return null; }
+
 	if( InArray(dids_array, t.name) ){ 
 		// 
 		if(t.fieldbyname['zapchan']){ 
@@ -106,6 +156,7 @@ callbacks.format = function(t) {
 		} 
 		return t.fieldbyname['trunkname']; 
 	}
+
 	return null;
 }
 
@@ -133,8 +184,8 @@ callbacks.loaded = function() {
 callbacks.postselect = function(){
 	if( _$('trunkstylecustomvoip').checked ){
 		// Custom VOIP
-		var tmp = $('trunkname').value.split("Custom - ")  ;
-		_$('customvoip_name').value = tmp[1];
+		var tmp = _$('trunkname').value.split("Custom - ")  ;
+		_$('customvoip_name').value = (tmp[1]) ? tmp[1] : (_$('trunkname').value) ? _$('trunkname').value : "No Comment/Trunk Name Set";
 		_$('customvoip_username').value = _$('username').value;
 		_$('customvoip_secret').value = _$('secret').value;
 		_$('customvoip_protocol').selectedIndex = ( _$('hassip').value  == "yes" ) ? 1 : 0;
@@ -178,8 +229,59 @@ callbacks.beforeSaving = function(){
 	var _msg2 = "No analog line hardware installed on the system";
 	var _msg3 = "When using Analog, at least one port must be selected.";
 	var _msg4 = "Please enter a Comment for this Service Provider";
+	var _msg5 = "Please enter an IP for your NGT Sip Server!";
 
-	if ( _tsv.checked && !_$('username').value.length ) { gui_alert(_msg1); return false; }
+	var provider_rl;
+	var _provider_rl = _$('provider');
+	provider_rl = _provider_rl.stored_config.catbyname[_provider_rl.value];
+
+	/* ngt and bandwidth do not require passwords, its ip based. */
+	if ( _tsv.checked && !_$('username').value.length && _$('provider').value != "bandwidth" && _$('provider').value != "ngt") { gui_alert(_msg1); return false; }
+
+	if ( _tsv.checked && !_$('ip').value.length && _$('provider').value == "ngt") { gui_alert(_msg5); return false; }
+	/* If they chose ngt, and did not provide an IP address, error out. */
+
+	if(_tsv.checked && _$('provider').value == "ngt") {
+	_$('fromuser').value = (_$('username').value) ? _$('username').value : 'NO USERNAME SPECIFIED!';
+	widgets['fromuser'] = _$('username');
+	/* Our makerequest uses this widget as its call for fromuser */
+	/* If provider is NGT, we need to change the host and IP right before we save, to our two input boxes, username and IP. */
+	_$('host').value = (_$('ip').value.length) ? _$('ip').value : 'NO IP SPECIFIED!' ;
+	_$('insecure').value = 'very';
+	}
+
+	if(_$('provider').value == "simplesignal" && _tsv.checked) {
+		if(_tsv.checked) {
+			_$('fromuser').value = _$('username').value;
+			widgets['fromuser'] = _$('username');
+			/* Our makerequest uses this widget as its call for fromuser */
+			_$('fromdomain').value = (provider_rl.fieldbyname['host']) ? provider_rl.fieldbyname['host'] : 'type make samples in the gui source directory' ;
+			_$('insecure').value = 'invite';
+		}
+	} else {
+		if(_tsv.checked) {
+			_$('fromuser').value = (provider_rl.fieldbyname['fromuser']) ? provider_rl.fieldbyname['fromuser'] : '' ;
+			_$('fromdomain').value = (provider_rl.fieldbyname['fromdomain']) ? provider_rl.fieldbyname['fromdomain'] : '' ;
+		}
+	}
+
+
+	if(_$('provider').value == "VoicePulse-sip" && _tsv.checked) {
+		/* save our fromuser field has the username field. */
+		_$('fromuser').value = _$('username').value;
+		widgets['fromuser'] = _$('username');
+		_$('insecure').value = "very";
+	}
+
+	if(_$('provider').value == "voilaip-sip" && _tsv.checked) {
+		/* save our fromuser field has the username field. */
+		_$('fromuser').value = _$('username').value;
+		widgets['fromuser'] = _$('username');
+		_$('insecure').value = "very";
+		_$('contact').value = _$('username').value;
+		widgets['contact'] = _$('username');
+	}
+
 
 	if ( _tsa.checked ) {
 		var _zapchan = _$('zapchan');
@@ -196,6 +298,15 @@ callbacks.beforeSaving = function(){
 	if( !_tsv.checked && !_tsa.checked && !_tscv.checked ){ gui_alert("A trunk must be Analog or VoIP or Custom VOIP"); return false; }
 
 	if(_dvcs_v.length ==0 ){
+		try{
+			var _pvdr = _$('provider');
+			provider = _pvdr.stored_config.catbyname[_pvdr.value];		
+			if( typeof provider.fieldbyname['trunk_username'] != "undefined" && _tsv.checked ){
+				_name.value = provider.fieldbyname['trunk_username'];
+			}
+		}catch(e){ 
+
+		}
 		ifnewtrunk();
 	}else{
 		if( _$('custom_trunkname').value !=  _dvcs_v && _$('advanced_content').style.display == '' ){
@@ -206,15 +317,6 @@ callbacks.beforeSaving = function(){
 	}
 
 	if(isnewtrunk ==1){
-		try{
-			var _pvdr = _$('provider');
-			provider = _pvdr.stored_config.catbyname[_pvdr.value];		
-			if( typeof provider.fieldbyname['trunk_username'] != "undefined" && _tsv.checked ){
-				_name.value = provider.fieldbyname['trunk_username'];
-			}
-		}catch(e){
-
-		}
 		dids_array.push( _name.value );
 	}else{
 
@@ -233,6 +335,7 @@ callbacks.beforeSaving = function(){
 					count++ ;
 				}
 			}
+			PORTS_toCALIBRATE.ports_string = _$('trunkname').value;
 			used_fxos.newvalue = _$('trunkname').value;
 			_$('trunkname').value = ((count > 1) ? "Ports ":"Port ") + _$('trunkname').value ;
 		}
@@ -245,7 +348,12 @@ callbacks.beforeSaving = function(){
 }
 
 callbacks.savechanges = function() {
+	isAnalog = false;
 	update_used_fxos();
+	var _hiddenglobals = _$('hiddenglobals') ;
+	//if ( !( _$('trunkstylevoip').checked && _$('trunkstylecustomvoip').checked )  ) { isAnalog = true; }
+	if ( _$('trunkstyleanalog').checked ) { isAnalog = true; parent.REQUIRE_RESTART = true;}
+
 	if(isnewtrunk == 1){ //New Trunk created , add [DID_trunk_x] in extensions.conf
 		add_didcontext(_$('name').value);
 		if (_$('trunkstylevoip').checked) {
@@ -254,23 +362,61 @@ callbacks.savechanges = function() {
 			_$('insecure').value = (provider.fieldbyname['insecure']) ? provider.fieldbyname['insecure'] : '' ;
 			_$('port').value = (provider.fieldbyname['port']) ? provider.fieldbyname['port'] : '' ;
 			_$('fromuser').value = (provider.fieldbyname['fromuser']) ? provider.fieldbyname['fromuser'] : '' ;
-			if (_$('fromuser').value == '<DID>') { _$('fromuser').value = _$('username').value; }
+
+			if(_$('provider').value == "ngt") {
+				_$('fromuser').value = _$('username').value;
+			} else {
+				_$('fromuser').value = (provider.fieldbyname['fromuser']) ? provider.fieldbyname['fromuser'] : '' ;
+			}
+
 			_$('fromdomain').value = (provider.fieldbyname['fromdomain']) ? provider.fieldbyname['fromdomain'] : '' ;
 		}
 		callbacks_savechanges_step2();
+		
 	}else{
-		if(old_trunkname != _$('name').value ){ update_didcontext(old_trunkname, _$('name').value); } // rename DID if needed
+		/* Rename DID if needed */
+		if(old_trunkname != _$('name').value )	{
+			if(_$('callerid').value != "") {
+				update_didcontext_andcid(old_trunkname, _$('name').value); 
+			} else {
+				update_didcontext(old_trunkname, _$('name').value); 
+			}
+		}
+		/* build callerid */
+		var u = 0;
+		var newvalue = (_$('callerid').value.length > 0) ? _$('callerid').value : "unknown";
+		var uri = build_action('delete', u, 'globals', old_trunkname + "_cid", "","" ); u++;
+		uri += build_action('update', u, 'globals', old_trunkname + "_cid", newvalue);
+		apply_uri(_hiddenglobals, uri);
+		_hiddenglobals.stored_config.catbyname['globals'].fieldbyname[old_trunkname + "_cid"] = newvalue;
+		makerequest('u', 'extensions.conf',uri, function(t){ });
 		hideSPdetails();
 		loadServiceProvidersintotable();
 	}
-
+	/* do not need this yet...
+       if ( isAnalog ){
+		PORTS_toCALIBRATE.ports_array  = PORTS_toCALIBRATE.ports_string.split(",") ;
+		$('span_Ports_toCalibratie').innerHTML = "" ;
+		for( var p =0; p < PORTS_toCALIBRATE.ports_array.length ; p++) {
+			$('span_Ports_toCalibratie').innerHTML += "Analog Port #" + PORTS_toCALIBRATE.ports_array[p] + "<BR>" ;
+		}
+		_$('bg_transparent').style.display = '' ;
+		_$('div_calibrate').style.display = '' ;
+		_$('img_loading').setAttribute('src', './images/loading.gif' );
+		_$('bottom_msg').innerHTML = "<BR>This might take upto 8 minutes to complete. Please do not reboot or poweroff the unit until the calibration is complete." ;
+		_$('button_calPorts').disabled = false;
+		_$('button_resCalib').disabled = false;
+		_$('button_skipCalib').disabled = false;
+       }
+	*/
 	return true;
 }
 
+
 function update_used_fxos(){
-	var r; 
-	var ovs = used_fxos.oldvalue.split(",");
-	var nvs = used_fxos.newvalue.split(",");
+	var r;
+	try {	var ovs = used_fxos.oldvalue.split(",");	}catch(err){	var ovs = [];	}
+	try {	var nvs = used_fxos.newvalue.split(",");	}catch(err){	var nvs = [];	}
 	for(r=0; r < ovs.length; r++){ delete used_fxos[ovs[r]]; }
 	for(r=0; r < nvs.length; r++){ used_fxos[nvs[r]] = true; }
 }
@@ -293,7 +439,8 @@ function callbacks_savechanges_step2(){
 		else
 			newvalue = "SIP/" + _devices.value;
 	} else {
-		newvalue = "Zap/g"+tmp[1];
+		newvalue = "Zap/g" + NEWGROUPNUMBER;
+		GROUPS.push(NEWGROUPNUMBER);
 	}
 
 	if (newvalue != oldvalue) {
@@ -315,8 +462,6 @@ function callbacks_savechanges_step2(){
 	}
 }
 
-
-
 function ifnewtrunk(){
 	var needcomma = 0;
 	var provider;
@@ -324,17 +469,25 @@ function ifnewtrunk(){
 	var _provider = _$('provider');
 	var _zapchan = _$('zapchan');
 	var _trunkname = _$('trunkname');
+	var _username2 = (_$('username').value) ? ' - ' + _$('username').value : ' - (No Username Needed)'; 
 	_$('hasexten').value = 'no';
 	_$('context').value =  asterisk_guiTDPrefix + _$('name').value  ;
 
 	if (_$('trunkstylevoip').checked) {
 		provider = _provider.stored_config.catbyname[_provider.value];
-		_trunkname.value = _provider.options[_provider.selectedIndex].innerHTML + " - " + _$('username').value;
+		_trunkname.value = _provider.options[_provider.selectedIndex].innerHTML + _username2;
+		_$('signalling').value = '';
 		_$('hassip').value = provider.fieldbyname['hassip'];
 		_$('hasiax').value = provider.fieldbyname['hasiax'];
 		_$('registeriax').value = provider.fieldbyname['registeriax'];
 		_$('registersip').value = provider.fieldbyname['registersip'];
-		_$('host').value = provider.fieldbyname['host'];
+
+		/* if its not ngt, go ahead and set the host field, or else do NOT and get it from _$('ip'); */
+		if(_provider.value != "ngt") {
+			_$('host').value = provider.fieldbyname['host'];
+			_$('fromuser').value = _$('username').value;
+		}
+
 		for (var x=0;x<_zapchan.options.length;x++){  _zapchan.options[x].selected = false; }
 		_zapchan.value = '';
 		_$('group').value = '';
@@ -354,18 +507,23 @@ function ifnewtrunk(){
 				count++;
 			}
 		}
+
+ 		 PORTS_toCALIBRATE.ports_string = _trunkname.value;	
 		used_fxos.newvalue = _trunkname.value; 
 		_trunkname.value = ((count > 1) ? "Ports ":"Port ") + _trunkname.value;
+		_$('signalling').value = 'fxs_ks';
 		_$('callerid').value = 'asreceived';
 		_$('hassip').value = 'no';
 		_$('hasiax').value = 'no';
 		_$('callerid').value = 'asreceived';
-		_$('group').value = _$('name').value.split('_')[1];
+		NEWGROUPNUMBER = GROUPS.firstAvailable() ;
+		_$('group').value = NEWGROUPNUMBER ;
 	} else if( _$('trunkstylecustomvoip').checked ){
 		// Custom VOIP Provider
 		_trunkname.value = "Custom - " + _$('customvoip_name').value;
 		provider = _$('customvoip_name').value;
 		_provider.selectedIndex  = -1;
+		_$('signalling').value = '';
 		_$('username').value = _$('customvoip_username').value;
 		_$('secret').value = _$('customvoip_secret').value;
 		var _cv_p = $('customvoip_protocol').value ;
@@ -401,11 +559,12 @@ function ifnewtrunk(){
 }
 
 callbacks.newcategory = function() {
-	var tmp = null;
+	var tmp = {};
+	tmp.fieldbyname = {};
 	var x;
 	var _devices = _$('devices'); 
-	if ( _devices.stored_config.catbyname['general'])
-		tmp = objcopy( _devices.stored_config.catbyname['general']);
+//	if ( _devices.stored_config.catbyname['general'])
+//		tmp = objcopy( _devices.stored_config.catbyname['general']);
 	if (tmp) {
 		x = 1;
 		while( _devices.stored_config.catbyname['trunk_' + x]) x++;
@@ -433,15 +592,7 @@ callbacks.newcategory = function() {
 
 callbacks.identifier = "extension";
 
-phonecallbacks.format = function(t) {
-	if (t.fieldbyname['port'] == 'fxs')
-		return "Analog Port #" + t.name;
-	return null;
-}
 
-phonecallbacks.loaded = function() {
-	parent.astmanEngine.config2list("providers.conf", _$('provider'), provwidgets, providercallbacks);
-}
 
 function update_zapchan(){
 	_$('save').disabled = false;
@@ -464,7 +615,7 @@ function activateanalogvoip() {
 	var disablestring;
 
 	if (_$('trunkstyleanalog').checked) {
-		_$('analog').style.display = "block";
+		_$('analog').style.display = "";
 		_zcal.style.display = "";
 		if(_zapchan.options.length ==0){
 			_zcal.innerHTML = "No analog line hardware installed on the system";
@@ -487,7 +638,8 @@ function activateanalogvoip() {
 		}
 	}else if (_$('trunkstylevoip').checked) {
 		_$('voip').style.display = "";
-		_$('voip').style.height =350;
+		//_$('voip').style.height =350;
+		showhidefields();
 	}else if (_$('trunkstylecustomvoip').checked) {
 		_$('customvoip').style.display = "" ;
 	}
@@ -496,20 +648,30 @@ function activateanalogvoip() {
 function localajaxinit() {
 	ASTGUI.events.add(document, 'mouseover', show_tooltip);
 
+	for(var x=0; x < opt_userandpass; x++) {
+	  ASTGUI.events.add( _$(opt_userandpass[x]) , "change", function() { _$('save').disabled = false; _$('cancel').disabled = false; });
+	}
+	ASTGUI.events.add( _$('ip') , "change", function() { _$('save').disabled = false; _$('cancel').disabled = false; });
+	ASTGUI.events.add( _$('voip_ip') , "change", function() { _$('save').disabled = false; _$('cancel').disabled = false; });
+
 	ASTGUI.events.add( _$('customvoip_name') , 'change' , function(){ _$('trunkname').value = _$('customvoip_name').value; } );
 	ASTGUI.events.add( _$('customvoip_protocol') , 'change' , function(){ 
-		if(_$('customvoip_protocol').value == "sip"){ _$('hassip').value = 'yes'; _$('hasiax').value = 'no'; }
+		if(_$('customvoip_protocol').value == "sip"){ _$('hassip').value = 'yes'; _$('hasiax').value = 'no';  }
 		if(_$('customvoip_protocol').value == "iax"){ _$('hassip').value = 'no' ; _$('hasiax').value = 'yes'; }
 	});
 	ASTGUI.events.add( _$('customvoip_register') , 'change' , function(){ 
 		if(_$('customvoip_register').checked){ 
 			if(_$('customvoip_protocol').value == "sip"){ _$('registersip').value = 'yes'; _$('registeriax').value = 'no';  }
 			if(_$('customvoip_protocol').value == "iax"){ _$('registersip').value = 'no' ; _$('registeriax').value = 'yes'; }
-		}else{ _$('registersip').value = 'no'; _$('registeriax').value = 'no'; }
+		}else{
+			_$('registersip').value = 'no'; _$('registeriax').value = 'no';
+		}
 	});
 	ASTGUI.events.add( _$('customvoip_host') , 'change' , function(){ _$('host').value = _$('customvoip_host').value; } );
 	ASTGUI.events.add( _$('customvoip_username') , 'change' , function(){ _$('username').value = _$('customvoip_username').value; } );
 	ASTGUI.events.add( _$('customvoip_secret') , 'change' , function(){ _$('secret').value = _$('customvoip_secret').value; } );
+
+	ASTGUI.events.add(_$('provider'), 'click', showhidefields);
 	setWindowTitle("Service Providers");
 	_$('devices').contentEditable = 'false';
 	_$('zapchan').splitchar=',';
@@ -529,17 +691,42 @@ function localajaxinit() {
 	) ;
 
 	for (var x =0; x< fieldnames.length; x++) {
+		if(!_$(fieldnames[x])) {
+			alert(fieldnames[x] + " does not exists.");
+		}
 		widgets[fieldnames[x]] = _$(fieldnames[x]);
 		widgets[fieldnames[x]].disabled = true;
 	}
-	for (var x =0; x < provfieldnames.length ; x++) {
+	for (var x =0; x < provfieldnames.length ; x++) { 
 		provwidgets[provfieldnames[x]] = _$(provfieldnames[x]);
 		provwidgets[provfieldnames[x]].disabled = true;
 	}
 
-	parent.astmanEngine.config2list("zapscan.conf", _$('zapchan'), new Array(), phonecallbacks);
+	parent.FXO_PORTS_DETECTED.each( function(y) {
+		ASTGUI.selectbox.append( _$('zapchan'),"Analog Port #" + y , y );
+	});
+	parent.astmanEngine.config2list("providers.conf", _$('provider'), provwidgets, providercallbacks);
+
 }
 
+function showhidefields() {
+	var provname = _$('provider').value;
+	if(provname == "bandwidth") {
+		for(var x=0; x < opt_userandpass.length; x++) { /* 3 */
+			_$(opt_userandpass[x]).style.display="none";	
+		}
+	return true;
+	/* we dont want to go to the next statement, if we know its bandwidth */
+	} 
+	if(provname == "ngt") {
+		for(var x=0; x < opt_userandpass.length; x++) { _$(opt_userandpass[x]).style.display="none"; }
+		for(var x=0; x < opt_userandip.length; x++) { _$(opt_userandip[x]).style.display=""; }
+	} else {
+		for(var x=0; x < opt_userandpass.length; x++) { _$(opt_userandpass[x]).style.display=""; }
+		_$('ip').style.display="none";
+		_$('voip_ip').style.display="none";
+	}
+}
 
 function loadServiceProvidersintotable(){
 	var _spt = _$('serviceproviderstable');
@@ -547,8 +734,50 @@ function loadServiceProvidersintotable(){
 		_spt.deleteRow(i);
 	}
 	var _devices = _$('devices');
- 
-	if( _devices.length == "0" ){
+
+	PRITRUNKS.each(function(item){	// item
+		var sno = _spt.rows.length + 1;
+		var newRow = _spt.insertRow(-1);
+
+		var newCell0 = newRow.insertCell(0);
+		newCell0 .innerHTML = sno ;
+		newCell0 .style.width = 40;
+
+		var newCell1 = newRow.insertCell(1);
+		newCell1 .innerHTML = item ;
+		newCell1 .style.width = 200;
+	
+		var newCell2 = newRow.insertCell(2);
+		newCell2.innerHTML =  "PRI";
+
+		var newCell3 = newRow.insertCell(3);
+		newCell3 .style.width = 90;
+		newCell3.innerHTML =  '';
+
+	});
+
+	MISDNTRUNKS.each(function(item){	// item
+		var sno = _spt.rows.length + 1;
+		var newRow = _spt.insertRow(-1);
+
+		var newCell0 = newRow.insertCell(0);
+		newCell0 .innerHTML = sno ;
+		newCell0 .style.width = 40;
+
+		var newCell1 = newRow.insertCell(1);
+		newCell1 .innerHTML = item ;
+		newCell1 .style.width = 200;
+	
+		var newCell2 = newRow.insertCell(2);
+		newCell2.innerHTML =  "BRI";
+
+		var newCell3 = newRow.insertCell(3);
+		newCell3 .style.width = 90;
+		newCell3.innerHTML =  '';
+
+	});
+
+	if( _devices.options.length == 0 && PRITRUNKS.length == 0 && MISDNTRUNKS.length == 0){
 		_$('table_one').style.display="none";
 		var newRow = _spt.insertRow(-1);
 		var newCell0 = newRow.insertCell(0);
@@ -629,7 +858,7 @@ function hide_mymenu( ) {
 
 function preparemenus(){
 	var menu_div = document.getElementById('mymenu') ;
-	menu_div.style.width="80";
+	menu_div.style.width="100";
 	menu_div.style.borderColor = "#eee #bbb #bbb #ddd";
 	ASTGUI.events.add( document.body , "click", function(){ _$('mymenu').style.display="none"; } );
 
@@ -771,12 +1000,13 @@ function selectbox_add(selectbox_id, codec){
 		case 'ulaw': addtosel("u-law","ulaw",selectbox_id) ; break;
 		case 'alaw': addtosel("a-law","alaw",selectbox_id) ; break;
 		case 'gsm': addtosel("GSM","gsm",selectbox_id) ; break ;
-		case 'ilbc': addtosel("ILBC","ilbc",selectbox_id) ; break ;
-		case 'speex': addtosel("SPEEX","speex",selectbox_id) ; break ;
 		case 'g726':  addtosel("G.726","g726",selectbox_id) ; break ;
-		case 'adpcm': addtosel("ADPCM","adpcm",selectbox_id) ; break ;
-		case 'lpc10': addtosel("LPC10","lpc10",selectbox_id) ; break ;
-		case 'g729': addtosel("G.729","g729",selectbox_id) ; break ;
+
+//		case 'ilbc': addtosel("ILBC","ilbc",selectbox_id) ; break ;
+//		case 'speex': addtosel("SPEEX","speex",selectbox_id) ; break ;
+//		case 'adpcm': addtosel("ADPCM","adpcm",selectbox_id) ; break ;
+//		case 'lpc10': addtosel("LPC10","lpc10",selectbox_id) ; break ;
+//		case 'g729': addtosel("G.729","g729",selectbox_id) ; break ;
 		default: break
 	}
 
@@ -836,12 +1066,13 @@ function update_div_setordercodecs(){
 		selectbox_add("disallowed", "ulaw");
 		selectbox_add("disallowed", "alaw");
 		selectbox_add("disallowed", "gsm");
-		selectbox_add("disallowed", "ilbc");
-		selectbox_add("disallowed", "speex");
 		selectbox_add("disallowed", "g726");
-		selectbox_add("disallowed", "adpcm");
-		selectbox_add("disallowed", "lpc10");
-		selectbox_add("disallowed", "g729");
+
+//		selectbox_add("disallowed", "ilbc");
+//		selectbox_add("disallowed", "speex");
+//		selectbox_add("disallowed", "adpcm");
+//		selectbox_add("disallowed", "lpc10");
+//		selectbox_add("disallowed", "g729");
 	}else{
 		var tmp = _$('disallow').value.split(",");
 		for(var x=0; x < tmp.length; x++){
@@ -852,12 +1083,13 @@ function update_div_setordercodecs(){
 		selectbox_add("allowed", "ulaw");
 		selectbox_add("allowed", "alaw");
 		selectbox_add("allowed", "gsm");
-		selectbox_add("allowed", "ilbc");
-		selectbox_add("allowed", "speex");
 		selectbox_add("allowed", "g726");
-		selectbox_add("allowed", "adpcm");
-		selectbox_add("allowed", "lpc10");
-		selectbox_add("allowed", "g729");
+
+//		selectbox_add("allowed", "ilbc");
+//		selectbox_add("allowed", "speex");
+//		selectbox_add("allowed", "adpcm");
+//		selectbox_add("allowed", "lpc10");
+//		selectbox_add("allowed", "g729");
 	}else{
 		var tmp = _$('allow').value.split(",");
 		for(var x=0; x < tmp.length; x++){
@@ -891,13 +1123,27 @@ function hideSPdetails(){
 
 function showSPdetails(){
 	_$('cancel').disabled = false;
-	_$('userscontent').style.display = "block";
+	_$('userscontent').style.display = "";
 	_$('bg_transparent').style.display ='';
 	if ( isnewtrunk == 0){
 		_$('trunkstyleanalog').disabled = true;
 		_$('trunkstylevoip').disabled = true;
 		_$('trunkstylecustomvoip').disabled = true;
 		_$('provider').disabled = true;
+	} else {
+		_$('voip').style.display = "";
+		//_$('voip').style.height =350;
+
+		_$('trunkstylevoip').click();
+		//_$('provider').options[0].selected = true;
+		_$('provider').selectedIndex = -1 ;
+		setTimeout( 
+			function(){
+				try{$('provider').selectitem(0); showhidefields(); }catch(err){}
+			}, 500
+		);
+
+		showhidefields();
 	}
 }
 
@@ -967,6 +1213,241 @@ function advanced_cancel(){
 	_$('advanced_content').style.display = "none";
 }
 
+function calibrate_ports(){
+	// PORTS_toCALIBRATE  -- button_CalibratePorts, button_resetCalibration, button_skipCalibration
+	var output = "/var/lib/asterisk/static-http/config/fxotune_out";
+	var msg1 = "starting FXO tuning".toLowerCase() ;
+	var msg2 =  "FXO tuning is complete".toLowerCase() ;
+	var keepchecking;
+
+	var starthere=  function(){
+		_$('bg_transparent').style.display = "";
+		_$('msg_div').style.display = "";
+
+		_$('button_calPorts').disabled = true;
+		_$('button_resCalib').disabled = true;
+		_$('button_skipCalib').disabled = true;
+
+		var getoutput = function(){
+			var opt = { method: 'get', asynchronous: true,
+				onComplete: function(originalRequest){
+						var op = originalRequest.responseText.toLowerCase();
+						if( op.indexOf(msg1) != -1 ){
+							_$('msg_div_span').innerHTML = " Performing Calibration .... ";
+						}else if( op.indexOf(msg2) != -1 ){
+							//_$('img_loading').style.display = "none";
+							_$('img_loading').setAttribute('src', './images/tick.gif' );
+							_$('msg_div_span').innerHTML = "Finished Calibrating !!";
+							_$('bottom_msg').innerHTML = "<BR>Click the 'Save Configuration' button in the 'Home' panel to save these parameter settings"
+													+ "<BR><input type=button onclick='skip_Calibration();' value='Close'>";
+
+							window.clearInterval ( keepPinging );
+							updateUsers_fromFxotune();
+							_$('msg_div').onclick = function(){ skip_Calibration(); };
+						}
+				},
+				onFailure: function(t) { alert("Config Error: " + t.status + ": " + t.statusText); }
+			};
+			opt.parameters="";
+			var tmp = new Ajax.Request('./fxotune_out', opt);
+		}
+
+		var f1 =function(){
+			keepPinging =  window.setInterval ( getoutput , 10000);
+		};
+
+		var f2= function(){};
+	
+		_$('msg_div_span').innerHTML = "Starting Calibration script ..";
+		f1();
+		var pstc = "";
+		for( var p =0; p < PORTS_toCALIBRATE.ports_array.length ; p++) { pstc += " "+ PORTS_toCALIBRATE.ports_array[p]; }
+		parent.astmanEngine.run_tool( "/bin/fxotune_from_gui" + pstc, onSuccess = f2 );
+	};
+
+	starthere();
+}
+
+
+function reset_calibration(){		// Reset Calibration
+	var t , uri = "" , u =0 ;
+
+	for( var p =0; p < PORTS_toCALIBRATE.ports_array.length ; p++) { 
+		t = PORTS_toCALIBRATE.ports_array[p] ;
+		uri += build_action( 'delcat' , u , t , "" ,  "" ) ; u++ ;
+	}
+
+	makerequest ( 'u','fxotune.conf', uri , function(t) {
+		updateUsers_fromFxotune();
+		gui_alert ( " Finished Resetting Channels " );
+	}) ;
+
+}
+
+
+function skip_Calibration(){
+	_$('bg_transparent').style.display = "none";
+	_$('msg_div').style.display = "none";
+	_$('div_calibrate').style.display = "none";
+}
+
+function editVolumeLevels( spName ){
+
+	var portsArray = _$('devices').stored_config.catbyname[ spName ].fieldbyname['zapchan'].split( ',' );
+	var efgh = function(){
+		var y = _$('al_ports');
+		var z = "";
+	
+		ASTGUI.selectbox.clear(y);
+		for( var u =0; u < portsArray.length ; u++ ){
+			z = 'Analog Port #' + portsArray[u] ;
+			ASTGUI.selectbox.append( y, z , portsArray[u] ) ;
+		}
+		y.selectedIndex = -1;
+	};
+	efgh();
+	
+	var abcd = function(al_channels){
+		AUDIO_LEVELS = al_channels;
+		AUDIO_LEVELS.trunkname = spName;
+		_$('volLevel6').checked = false;
+		_$('volLevel5').checked = false;
+		_$('volLevel4').checked = false;
+		_$('volLevel3').checked = false;
+		_$('volLevel2').checked = false;
+		_$('volLevel1').checked = false;
+		_$('button_saveAudioLevels').disabled = true ;
+		_$('bg_transparent').style.display = '';
+		_$('div_audioLevels').style.display = '' ;
+	};
+
+	getPreviousVolume_fromFxotune( spName , portsArray,  abcd );
+	
+	
+}
+
+
+function audioLevels_Cancel(){
+	AUDIO_LEVELS = [];
+	AUDIO_LEVELS.trunkname ="";
+
+	_$('bg_transparent').style.display = 'none';
+	_$('div_audioLevels').style.display = 'none';
+}
+
+function audioLevels_showPort(){
+	var getVolumeforPort = function(x){
+		for( var w=0; w< AUDIO_LEVELS.length; w++){
+			if(AUDIO_LEVELS[w].port == x ){ return AUDIO_LEVELS[w].portVolumeLevel }
+		}
+	};
+	//console.log( AUDIO_LEVELS.length );
+	//console.log( AUDIO_LEVELS.trunkname );
+
+	var v = Number( getVolumeforPort(_$('al_ports').value ) ) ;
+	switch(v){
+		case 1:
+			_$('volLevel1').checked = true;
+			break ;
+		case 2:
+			_$('volLevel2').checked = true;
+			break ;
+		case 3:
+			_$('volLevel3').checked = true;
+			break ;
+		case 4:
+			_$('volLevel4').checked = true;
+			break ;
+		case 5:
+			_$('volLevel5').checked = true;
+			break ;
+		case 6:
+			_$('volLevel6').checked = true;
+			break ;
+
+		default:
+		_$('volLevel6').checked = false;
+		_$('volLevel5').checked = false;
+		_$('volLevel4').checked = false;
+		_$('volLevel3').checked = false;
+		_$('volLevel2').checked = false;
+		_$('volLevel1').checked = false;
+	}
+}
+
+
+
+function audioLevels_Change(z){
+	if( _$('al_ports').selectedIndex == -1 ) return;
+	_$('button_saveAudioLevels').disabled = false ;
+	
+	var setVolumeforPort = function(x, y){ // set volume for port x to y
+		for( var w=0; w< AUDIO_LEVELS.length; w++){
+			if(AUDIO_LEVELS[w].port == x ){ AUDIO_LEVELS[w].portVolumeLevel = y; }
+		}
+	};
+
+	setVolumeforPort( Number(_$('al_ports').value) ,  z);
+}
+
+function save_audioLevels(){
+
+
+	var getVolumeforPort = function(x){
+		for( var w=0; w< AUDIO_LEVELS.length; w++){
+			if(AUDIO_LEVELS[w].port == x ){ return AUDIO_LEVELS[w].portVolumeLevel }
+		}
+	};
+
+
+	// read the list of ports and then get their corresponding volume levels from AUDIO_LEVELS
+	// calculate new values and update the context in users.conf
+	var i,j,k, fx;
+	var deleteUrl ='' , updaterequest ='' , h = 0, g = AUDIO_LEVELS.trunkname;
+	var get_guiVolValue = { '1':'-2', '2':'0', '3':'2', '4':'5', '5':'9', '6':'12' };
+	var ports = { 1:{'fxogain':'0' }, 2:{'fxogain':'0'}, 3:{'fxogain':'0'}, 4:{'fxogain':'0'}, 5:{'fxogain':'0'}, 6:{'fxogain':'0'}, 7:{'fxogain':'0'}, 8:{'fxogain':'0'} };
+	var u_new, v_new, w_new ;
+
+	deleteUrl    = build_action( 'delete', h, g,'gui_volume', '', '' ); h++ ;
+	deleteUrl  += build_action( 'delete', h, g ,'gui_fxooffset', '', '' ); h++ ;
+	deleteUrl  += build_action( 'delete', h, g ,'rxgain', '', '' ); h++ ;
+	deleteUrl  += build_action( 'delete', h, g ,'txgain', '', '' ); h++ ;
+	deleteUrl  += build_action( 'delete', h, g ,'channel', '', '' ); h++ ;
+	
+	var fxotune_conf_loaded = function(c){
+		var update_fxogains = function(c){
+			for( var d in c ){	
+				if ( c.hasOwnProperty(d) && c[d]['fxorxgain']) {
+					ports[d].fxogain = Number(c[d]['fxorxgain']) ;
+				}
+			}
+		};
+		update_fxogains(c);
+
+		for( i=0 ; i < _$('al_ports').options.length ;   i++ ){
+			j = _$('al_ports').options[i].value ; // j is port
+			k = getVolumeforPort(j); // k is volume for this port
+			fx = Number( ports[j].fxogain ) ; // gain from fxotune for this channel (y)
+
+			u_new = k ;
+			v_new = -1 * fx ;
+			w_new = v_new + Number(get_guiVolValue[ String(k) ]) ;
+
+			updaterequest += build_action('append', h, g , "gui_volume", u_new); h++;
+			updaterequest += build_action('append', h, g , "gui_fxooffset", v_new); h++;
+			updaterequest += build_action('append', h, g , "rxgain", w_new); h++;
+			updaterequest += build_action('append', h, g , "txgain", '0.0'); h++;
+			updaterequest += build_action('append', h, g , "channel", j ); h++;
+		}
+
+		var m = deleteUrl + updaterequest ;
+		makerequest( 'u','users.conf', m, function(t){ audioLevels_Cancel(); } );
+	};
+
+	config2json( 'fxotune.conf', 1 , fxotune_conf_loaded );
+}
+
+
 </script>
 <body id="foo" onload="localajaxinit()"  bgcolor="EFEFEF"   onunload="free_mem()">
 <div class="mainscreenTitleBar">
@@ -998,95 +1479,124 @@ function advanced_cancel(){
 		<TD Height="20" width=15 align="center"  style="color:#FFFFFF; font-size: 12px; font-weight:bold;" onclick="$('cancel').click();">X</TD>
 		</TR>
 	</table>
-<table align="center" width=450>
-<tr>
-<td class="field_text" width=130 valign="top" align="left" tip="en,trunks,0">
-<!-- Provider type -->
-	<div id='cabinet' style='width:0;overflow:hidden'><select id='hiddenglobals'></select></div>
-	<fieldset  tip="en,trunks,0">
+<table align="center" width=470>
+<tr>	<td class="field_text">
+	<!-- Provider type -->
+	<fieldset  tip="en,trunks,0" style="width:460px">
+		<select id='hiddenglobals' style="display:none"></select>
+		<input id="name" size=10  style="display:none">
+
 		<legend><B>&nbsp;Provider Type:&nbsp;</B></legend>
-		<LABEL FOR="trunkstyleanalog"><input name='trunkstyle' type='radio' id='trunkstyleanalog' value='analog'>Analog</LABEL><BR>
-		<LABEL FOR="trunkstylevoip"><input name='trunkstyle' type='radio' id='trunkstylevoip' value='voip'>VoIP</LABEL><BR>
+		<LABEL FOR="trunkstyleanalog"><input name='trunkstyle' type='radio' id='trunkstyleanalog' value='analog'>Analog</LABEL>
+		<LABEL FOR="trunkstylevoip"><input name='trunkstyle' type='radio' id='trunkstylevoip' value='voip'>VoIP</LABEL>
 		<LABEL FOR="trunkstylecustomvoip"><input name='trunkstyle' type='radio' id='trunkstylecustomvoip' value='customvoip'>Custom VoIP</LABEL>
 	</fieldset>
-	<div id="div_providername" style="display:none">
-		<BR><BR><B>Provider Name:</B><BR><input id="name" size=10 class='input8'>
-	</div>
-<!-- Provider type -->
-</td>
-<td>
-<!-- Provider options -->
-<div id='analogvoipcontainer' style='height:350;overflow:hidden' align="center">
-<div id='analog' style='overflow:hidden' align="center">
-	<table align="center">
-	<tr><td style='width:80px' valign='top' class="field_text"  tip="en,trunks,2">Lines:</td>
-		<td>	<select size="12" multiple='true' id='zapchan' style='width:200px' class="input8"></select>
-			<div id="zapchan_analoglines" style='height:110px; width: 200px; overflow :auto; display:none'></div>
-		</td>
-	</tr>
-	<tr><td colspan='2' style='width:80px' valign='top' align='center'></td></tr>
-	</table>
-</div>
-<div id='voip' style='height:0;overflow:hidden' align="center">
-	<table align="center">
-	<tr>	<td style='width:80px' valign='top' class="field_text" tip="en,trunks,1">Provider:</td>
-		<td><select size='6' id='provider' style='width:200px' class="input8"></select></td>
-	</tr>
-	<tr><td colspan='2' align='center'><A href="#" id="providerlink"><img id='providerlogo' style='visibility:hidden;' border=0></A></td></tr>
-	<tr><td colspan='2' align='center'><div id='providerdesc' align='left' style='width:230px;height:100px; font-size:10px'></div></td></tr>
-	<tr>	<td class="field_text" tip="en,trunks,3">Username:</td>
-		<td><input size='20' id='username' class="input8"></td>
-	</tr>
-	<tr>	<td class="field_text" tip="en,trunks,4">Password:</td>
-		<td><input type="password" size='20' id='secret' class="input8"></td>
-	</tr>
-	</table>
-</div>
-<div id='customvoip' align="center" style='display:none' align="center">
-	<table align="center" cellpadding=2 cellspacing=1>
-		<input id="trunkname" type="hidden">
-		<input id="hasiax" type="hidden">
-		<input id="hassip" type="hidden">
-		<input id="hasexten" type="hidden">
-		<input id="registeriax" type="hidden">
-		<input id="registersip" type="hidden">
-		<input id="host" type="hidden">
-		<input id="dialformat" type="hidden">
-		<input id="context" type="hidden">
-		<input id="group" type="hidden">
-		<tr>	<td height=10></td>
-			<td></td>
-		</tr>
-		<tr>	<td class="field_text">Comment:</td>
-			<td><input type="text" id="customvoip_name" size=14 onkeyup=" $('cancel').disabled= false;$('save').disabled= false;"  class="input8"></td>
-		</tr>
-		<tr>	<td class="field_text">Protocol:</td>
-			<td><select id="customvoip_protocol" onchange=" $('cancel').disabled= false;$('save').disabled= false;"  class="input8">
-				<option value="iax">IAX</option>
-				<option value="sip">SIP</option>
-				</select>
+	<!-- Provider type -->
+	</td>
+</tr>
+<tr id='analog' style='display:none; height:280px'>
+	<td align="center">
+		<table align="center">
+		<tr>	<td style='width:80px' valign='top' class="field_text"  tip="en,trunks,2">
+				Lines:
+			</td>
+			<td>	<select multiple='true' id='zapchan' style='display:none'></select>
+				<div id="zapchan_analoglines" style='height:110px; width: 200px; overflow :auto; display:none'></div>
 			</td>
 		</tr>
-		<tr>	<td class="field_text">Register:</td>
-			<td><input type="checkbox" id="customvoip_register" onchange="flip_register();"  class="input8"></td>
-		</tr>
-		<tr>	<td class="field_text">Host:</td>
-			<td><input type="text" id="customvoip_host" size=14 onkeyup=" $('cancel').disabled= false;$('save').disabled= false;"  class="input8"></td>
-		</tr>
-		<tr>	<td class="field_text">Username:</td>
-			<td><input type="text" id="customvoip_username" size=14 onkeyup=" $('cancel').disabled= false;$('save').disabled= false;"  class="input8"></td>
-		</tr>
-		<tr>	<td class="field_text">Password:</td>
-			<td><input type="password" id="customvoip_secret" size=14 onkeyup=" $('cancel').disabled= false;$('save').disabled= false;"  class="input8"></td>
-		</tr>
-	</table>
-</div>
-</div>
-<!-- Provider options -->
-</td>
+		</table>
+	</td>
 </tr>
-<tr><td></td><td align="center"><input type='button' id='save' value='Save' class="buttonbold">&nbsp;<input type='button' id='cancel' value='Cancel' class="buttonbold"></td></tr>
+
+<tr id='voip' style='display:none; height:280px'>
+	<td align="center" valign="top">
+		<table align="center" width="96%">
+		<tr>	<td valign='top' class="field_text" tip="en,trunks,1">
+				Provider:<BR>
+				<select size='6' id='provider' style='width:200px' class="input8"></select>
+			</td>
+			<td>
+				<A href="#" id="providerlink"><img id='providerlogo' style='visibility:hidden;' border=0></A>
+			</td>
+		</tr>
+		<tr>
+			<td colspan=2 align="center">
+				<div id='providerdesc' style='margin-left: 5px; margin-bottom: 5px; margin-top: 10px; font-size:10px'></div>
+
+				<div>
+				<table align="center">
+				<tr>	<td id='voip_user' class="field_text" tip="en,trunks,3">
+					Username:</td>
+					<td><input size='20' id='username' class="input8"></td>
+				</tr>
+				<tr>	<td id='voip_pass' class="field_text" tip="en,trunks,4">
+					Password:</td>
+					<td><input type="password" size='20' id='secret' class="input8"></td>
+				</tr>
+
+				<tr>    <td style='display:none' id='voip_ip' class="field_text" tip="en,trunks,5">NGT Host:</td>
+					<td><input style="display:none" size='20' id='ip' class="input8"></td>
+				</tr>
+
+				</table>
+				</div>
+			</td>
+		</tr>
+		</table>
+	</td>
+</tr>
+
+<tr id='customvoip' style='display:none; height:280px'>
+	<td align="center">
+		<table align="center" cellpadding=2 cellspacing=1>
+			<input id="trunkname" type="hidden">
+			<input id="hasiax" type="hidden">
+			<input id="hassip" type="hidden">
+			<input id="hasexten" type="hidden">
+			<input id="registeriax" type="hidden">
+			<input id="registersip" type="hidden">
+			<input id="host" type="hidden">
+			<input id="dialformat" type="hidden">
+			<input id="context" type="hidden">
+			<input id="group" type="hidden">
+			<input id="signalling" type="hidden">
+			<tr>	<td height=10></td>
+				<td></td>
+			</tr>
+			<tr>	<td class="field_text">Comment:</td>
+				<td><input type="text" id="customvoip_name" size=14 onkeyup=" $('cancel').disabled= false;$('save').disabled= false;"  class="input8"></td>
+			</tr>
+			<tr>	<td class="field_text">Protocol:</td>
+				<td><select id="customvoip_protocol" onchange=" $('cancel').disabled= false;$('save').disabled= false;"  class="input8">
+					<option value="iax">IAX</option>
+					<option value="sip">SIP</option>
+					</select>
+				</td>
+			</tr>
+			<tr>	<td class="field_text">Register:</td>
+				<td><input type="checkbox" id="customvoip_register" onchange="flip_register();"  class="input8"></td>
+			</tr>
+			<tr>	<td class="field_text">Host:</td>
+				<td><input type="text" id="customvoip_host" size=14 onkeyup=" $('cancel').disabled= false;$('save').disabled= false;"  class="input8"></td>
+			</tr>
+			<tr>	<td class="field_text">Username:</td>
+				<td><input type="text" id="customvoip_username" size=14 onkeyup=" $('cancel').disabled= false;$('save').disabled= false;"  class="input8"></td>
+			</tr>
+			<tr>	<td class="field_text">Password:</td>
+				<td><input type="password" id="customvoip_secret" size=14 onkeyup=" $('cancel').disabled= false;$('save').disabled= false;"  class="input8"></td>
+			</tr>
+		</table>
+	</td>
+</tr>
+
+<tr>	<td align="center">
+		<input type='button' id='save' value='Save' class="buttonbold">&nbsp;
+		<input type='button' id='cancel' value='Cancel' class="buttonbold">
+	</td>
+</tr>
+
 </table>
+
 </div>
 <!-- Users content DIV -->
 <!-- Codecs content DIV -->
@@ -1127,7 +1637,7 @@ function advanced_cancel(){
 </div>
 <!-- Codecs content DIV -->
 <!-- Advanced content DIV -->
-<div id="advanced_content" STYLE="display:none; position: absolute; left: 20; top: 125; width:350; height:197;  background-color:#F4EFE5;   border-width: 1px; border-color: #7E5538; border-style: solid;z-index:7">
+<div id="advanced_content" STYLE="display:none; position: absolute; left: 20; top: 125; width:350; height:207;  background-color:#F4EFE5;   border-width: 1px; border-color: #7E5538; border-style: solid;z-index:7">
 	<table width="100%" cellpadding=0 cellspacing=0 onmousedown="ASTGUI.startDrag(event , 'advanced_content');">
 	<TR bgcolor="#7E5538"  style="background-image:url('images/title_gradient.gif');">
 		<TD Height="20" align="center" style="cursor: move"><font style="color:#FFFFFF; font-size: 12px; font-weight:bold;">Advanced Settings</font></TD>
@@ -1157,6 +1667,9 @@ function advanced_cancel(){
 		<tr>	<td class="field_text">contact:</td>
 			<td><input type="text" id="contact" size=14 class="input8"></td>
 		</tr>
+		<tr>
+			<td class="field_text" tip="en,users,21">can reinvite:</td>
+			<td align=right><input type='checkbox' id='canreinvite'></td>
 		<tr><td colspan=2 align=Center>
 			<input type="button" class="buttonbold" value="update" onclick="advanced_save( )">&nbsp;&nbsp;
 			<input type="button" class="buttonbold" value="Cancel" onclick="advanced_cancel( )">
@@ -1167,5 +1680,108 @@ function advanced_cancel(){
 <!-- Advanced content DIV -->
 <div id="mymenu" class="mymenu" style="display:none"></div>
 <div id="bg_transparent" STYLE="display:none; position: absolute; left: 0; top: 24; width:100%; height:100%;  background-color:#EFEFEF; -moz-opacity:.50;opacity:.50; border-width: 1px; border-color: #EFEFEF; border-style: solid; z-index:4">
+</div>
+<div id="div_calibrate" STYLE="display:none; position: absolute; left: 20; top: 125; width:460; height:290;  background-color:#F4EFE5;   border-width: 1px; border-color: #7E5538; border-style: solid;z-index:8">
+	<table width="100%" cellpadding=0 cellspacing=0 onmousedown="ASTGUI.startDrag(event , 'div_calibrate');">
+	<TR bgcolor="#7E5538"  style="background-image:url('images/title_gradient.gif');">
+		<TD Height="20" align="center" style="cursor: move"><font style="color:#FFFFFF; font-size: 12px; font-weight:bold;">
+			Easy Calibrate
+		</font></TD>
+		<TD Height="20" align="right" style="cursor: move"><A href="#" onclick="skip_Calibration();"><font style="color:#FFFFFF; font-size: 12px; font-weight:bold;">X</font></A></TD>
+		<TD width=4></TD>
+	</TR>
+	</table>
+	<table align=center>
+		<tr>	<td class="field_text" colspan=2 align="center">
+					The analog ports that you have chosen should be calibrated for optimum performance.
+					Please ensure that your analog lines are plugged in and proceed with calibration.
+				</td>
+		</tr>
+		<tr>	<td height=20></td>	</tr>
+		<tr>	<td align="right" valign=top>Lines:&nbsp;</td>
+				<td valign="top">
+					<span id="span_Ports_toCalibratie"></span>
+				</td>
+		</tr>
+		<tr><td colspan=2 align=Center>
+			<input id="button_calPorts" type="button" class="buttonbold" value="Easy Calibrate" onclick="calibrate_ports( )">&nbsp;&nbsp;
+			<input id="button_resCalib" type="button" class="buttonbold" value="Reset Calibration" onclick="reset_calibration( )">&nbsp;&nbsp;
+			<input id="button_skipCalib" type="button" class="buttonbold" value="Skip" onclick="skip_Calibration( )">
+			</td>
+		</tr>
+	</table>
+</div>
+<div id="msg_div" style="display:none; position: absolute; width:400; height:170; background-color:#FFFFFF; border-width: 1px; border-color: #7E5538; border-style: solid; z-index:10; left: 45; top: 175">
+	<BR>
+	<TABLE border=0 cellpadding=0 cellspacing=3 align=center>
+	<TR>
+		<TD align=right><img src="./images/loading.gif" id="img_loading"></TD>
+		<TD align="left" valign=middle align=center>
+			&nbsp;&nbsp;<font color="bd0e12"><span id="msg_div_span"></span></font>
+		</TD>
+	</TR>
+	<TR>
+		<TD colspan=2 align=center id="bottom_msg">
+		<BR>This might take upto 8 minutes to complete. Please do not reboot or poweroff the unit until the calibration is complete.
+		</TD>
+	</TR>
+	</TABLE> 
+</div>
+<div id="div_audioLevels" STYLE="display:none; position: absolute; left: 20; top: 125; width:460; height: 320;  background-color:#F4EFE5;   border-width: 1px; border-color: #7E5538; border-style: solid; z-index:11">
+	<table width="100%" cellpadding=0 cellspacing=0 onmousedown="ASTGUI.startDrag(event , 'div_audioLevels');">
+	<TR bgcolor="#7E5538"  style="background-image:url('images/title_gradient.gif');">
+		<TD Height="20" align="center" style="cursor: move"><font style="color:#FFFFFF; font-size: 12px; font-weight:bold;">
+			Audio Tuning
+		</font></TD>
+		<TD Height="20" align="right" style="cursor: move"><A href="#" onclick="audioLevels_Cancel();"><font style="color:#FFFFFF; font-size: 12px; font-weight:bold;">X</font></A></TD>
+		<TD width=4></TD>
+	</TR>
+	</table>
+	<table align=center width="100%">
+		<tr>	<td class="field_text" align="center">
+					Normally you should not have to adjust your analog ports beyond the initial calibration. Should you still need to fine tune your audio settings , please use the adjustments below.
+				</td>
+		</tr>
+		<tr>	<td height=15></td>	</tr>
+
+		<tr>	<td align="center"><B>Port for Adjustment</B>&nbsp;<select id="al_ports" onchange="audioLevels_showPort()"></select></td>	</tr>
+
+		<tr>	<td valign="top">
+
+					<table cellpadding=2 cellspacing=2 border=0 align="center">
+						<tr><td>
+							<LABEL FOR="volLevel6"><input name='al_volLevel' type='radio' id='volLevel6' value='6'  onchange="audioLevels_Change(this.value)">Loudest</LABEL>
+							</td>
+						</tr>
+						<tr><td>
+							<LABEL FOR="volLevel5"><input name='al_volLevel' type='radio' id='volLevel5' value='5' onchange="audioLevels_Change(this.value)">Louder</LABEL>
+							</td>
+						</tr>
+						<tr><td>
+							<LABEL FOR="volLevel4"><input name='al_volLevel' type='radio' id='volLevel4' value='4' onchange="audioLevels_Change(this.value)">Loud</LABEL>
+							</td>
+						</tr>
+						<tr><td>
+							<LABEL FOR="volLevel3"><input name='al_volLevel' type='radio' id='volLevel3' value='3'  onchange="audioLevels_Change(this.value)">Normal</LABEL>
+							</td>
+						</tr>
+						<tr><td>
+							<LABEL FOR="volLevel2"><input name='al_volLevel' type='radio' id='volLevel2' value='2'  onchange="audioLevels_Change(this.value)">Soft</LABEL>
+							</td>
+						</tr>
+						<tr><td>
+							<LABEL FOR="volLevel1"><input name='al_volLevel' type='radio' id='volLevel1' value='1'  onchange="audioLevels_Change(this.value)">Low</LABEL>
+							</td>
+						</tr>
+					</table>
+
+				</td>
+		</tr>
+		<tr><td align=Center height=45>
+			<input id="button_saveAudioLevels" type="button" class="buttonbold" value="Save" onclick="save_audioLevels()">&nbsp;&nbsp;
+			<input type="button" class="buttonbold" value="Cancel" onclick="audioLevels_Cancel()">
+			</td>
+		</tr>
+	</table>
 </div>
 </body>
