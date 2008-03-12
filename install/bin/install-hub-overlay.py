@@ -16,6 +16,7 @@ import traceback
 import re
 import pwd
 import glob
+import shutil
 import subprocess as sp
 from os import path
 from sys import stderr,stdout
@@ -221,13 +222,13 @@ def make_links(dest):
 
     # make link for ast-gui
     target=path.join(dest,'var','lib','asterisk')
-    try:
-        if os.islink(target): 
-            os.remove(target)
+    
+    if os.path.lexists(target):
+        if os.path.isdir(target): 
+            shutil.rmtree(target)
         else:
-            os.rmdir(target)
-    except:
-        pass
+            os.remove(target)
+
     os.symlink(path.join(dest,'usr','share','asterisk'),target)
         
 def main():
