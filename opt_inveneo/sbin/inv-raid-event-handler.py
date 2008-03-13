@@ -3,6 +3,7 @@
 
 import sys
 import syslog
+import subprocess as sp
 sys.path.append('/opt/inveneo/lib/python')
 from inveneo import constants, fileutils, raidutils, pidfile
 from time import sleep
