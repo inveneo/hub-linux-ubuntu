@@ -11,7 +11,7 @@ sys.path.append('/opt/inveneo/lib/python')
 import constants
 import fileutils
 
-WORK_DEV_MATCHER=re.compile(r'Working Devices\s+:\s+(\d)')
+WORK_DEV_MATCHER=re.compile(r'Active Devices\s+:\s+(\d)')
 
 def num_active_drives_in_array(array_dev):
     output = sp.Popen(['mdadm','--detail',array_dev], stdout=sp.PIPE).communicate()[0]
@@ -26,7 +26,7 @@ def num_active_drives_in_array(array_dev):
 def sound_audio_notice(config):
     success=True
     try:
-        sp.call(config.dict['BEEP_CMD'].split())
+        sp.call(config.get_as_str('BEEP_CMD').split())
     except:
         success=False
 
@@ -38,12 +38,12 @@ def send_email_notice(config, subject='', message=''):
 
     # take care of defaults
     if subject == '':
-        subject=config.dict['MONITOR_SMTP_DEFAULT_SUBJECT']
+        subject=config.get_as_str('MONITOR_SMTP_DEFAULT_SUBJECT')
 
     if message == '':
-        message=config.dict['MONITOR_SMTP_DEFAULT_MESSAGE'] + " " + socket.gethostname()
+        message=config.get_as_str('MONITOR_SMTP_DEFAULT_MESSAGE') + " " + socket.gethostname()
     
-    if config.dict['MONITOR_SMTP_RECIPIENT'] == '':
+    if config.get_as_str('MONITOR_SMTP_RECIPIENT') == '':
         syslog.syslog("Recipient email not set. Exiting.")
         print 'unable to send message, please set recipient email'
         return False
@@ -51,13 +51,13 @@ def send_email_notice(config, subject='', message=''):
     message = subject + "\n\n" + message
     try:
         syslog.syslog("Opening SMTP connection")
-        s = smtplib.SMTP(config.dict['MONITOR_SMTP_HOSTNAME'], int(config.dict['MONITOR_SMTP_PORT']))
+        s = smtplib.SMTP(config.get_as_str('MONITOR_SMTP_HOSTNAME'), config.get_as_int('MONITOR_SMTP_PORT',25))
         # s.set_debuglevel(1)
         s.ehlo()
         s.starttls()
         s.ehlo()
-        s.login(config.dict['MONITOR_SMTP_USERNAME'], config.dict['MONITOR_SMTP_PASSWORD'])
-        s.sendmail(config.dict['MONITOR_SMTP_SENDER'], config.dict['MONITOR_SMTP_RECIPIENT'], message)
+        s.login(config.get_as_str('MONITOR_SMTP_USERNAME'), config.get_as_str('MONITOR_SMTP_PASSWORD'))
+        s.sendmail(config.get_as_str('MONITOR_SMTP_SENDER'), config.get_as_str('MONITOR_SMTP_RECIPIENT'), message)
         s.noop()
         s.rset()
         s.quit()

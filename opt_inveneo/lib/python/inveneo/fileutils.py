@@ -26,7 +26,28 @@ class ConfigFileDict(object):
         with open(self.config_file,'w') as f:
             for key,value in self.dict.items():
                 f.write("%s=\"%s\"\n" % (str(key),str(value)))
-                
+
+	
+    def get_as_int(self,key, default=-1):
+        val=int(default)
+        if key in self.dict:
+            try:
+                val=int(self.dict[key])
+            except:
+                val=int(default)
+        return val
+
+    def get_as_str(self,key, default=""):
+        val=str(default)
+        if key in self.dict:
+            try:
+                val=str(self.dict[key])
+            except:
+                val=str(default)
+        return val
+
+    def set_as_str(self,key,val):
+        self.dict[key]=str(val)                
     
 
 def replace_in_file(t, r, fn):

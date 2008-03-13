@@ -16,7 +16,8 @@ class RaidEventHandler:
         syslog.syslog("Received RAID event: %s for device: %s" % (event,device))
         
         config = fileutils.ConfigFileDict(constants.INV_RAID_MONITOR_CONFIG_FILE)
-        expected_drives=int(config.dict['MONITOR_EXPECTED_NUM_DRIVES'])
+        expected_drives=config.get_as_int('MONITOR_EXPECTED_NUM_DRIVES',1)
+                
         current_drives = raidutils.num_active_drives_in_array(device)
 	
 	# first see if the number of drives we have is _greater_ than the expected number
@@ -27,7 +28,7 @@ class RaidEventHandler:
             syslog.syslog("Upgrading RAID expectations: Expected %d active drives in array and found %d" % \
                           (expected_drives, current_drives))
             
-            config.dict['MONITOR_EXPECTED_NUM_DRIVES']='"%d"' % current_drives
+            config.set_as_str('MONITOR_EXPECTED_NUM_DRIVES',current_drives)
             config.save_config()
             # TO DO: Notify that new drive has appeared?
             return 0
@@ -62,9 +63,9 @@ class RaidEventHandler:
         # 1. check that things haven't improved, we can do this in while condition
         sleep_interval=10 
         sleep_count=0
-        email_interval=int(config.dict['EMAIL_INTERVAL'])
+        email_interval=config.get_as_int('EMAIL_INTERVAL',1440)
 	email_last_fail=False
-        beep_interval=int(config.dict['BEEP_INTERVAL'])
+        beep_interval=config.get_as_int('BEEP_INTERVAL',60)
 	beep_last_fail=False
         while current_drives < expected_drives:
             if email_last_fail or ((sleep_count * sleep_interval) % email_interval) < sleep_interval:
