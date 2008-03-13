@@ -6,7 +6,7 @@ import re
 import subprocess as sp
 sys.path.append('/opt/inveneo/lib/python')
 
-SERIAL_MATCHER=re.compile(r'Serial:\s*(\S+)')
+SERIAL_MATCHER=re.compile(r'Serial Number:\s*(\S+)')
 
 def id_for_device(dev):
     """
@@ -18,9 +18,14 @@ def id_for_device(dev):
     m=SERIAL_MATCHER.search(output)
 
     if m:
-        return m.groups(0)
+        return m.groups()[0]
 
     return None
 
 if __name__ == '__main__':
+    if len(sys.argv) != 2:
+        print "usage diskutils.py <device>"
+        sys.exit(-1)
+        
+    print id_for_device(sys.argv[1])
     sys.exit(0)

@@ -30,6 +30,8 @@ class RaidEventHandler:
             
             config.set_as_str('MONITOR_EXPECTED_NUM_DRIVES',current_drives)
             config.save_config()
+
+            sp.call(['/opt/inveneo/sbin/inv-id-md-drives.py',device])
             # TO DO: Notify that new drive has appeared?
             return 0
 
