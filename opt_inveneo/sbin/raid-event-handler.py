@@ -18,7 +18,7 @@ class RaidEventHandler:
         config = fileutils.ConfigFileDict(constants.INV_RAID_MONITOR_CONFIG_FILE)
         expected_drives=config.get_as_int('MONITOR_EXPECTED_NUM_DRIVES',1)
                 
-        current_drives = raidutils.num_active_drives_in_array(device)
+        current_drives = raidutils.num_working_drives_in_array(device)
 	
 	# first see if the number of drives we have is _greater_ than the expected number
 	# of drives. If so, we have moved from 1 drive to 2 drive system and need to update
@@ -78,7 +78,7 @@ class RaidEventHandler:
 
             sleep(sleep_interval * 60)
 	    sleep_count+=1
-            current_drives = raidutils.num_active_drives_in_array(device)
+            current_drives = raidutils.num_working_drives_in_array(device)
 
 
         return 0
