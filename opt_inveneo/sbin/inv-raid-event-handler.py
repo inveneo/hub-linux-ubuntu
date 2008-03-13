@@ -42,7 +42,8 @@ class RaidEventHandler:
             return 0
 
 	# so now we know we have _fewer_ drives than expected, but this is not necessarily an errror
-        if not (event == "Fail" or event == "DegradedArray"):
+        if not (event == "Fail" or event == "DegradedArray" or event == "FailSpare" or event == "SpareMissing"):
+            syslog.syslog("Event: %s not considered on error. Exiting." % event)
             return 0
 
         # Ok, so now we know we have an error state, but we don't want to notify if a notifying process
