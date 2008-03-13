@@ -6,6 +6,8 @@ import re
 import syslog
 import socket
 import smtplib
+import os
+from os import path
 import subprocess as sp
 sys.path.append('/opt/inveneo/lib/python')
 import constants
@@ -32,7 +34,20 @@ def sound_audio_notice(config):
 
     return success
   
+def drives_in_array(md):
+    """returns drive in an array or None.
+    Input arg is of form "md0"
+    Output is of form "[sda1,sdb2]"
+    """
 
+    sys_path=path.join('/sys','block',md)
+    slaves_path=path.join(sys_path,'slaves')
+    if not (path.isdir(sys_path) and path.isdir(slaves_path)):
+        return None
+
+    return os.listdir(slaves_path)
+
+    
 def send_email_notice(config, subject='', message=''):
     syslog.openlog('raidutils send_email_notice', 0, syslog.LOG_LOCAL5)
 

@@ -8,7 +8,7 @@ import sys
 import os
 import re
 
-PROP_PARSER=re.compile("^\s*(?!#)(\S+)\s*=\s*[\"\']?(.+?)[\"\']?$")
+PROP_PARSER=re.compile("^\s*(?!#)(\S+)\s*=\s*(.+?)\s*$")
             
 class ConfigFileDict(object):
     def __init__(self,filepath):
@@ -20,8 +20,16 @@ class ConfigFileDict(object):
                     m=PROP_PARSER.match(line)
                     if m:
                         key,value=m.groups()
-                        self.dict[key]=value
+                        self.dict[key]=self.strip_quote(value)
 
+    def strip_quote(self, val):
+        str_val=str(val).strip()
+        if (str_val[0] == '"' and str_val[-1] == '"') or \
+               (str_val[0] == "'" and str_val[-1] == "'"):
+            return str_val[1:-1]
+
+        return str_val
+        
     def save_config(self):
         with open(self.config_file,'w') as f:
             for key,value in self.dict.items():
@@ -47,6 +55,8 @@ class ConfigFileDict(object):
         return val
 
     def set_as_str(self,key,val):
+        if val==None:
+            val = ''
         self.dict[key]=str(val)                
     
 
