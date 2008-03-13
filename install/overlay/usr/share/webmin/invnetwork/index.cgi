@@ -81,12 +81,19 @@ sub draw_form {
     print &ui_columns_end();
     print &ui_submit('Submit');
     print &ui_form_end();
+    print "<b>Further Operations:</b><br><br>";
+    print &ui_form_start('dhcpd-stop.cgi');
+    print &ui_submit('Stop DHCP server');
+    print &ui_form_end();
+    print &ui_form_start('dhcpd-restart.cgi');
+    print &ui_submit('Restart DHCP server');
+    print &ui_form_end();
 }
 
 sub wan_stuff {
     return &ui_radio_table('wan_interface', $in{'wan_interface'},
     [ [ 'off',      'Off',      '&nbsp;' ],
-      [ 'ethernet', 'Ethernet', &eth0_stuff ],
+      [ 'ethernet', 'Ethernet', &in_a_box(&eth0_stuff) ],
       [ 'modem',    'Modem',    &in_a_box(&modem_stuff) ]
       ]);
 }
@@ -181,20 +188,14 @@ sub lan_stuff {
         &error_text('lan_address')],
         ['align="right"', '', '']) .
     &ui_columns_row(
-        ['Netmask:',
-        &ui_textbox('lan_netmask', $in{'lan_netmask'}, 20),
-        &error_text('lan_netmask')],
-        ['align="right"', '', '']) .
-    &ui_columns_row(
         ['Gateway:',
         &ui_textbox('lan_gateway', $in{'lan_gateway'}, 20),
         &error_text('lan_gateway')],
         ['align="right"', '', '']) .
     &ui_columns_row([
         "&nbsp;",
-        &ui_checkbox('lan_dhcp_on', $in{'lan_dhcp_on'}, 'DHCP Server On',
-            $in{'lan_dhcp_on'}),
-        "&nbsp;"]) .
+        &ui_checkbox('lan_dhcp_on', 'on', 'DHCP Server On', $in{'lan_dhcp_on'}),
+        &error_text('lan_dhcp_on')]) .
     &ui_columns_row(
         ['DHCP Address Range Start:',
         &ui_textbox('lan_dhcp_range_start', $in{'lan_dhcp_range_start'}, 3),
@@ -205,5 +206,6 @@ sub lan_stuff {
         &ui_textbox('lan_dhcp_range_end', $in{'lan_dhcp_range_end'}, 3),
         &error_text('lan_dhcp_range_end')],
         ['align="right"', '', '']) .
-    &ui_columns_end();
+    &ui_columns_end() .
+    &ui_hidden('lan_netmask', '255.255.255.0');
 }
