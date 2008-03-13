@@ -86,8 +86,10 @@ class RaidEventHandler:
         return 0
                 
 if __name__ == '__main__':
-    if len(sys.argv) != 3:
-        sys.stderr.write("Usage: raid-status-handler <status> <device>\n")
+    syslog.openlog('raid-status-monitor', 0, syslog.LOG_LOCAL5)
+    if len(sys.argv) not in (3,4):
+        sys.stderr.write("Usage: raid-status-handler <status> <device> [<related-device>]\n")
+        syslog.syslog("received bad args: %s" % str(sys.argv[1:]))
         sys.exit(1)
         
     sys.exit(RaidEventHandler().main(sys.argv[1], sys.argv[2]))
