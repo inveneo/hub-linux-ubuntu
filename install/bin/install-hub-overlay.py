@@ -224,10 +224,10 @@ def make_links(dest):
     target=path.join(dest,'var','lib','asterisk')
     
     if os.path.lexists(target):
-        if os.path.isdir(target): 
-            shutil.rmtree(target)
-        else:
+        if os.path.islink(target) or not os.path.isdir(target): 
             os.remove(target)
+        else:
+            shutil.rmtree(target)
 
     os.symlink(path.join(dest,'usr','share','asterisk'),target)
         
