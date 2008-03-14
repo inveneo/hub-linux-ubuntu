@@ -11,8 +11,8 @@ from os import path
 import StringIO
 import subprocess as sp
 sys.path.append('/opt/inveneo/lib/python')
-import constants
-import fileutils
+import constants, fileutils, diskutils
+
 
 ACTIVE_DEV_MATCHER=re.compile(r'Active Devices\s+:\s+(\d)')
 WORKING_DEV_MATCHER=re.compile(r'Working Devices\s+:\s+(\d)')
@@ -58,6 +58,7 @@ def get_missing_drives_for_array(config, array_dev='/dev/md0'):
     # get all the current good drives
     drives=drives_in_array(array_dev, True)
 
+    print drives
     # get all the ids
     ids=[]
     for i in (1,2):
@@ -67,8 +68,9 @@ def get_missing_drives_for_array(config, array_dev='/dev/md0'):
 
     # Now we need to remove all the id's from the GOOD drives
     # from the recorded list
-    for drive_id,status in drives:
-        ids=filter(lambda a: a[1] == drive_id, ids)
+    for logical_drive,status in drives:
+        drive_id=diskutils.id_for_device('/dev/%s' % logical_drive)
+        ids=filter(lambda a: a[1] != drive_id, ids)
 
     return ids
 
@@ -108,7 +110,7 @@ def drives_in_array(array_dev='/dev/md0', good_only=False):
 
     # filer bad drives, if requested
     if (good_only):
-        devices=filter(lambda d: d[1]!='faulty', devices)
+        devices=filter(lambda d: d[1] != 'faulty', devices)
 
     if len(devices)==0:
         return None

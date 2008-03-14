@@ -71,6 +71,12 @@ class RaidEventHandler:
 	email_last_fail=False
         beep_interval=config.get_as_int('BEEP_INTERVAL',60)
 	beep_last_fail=False
+
+        # start out with a sleep to avoid the warning on first boot
+        # with a new drive (degrade will be reported before we are
+        # notified of the new drive)
+        sleep(3*60)
+        current_drives = raidutils.num_working_drives_in_array(device)
         while current_drives < expected_drives:
             if email_last_fail or ((sleep_count * sleep_interval) % email_interval) < sleep_interval:
                 email_last_fail = not raidutils.send_email_notice(config)
