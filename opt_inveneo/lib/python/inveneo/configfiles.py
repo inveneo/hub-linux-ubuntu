@@ -60,7 +60,7 @@ class ConfigFileBase(object):
         If flag is set, make a backup of the old one."""
 
         if makeBackup:
-            bakfilepath = self.filepath + '.bak'
+            bakfilepath = self.filepath + '~'
             try: os.remove(bakfilepath)
             except: pass
             os.rename(self.filepath, bakfilepath)
