@@ -8,6 +8,7 @@ import socket
 import smtplib
 import os
 from os import path
+import StringIO
 import subprocess as sp
 sys.path.append('/opt/inveneo/lib/python')
 import constants
@@ -15,15 +16,16 @@ import fileutils
 
 ACTIVE_DEV_MATCHER=re.compile(r'Active Devices\s+:\s+(\d)')
 WORKING_DEV_MATCHER=re.compile(r'Working Devices\s+:\s+(\d)')
+MDADM_START_MATCHER=re.compile(r'^\s*Number\s+Major')
 
-def num_working_drives_in_array(array_dev):
+def num_working_drives_in_array(array_dev='/dev/md0'):
     """
     Includes functioning drives that are not fully synched
     """
     
     return num_drives_in_array(WORKING_DEV_MATCHER, array_dev)
 
-def num_active_drives_in_array(array_dev):
+def num_active_drives_in_array(array_dev='/dev/md0'):
     """
     Only drives actively synched and in use in the array
     """
@@ -40,6 +42,21 @@ def num_drives_in_array(matcher, array_dev):
 
     return int(m.groups()[0])
 
+def get_missing_drives_for_array(array_dev='/dev/md0'):
+    """
+    returns list of tuples ((hw logical name, serial num),(...,...)) for
+    any missing drives.
+
+    Or None.
+
+    Usually 'None' if everything is good OR a single drive since
+    we only support mirroring right now.
+
+    E.g. ((1,'SDJ72346'))
+    """
+
+    
+
 def sound_audio_notice(config):
     success=True
     try:
@@ -49,19 +66,40 @@ def sound_audio_notice(config):
 
     return success
   
-def drives_in_array(md):
-    """returns drive in an array or None.
-    Input arg is of form "md0"
-    Output is of form "[sda1,sdb2]"
+def drives_in_array(array_dev='/dev/md0'):
+    """returns drive in an array and status None.
+    Input arg is of form "md0" "/dev/md0"
+    Output is of form "[(sda1,'active'),(sdb2,'faulty')]"
+
+    Guaranteed to be returned in proper order (e.g. sda before sdb)
+
+    states are: active, fauly, spare (probably being rebuilt)
     """
 
-    sys_path=path.join('/sys','block',md)
-    slaves_path=path.join(sys_path,'slaves')
-    if not (path.isdir(sys_path) and path.isdir(slaves_path)):
+    # make sure whatever the input, md0 or /dev/md0 we get the right arg for mdadm
+    array_dev='/dev/'+array_dev.split('/')[-1]
+
+    output = StringIO.StringIO(sp.Popen(['mdadm','--detail',array_dev], stdout=sp.PIPE).communicate()[0])
+    devices=[]
+    start_caring=False
+    for line in output:
+        if not start_caring:
+            if MDADM_START_MATCHER.match(line):
+                start_caring=True
+        else:
+            devinfo=line.strip().split()[4:]
+            if len(devinfo)>=3:
+                devices.append((devinfo[-1].split('/')[-1],devinfo[0]))
+
+    if len(devices)==0:
         return None
+    else:
+        devices.sort(lambda x,y: cmp(x[0],y[0]))
 
-    return os.listdir(slaves_path)
-
+    return devices
+                
+            
+    
     
 def send_email_notice(config, subject='', message=''):
     syslog.openlog('raidutils send_email_notice', 0, syslog.LOG_LOCAL5)
@@ -101,6 +139,6 @@ def send_email_notice(config, subject='', message=''):
 
 
 if __name__ == '__main__':
-    print "Num active drives in md0: "+str(num_active_drives_in_array('/dev/md0'))
-    config = fileutils.ConfigFileDict(constants.INV_RAID_MONITOR_CONFIG_FILE)
-    sound_audio_notice(config)
+    print "drives in md0: "+str(drives_in_array('/dev/md0'))
+
+

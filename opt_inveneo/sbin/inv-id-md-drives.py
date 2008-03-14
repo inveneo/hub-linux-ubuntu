@@ -20,6 +20,7 @@ class IdentifyMDDrives:
         
         syslog.openlog('inv-driveid', 0, syslog.LOG_LOCAL5)
 
+	# drives come back sorted for me! Whee!
         drives=raidutils.drives_in_array(md)
         if drives == None:
             message="No drives found for device: %s\n" % md
@@ -36,10 +37,8 @@ class IdentifyMDDrives:
         # load config
         config = fileutils.ConfigFileDict(constants.INV_RAID_MONITOR_CONFIG_FILE)
 
-        drives.sort()
-
         for x in (0,1):
-            id = diskutils.id_for_device('/dev/'+drives[x])
+            id = diskutils.id_for_device('/dev/'+drives[x][0])
             disk='DISK'+str(x+1)
             config.set_as_str(disk,id)
             message="%s id: %s" % (disk, id)
