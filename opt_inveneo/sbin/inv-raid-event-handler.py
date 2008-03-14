@@ -88,6 +88,9 @@ class RaidEventHandler:
         sleep(3*60)
         current_drives = raidutils.num_working_drives_in_array(device)
         while current_drives < expected_drives:
+            # reload config in case changed
+            config = fileutils.ConfigFileDict(constants.INV_RAID_MONITOR_CONFIG_FILE)
+            
             if email_last_fail or ((sleep_count * sleep_interval) % email_interval) < sleep_interval:
                 email_last_fail = not raidutils.send_email_notice(config)
             
