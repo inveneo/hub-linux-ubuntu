@@ -149,6 +149,7 @@ def send_email_notice(config, subject='', message=''):
     username=config.get_as_str('MONITOR_SMTP_USERNAME', '')
     password=config.get_as_str('MONITOR_SMTP_PASSWORD','')
         
+    success = True
     message = subject + "\n\n" + message
     try:
         syslog.syslog("Opening SMTP connection")
@@ -163,17 +164,17 @@ def send_email_notice(config, subject='', message=''):
             s.login(username, password)
         
         s.sendmail(config.get_as_str('MONITOR_SMTP_SENDER'), config.get_as_str('MONITOR_SMTP_RECIPIENT'), message)
+    except Exception, e:
+        syslog.syslog("Unable to send message. Exception: %s" % e)
+        success=False
+    finally:
         s.noop()
         s.rset()
         s.quit()
         s.close()
         syslog.syslog("Closed SMTP connection")
-    except Exception, e:
-        traceback.print_exc(e)
-        syslog.syslog("Unable to send message. Exception: " + e.message)
-        return False
 
-    return True
+    return success
 
 
 if __name__ == '__main__':
