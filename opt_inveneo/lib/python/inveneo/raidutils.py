@@ -58,7 +58,6 @@ def get_missing_drives_for_array(config, array_dev='/dev/md0'):
     # get all the current good drives
     drives=drives_in_array(array_dev, True)
 
-    print drives
     # get all the ids
     ids=[]
     for i in (1,2):
