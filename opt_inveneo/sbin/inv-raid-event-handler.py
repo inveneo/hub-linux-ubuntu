@@ -16,6 +16,16 @@ class RaidEventHandler:
         syslog.openlog('raid-status-monitor', 0, syslog.LOG_LOCAL5)
         syslog.syslog("Received RAID event: %s for device: %s" % (event,device))
         
+        # is this an error event?
+        errorEvent=False
+        if event == "Fail" or event == "DegradedArray" or event == "FailSpare" or event == "SpareMissing":
+            errorEvent=True
+        
+        if not errorEvent:
+            syslog.syslog("Event: %s not considered on error." % event)
+            
+        # but continue to drive number check in case we want to upgrade expectations
+        
         config = fileutils.ConfigFileDict(constants.INV_RAID_MONITOR_CONFIG_FILE)
         expected_drives=config.get_as_int('MONITOR_EXPECTED_NUM_DRIVES',1)
         
@@ -41,9 +51,9 @@ class RaidEventHandler:
             syslog.syslog("While waiting to alert, found expected number of drives. Array is reconstructed. Exiting")
             return 0
         
-        # so now we know we have _fewer_ drives than expected, but this is not necessarily an errror
-        if not (event == "Fail" or event == "DegradedArray" or event == "FailSpare" or event == "SpareMissing"):
-            syslog.syslog("Event: %s not considered on error. Exiting." % event)
+        # so now we know we have _fewer_ drives than expected, but this is not necessarily an errror event we are processing
+        if not errorEvent:
+            syslog.syslog("Not processing error event.")
             return 0
         
         # Ok, so now we know we have an error state, but we don't want to notify if a notifying process
