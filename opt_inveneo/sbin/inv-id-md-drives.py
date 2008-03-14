@@ -27,8 +27,10 @@ class IdentifyMDDrives:
             syslog.syslog(message)
             sys.stderr.write(message+"\n")
             return -1
-        
-        if len(drives) != 2:
+
+        # skip faulty drives
+        good_drives=filter(lambda x: x[1]!='faulty', drives)
+        if len(good_drives) != 2:
             message="Only 1 drive found, not recording result"
             syslog.syslog(message)
             sys.stderr.write(message+"\n")
@@ -38,7 +40,7 @@ class IdentifyMDDrives:
         config = fileutils.ConfigFileDict(constants.INV_RAID_MONITOR_CONFIG_FILE)
 
         for x in (0,1):
-            id = diskutils.id_for_device('/dev/'+drives[x][0])
+            id = diskutils.id_for_device('/dev/'+good_drives[x][0])
             disk='DISK'+str(x+1)
             config.set_as_str(disk,id)
             message="%s id: %s" % (disk, id)
