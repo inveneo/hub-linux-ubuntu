@@ -48,6 +48,7 @@ class ConfigFileDict(object):
         return val
         
     def get_as_bool(self,key, default=None):
+        val=utils.is_true(default)
         if key in self.dict:
             try:
                 val=utils.is_true(self.dict[key])

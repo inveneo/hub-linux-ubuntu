@@ -10,6 +10,7 @@ import os
 from os import path
 import StringIO
 import subprocess as sp
+import traceback
 sys.path.append('/opt/inveneo/lib/python')
 import constants, fileutils, diskutils
 
@@ -55,11 +56,15 @@ def get_missing_drives_for_array(config, array_dev='/dev/md0'):
     E.g. ((1,'SDJ72346'))
     """
 
+    # to hold id's to return
+    ids=[]
+
     # get all the current good drives
     drives=drives_in_array(array_dev, True)
+    if drives==None or len(drives)==0:
+        return ids
 
     # get all the ids
-    ids=[]
     for i in (1,2):
         id = config.get_as_str('DISK%d' % i).strip()
         if id != '':
@@ -143,7 +148,7 @@ def send_email_notice(config, subject='', message=''):
     use_tls=config.get_as_bool('MONITOR_SMTP_TLS',False)
     username=config.get_as_str('MONITOR_SMTP_USERNAME', '')
     password=config.get_as_str('MONITOR_SMTP_PASSWORD','')
-    
+        
     message = subject + "\n\n" + message
     try:
         syslog.syslog("Opening SMTP connection")
@@ -164,6 +169,7 @@ def send_email_notice(config, subject='', message=''):
         s.close()
         syslog.syslog("Closed SMTP connection")
     except Exception, e:
+        traceback.print_exc(e)
         syslog.syslog("Unable to send message. Exception: " + e.message)
         return False
 
@@ -172,7 +178,8 @@ def send_email_notice(config, subject='', message=''):
 
 if __name__ == '__main__':
     config=fileutils.ConfigFileDict(constants.INV_RAID_MONITOR_CONFIG_FILE)
-    print get_missing_drives_for_array(config)
+    # print get_missing_drives_for_array(config)
+    send_email_notice(config)
     
     
 
