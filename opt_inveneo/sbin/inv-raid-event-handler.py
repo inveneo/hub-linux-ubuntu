@@ -48,7 +48,7 @@ class RaidEventHandler:
         
         # Now see if the are equivalent, and just exit
         if current_drives == expected_drives:
-            syslog.syslog("While waiting to alert, found expected number of drives. Array is reconstructed. Exiting")
+            syslog.syslog("Found expected number of drives. Exiting")
             return 0
         
         # so now we know we have _fewer_ drives than expected, but this is not necessarily an errror event we are processing
@@ -99,7 +99,8 @@ class RaidEventHandler:
             sleep_count+=1
             current_drives = raidutils.num_working_drives_in_array(device)
         
-        
+        syslog.syslog("While waiting to alert, found expected number of drives. Array is reconstructed.")
+        # TO DO: Send array fixed email?
         return 0
 
 if __name__ == '__main__':
