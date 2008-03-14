@@ -126,8 +126,15 @@ def send_email_notice(config, subject='', message=''):
     if subject == '':
         subject=config.get_as_str('MONITOR_SMTP_DEFAULT_SUBJECT')
 
+    failed_drives=get_missing_drives_for_array(config)
+
+    # TO DO: Make this a configurable message
     if message == '':
-        message=config.get_as_str('MONITOR_SMTP_DEFAULT_MESSAGE') + " " + socket.gethostname()
+        message="Host: '%s' has a failed hard-drive which must be replaced.\n" % socket.gethostname()
+        if len(failed_drives) > 0:
+            message+="\nFailed Drive: 'Disk %d' with serial number '%s'\n\n" % failed_drives[0]
+        else:
+            message+="\nFailed drive could not be identified. Technician must test drives manually.\n\n"
     
     if config.get_as_str('MONITOR_SMTP_RECIPIENT') == '':
         syslog.syslog("Recipient email not set. Not sending email.")
