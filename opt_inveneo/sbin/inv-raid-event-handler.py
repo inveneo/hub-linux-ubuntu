@@ -10,7 +10,7 @@ from time import sleep
 
 class RaidEventHandler:
     def __init__(self):
-    pass
+        pass
     
     def main(self, event, device):
         syslog.openlog('raid-status-monitor', 0, syslog.LOG_LOCAL5)
@@ -68,9 +68,9 @@ class RaidEventHandler:
         sleep_interval=10
         sleep_count=0
         email_interval=config.get_as_int('EMAIL_INTERVAL',1440)
-    email_last_fail=False
+        email_last_fail=False
         beep_interval=config.get_as_int('BEEP_INTERVAL',60)
-    beep_last_fail=False
+        beep_last_fail=False
         
         # start out with a sleep to avoid the warning on first boot
         # with a new drive (degrade will be reported before we are
@@ -86,7 +86,7 @@ class RaidEventHandler:
                 beep_last_fail = not raidutils.sound_audio_notice(config)
             
             sleep(sleep_interval * 60)
-        sleep_count+=1
+            sleep_count+=1
             current_drives = raidutils.num_working_drives_in_array(device)
         
         
