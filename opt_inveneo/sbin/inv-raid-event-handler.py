@@ -75,6 +75,7 @@ class RaidEventHandler:
         # start out with a sleep to avoid the warning on first boot
         # with a new drive (degrade will be reported before we are
         # notified of the new drive)
+        syslog.syslog("Waiting briefly before starting alerts.")
         sleep(3*60)
         current_drives = raidutils.num_working_drives_in_array(device)
         while current_drives < expected_drives:
