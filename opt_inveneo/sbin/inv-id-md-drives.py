@@ -21,15 +21,13 @@ class IdentifyMDDrives:
         syslog.openlog('inv-driveid', 0, syslog.LOG_LOCAL5)
 
 	# drives come back sorted for me! Whee!
-        drives=raidutils.drives_in_array(md)
-        if drives == None:
+        good_drives=raidutils.drives_in_array(md, True)
+        if good_drives == None:
             message="No drives found for device: %s\n" % md
             syslog.syslog(message)
             sys.stderr.write(message+"\n")
             return -1
 
-        # skip faulty drives
-        good_drives=filter(lambda x: x[1]!='faulty', drives)
         if len(good_drives) != 2:
             message="Only 1 drive found, not recording result"
             syslog.syslog(message)

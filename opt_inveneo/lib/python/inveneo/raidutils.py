@@ -42,7 +42,7 @@ def num_drives_in_array(matcher, array_dev):
 
     return int(m.groups()[0])
 
-def get_missing_drives_for_array(array_dev='/dev/md0'):
+def get_missing_drives_for_array(config, array_dev='/dev/md0'):
     """
     returns list of tuples ((hw logical name, serial num),(...,...)) for
     any missing drives.
@@ -55,7 +55,22 @@ def get_missing_drives_for_array(array_dev='/dev/md0'):
     E.g. ((1,'SDJ72346'))
     """
 
-    
+    # get all the current good drives
+    drives=drives_in_array(array_dev, True)
+
+    # get all the ids
+    ids=[]
+    for i in (1,2):
+        id = config.get_as_str('DISK%d' % i).strip()
+        if id != '':
+            ids.append((i,id))
+
+    # Now we need to remove all the id's from the GOOD drives
+    # from the recorded list
+    for drive_id,status in drives:
+        ids=filter(lambda a: a[1] == drive_id, ids)
+
+    return ids
 
 def sound_audio_notice(config):
     success=True
@@ -66,7 +81,7 @@ def sound_audio_notice(config):
 
     return success
   
-def drives_in_array(array_dev='/dev/md0'):
+def drives_in_array(array_dev='/dev/md0', good_only=False):
     """returns drive in an array and status None.
     Input arg is of form "md0" "/dev/md0"
     Output is of form "[(sda1,'active'),(sdb2,'faulty')]"
@@ -91,15 +106,16 @@ def drives_in_array(array_dev='/dev/md0'):
             if len(devinfo)>=3:
                 devices.append((devinfo[-1].split('/')[-1],devinfo[0]))
 
+    # filer bad drives, if requested
+    if (good_only):
+        devices=filter(lambda d: d[1]!='faulty', devices)
+
     if len(devices)==0:
         return None
     else:
         devices.sort(lambda x,y: cmp(x[0],y[0]))
 
     return devices
-                
-            
-    
     
 def send_email_notice(config, subject='', message=''):
     syslog.openlog('raidutils send_email_notice', 0, syslog.LOG_LOCAL5)
@@ -139,6 +155,10 @@ def send_email_notice(config, subject='', message=''):
 
 
 if __name__ == '__main__':
-    print "drives in md0: "+str(drives_in_array('/dev/md0'))
+    config=fileutils.ConfigFileDict(constants.INV_RAID_MONITOR_CONFIG_FILE)
+    print get_missing_drives_for_array(config)
+    
+    
+
 
 
