@@ -3,10 +3,10 @@
 
 import sys
 import syslog
+from time import sleep
 import subprocess as sp
 sys.path.append('/opt/inveneo/lib/python')
 from inveneo import constants, fileutils, raidutils, pidfile
-from time import sleep
 
 class RaidEventHandler:
     def __init__(self):
@@ -25,7 +25,6 @@ class RaidEventHandler:
             syslog.syslog("Event: %s not considered on error." % event)
             
         # but continue to drive number check in case we want to upgrade expectations
-        
         config = fileutils.ConfigFileDict(constants.INV_RAID_MONITOR_CONFIG_FILE)
         expected_drives=config.get_as_int('MONITOR_EXPECTED_NUM_DRIVES',1)
         

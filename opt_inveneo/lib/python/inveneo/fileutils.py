@@ -7,6 +7,8 @@ import mmap
 import sys
 import os
 import re
+sys.path.append('/opt/inveneo/lib/python')
+from inveneo import utils
 
 PROP_PARSER=re.compile("^\s*(?!#)(\S+)\s*=\s*(.+?)\s*$")
             
@@ -42,7 +44,15 @@ class ConfigFileDict(object):
             try:
                 val=int(self.dict[key])
             except:
-                val=int(default)
+                pass
+        return val
+        
+    def get_as_bool(self,key, default=None):
+        if key in self.dict:
+            try:
+                val=utils.is_true(self.dict[key])
+            except:
+                pass
         return val
 
     def get_as_str(self,key, default=""):
@@ -51,7 +61,7 @@ class ConfigFileDict(object):
             try:
                 val=str(self.dict[key])
             except:
-                val=str(default)
+                pass
         return val
 
     def set_as_str(self,key,val):

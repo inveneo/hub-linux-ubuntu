@@ -9,18 +9,18 @@ from time import sleep
 
 class IdentifyMDDrives:
     def __init__(self):
-	pass
+    pass
 
-    def	main(self, md):
-	""" Identify the drives in the MD array be serial number 
-	and record in raid_monitor.conf.
-
-	Argument is of form 'md0'
+    def main(self, md):
+        """ 
+        Identify the drives in the MD array be serial number 
+        and record in raid_monitor.conf.
+        Argument is of form 'md0'
         """
         
         syslog.openlog('inv-driveid', 0, syslog.LOG_LOCAL5)
 
-	# drives come back sorted for me! Whee!
+    # drives come back sorted for me! Whee!
         good_drives=raidutils.drives_in_array(md, True)
         if good_drives == None:
             message="No drives found for device: %s\n" % md

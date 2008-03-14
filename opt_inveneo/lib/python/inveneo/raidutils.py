@@ -140,15 +140,23 @@ def send_email_notice(config, subject='', message=''):
         print 'unable to send message, please set recipient email'
         return False
         
+    use_tls=config.get_as_bool('MONITOR_SMTP_TLS',False)
+    username=config.get_as_str('MONITOR_SMTP_USERNAME', '')
+    password=config.get_as_str('MONITOR_SMTP_PASSWORD','')
+    
     message = subject + "\n\n" + message
     try:
         syslog.syslog("Opening SMTP connection")
         s = smtplib.SMTP(config.get_as_str('MONITOR_SMTP_HOSTNAME'), config.get_as_int('MONITOR_SMTP_PORT',25))
-        # s.set_debuglevel(1)
         s.ehlo()
-        s.starttls()
+        
+        if use_tls:
+            s.starttls()
+            
         s.ehlo()
-        s.login(config.get_as_str('MONITOR_SMTP_USERNAME'), config.get_as_str('MONITOR_SMTP_PASSWORD'))
+        if username != '' and password != '':
+            s.login(username, password)
+        
         s.sendmail(config.get_as_str('MONITOR_SMTP_SENDER'), config.get_as_str('MONITOR_SMTP_RECIPIENT'), message)
         s.noop()
         s.rset()
