@@ -69,7 +69,9 @@ class ConfigFileDict(object):
         if val==None:
             val = ''
         self.dict[key]=str(val)                
-    
+
+    def set_as_bool(self,key,val):
+        self.set_as_str(key,utils.is_true(val))
 
 def replace_in_file(t, r, fn):
     """ Args are: token, replacement, file """
