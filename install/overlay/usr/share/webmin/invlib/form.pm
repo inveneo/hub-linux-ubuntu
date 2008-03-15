@@ -2,9 +2,10 @@
 sub input_box_row { 
    $name = shift; 
    $title = shift; 
+   $value = shift;
     
    print "<tr><td valign='top'><b>$title</b></td>\n";
-   print "<td valign='top'>",&ui_textbox("$name", undef, 32),"</td></tr>\n";
+   print "<td valign='top'>",&ui_textbox("$name", $value, 32),"</td></tr>\n";
 }
 
 sub print_row_title { 
