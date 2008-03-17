@@ -10,6 +10,7 @@ ntp             install
 network-manager install
 mdadm           install
 rssh		install
+ca-certificates install
 
 # useful utilities
 screen  install
