@@ -5,6 +5,7 @@ require '../invlib/validation.pl';
 use raidalertconfig; 
 &ReadParse();
 
+
 sub validate_input {
         my $configFileMap = shift;
         my @errors = (); 
@@ -25,10 +26,23 @@ sub validate_input {
             $configFileMap->{"MONITOR_SMTP_PORT"} = "25";
         }
 
-        for $key ( keys(%$configFileMap) ) {
-            if ( !($key eq 'MONITOR_SMTP_TLS') ) {
-            push(@errors,"The " . $nameTranslation{$key} . " field cannot be blank.") if length($configFileMap->{$key}) eq 0;   
-            }
+        my @should_not_be_blank = (
+                "MONITOR_SMTP_HOSTNAME",
+                "MONITOR_SMTP_SENDER", 
+                "MONITOR_SMTP_RECIPIENT",
+                "MONITOR_SMTP_DEFAULT_SUBJECT"
+        );
+
+        foreach ( @should_not_be_blank ) {
+            $key = $_;
+            push(@errors,"The " . $nameTranslation{$key} . " field cannot be blank.") if is_blank($configFileMap->{$key});   
+        }
+
+        if ( $configFileMap->{"SMTP_REQUIRES_AUTHENTICATION"} eq 1 ) {
+            $key = "MONITOR_SMTP_USERNAME";
+            push(@errors,"The " . $nameTranslation{$key} . " field cannot be blank.") if is_blank($configFileMap->{$key});
+            $key = "MONITOR_SMTP_PASSWORD";
+            push(@errors,"The " . $nameTranslation{$key} . " field cannot be blank.") if is_blank($configFileMap->{$key});
         }
 
         return @errors;
@@ -40,9 +54,32 @@ my $msg = $in{'msg'};
 my @items = ( 
     "MONITOR_SMTP_USERNAME", "MONITOR_SMTP_PASSWORD", "MONITOR_SMTP_HOSTNAME",
     "MONITOR_SMTP_PORT", "MONITOR_SMTP_TLS", "MONITOR_SMTP_SENDER", 
-    "MONITOR_SMTP_DEFAULT_MESSAGE", "MONITOR_SMTP_DEFAULT_SUBJECT", "MONITOR_SMTP_RECIPIENT" );
+    "MONITOR_SMTP_DEFAULT_MESSAGE", "MONITOR_SMTP_DEFAULT_SUBJECT", "MONITOR_SMTP_RECIPIENT", "SMTP_REQUIRES_AUTHENTICATION" );
 
 &ui_print_header(undef, $module_info{'desc'}, "", undef, 1, 1);
+print <<END;
+<script type='text/javascript'> 
+        function change_disabled(fields,state) {
+                for ( var idx=0; idx<fields.length; idx++ ) {
+                        fields[idx].disabled = state;
+                }
+        } 
+        function handle_auth_changed(element) {
+                var state;
+                var disabledFields = new Array();
+                disabledFields[0] = element.form.elements.MONITOR_SMTP_USERNAME;
+                disabledFields[1] = element.form.elements.MONITOR_SMTP_PASSWORD;
+                //disabledFields[2] = element.form.elements.MONITOR_SMTP_TLS;
+
+                if ( element.checked ) {
+                    state = false;
+                } else {
+                    state = true;
+                }
+                change_disabled(disabledFields,state);
+        }
+</script> 
+END
 
 # read the form vaules
 if ( defined $in{'form_post'} ) {
@@ -72,11 +109,17 @@ if ( defined $in{'form_post'} ) {
         print "<input type='hidden' name='form_post' value='1'></input>";
         print "<table>";
         print "<tr><td><h4>Server Configuration</h4></td></tr>";
-        input_box_row("MONITOR_SMTP_USERNAME","SMTP User Name",$configFileMap->{"MONITOR_SMTP_USERNAME"});
-        printf("<tr><td><b>SMTP Password</b><td><input name='MONITOR_SMTP_PASSWORD' type='password' size='32' value='%s'></input></td></tr>", $configFileMap->{"MONITOR_SMTP_PASSWORD"});
         input_box_row("MONITOR_SMTP_HOSTNAME","SMTP Host",$configFileMap->{"MONITOR_SMTP_HOSTNAME"});
         input_box_row("MONITOR_SMTP_PORT","SMTP Port",$configFileMap->{"MONITOR_SMTP_PORT"});
+        print_row_title("&nbsp;","&nbsp;");
+
+        my $smtp_auth = $configFileMap->{"SMTP_REQUIRES_AUTHENTICATION"} eq 1 ? "checked" : "";
         printf("<tr><td><b>Use Secure Connection?</b></td><td><input name='MONITOR_SMTP_TLS' type='checkbox' value='1' %s></input></td></tr>",$configFileMap->{"MONITOR_SMTP_TLS"} eq "1" ? 'checked' : '');
+        print_row_title("Server requires authentication:","<input $smtp_auth name='SMTP_REQUIRES_AUTHENTICATION' value='1' type='checkbox' onchange='handle_auth_changed(this);'/></input>");
+
+        input_box_row("MONITOR_SMTP_USERNAME","SMTP User Name",$configFileMap->{"MONITOR_SMTP_USERNAME"});
+        printf("<tr><td><b>SMTP Password</b><td><input name='MONITOR_SMTP_PASSWORD' type='password' size='32' value='%s'></input></td></tr>", $configFileMap->{"MONITOR_SMTP_PASSWORD"});
+        print_row_title("&nbsp;","&nbsp;");
         print "<tr><td><h4>Message Contents</h4></td></tr>";
         input_box_row("MONITOR_SMTP_SENDER","From Address",$configFileMap->{"MONITOR_SMTP_SENDER"});
         input_box_row("MONITOR_SMTP_RECIPIENT","To Address",$configFileMap->{"MONITOR_SMTP_RECIPIENT"});
@@ -86,4 +129,5 @@ if ( defined $in{'form_post'} ) {
         print "</table>"; 
         print &ui_form_end();
 
+        print "<script type='text/javascript'>handle_auth_changed(document.forms[0].elements.SMTP_REQUIRES_AUTHENTICATION);</script>";
         &ui_print_footer("/", $text{'index'});
