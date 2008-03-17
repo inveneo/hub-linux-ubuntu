@@ -55,6 +55,11 @@ def fix_perms(opt_root):
     for conf in glob.glob(path.join(quagga_conf_dir,'*.conf')):
         os.chmod(path.join(quagga_conf_dir, conf),0644)
 
+    # fix private key
+    key_dir=(path.join(opt_root,'inveneo','keys'))
+    os.chmod(key_dir,0700)
+    os.chmod(path.join(key_dir,'inveneo-hub.privkey'),0400)
+
 def fix_owners(opt_root):
     overlay=path.join(opt_root,'install','overlay')
     
@@ -144,6 +149,10 @@ def post_overlay_transfer(overlay_root, dest):
     stdout.write("Writing disk type to 'menu.lst'\n")
     fileutils.replace_in_file(token, dt, os.path.join(dest,'boot','grub','menu.lst'))
 
+    # update certs
+    stdout.write("Updating Root Certificate Authorities...\n")
+    sp.check_call(['update-ca-certificates'])
+    
     # install new initramfs - we need the scripts to handle raid drives
     sp.check_call(['update-initramfs','-k','all','-u'])
 
