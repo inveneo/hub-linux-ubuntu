@@ -6,14 +6,18 @@ processForm.cgi
 Copyright (c) 2007 Inveneo, inc. All rights reserved.
 """
 
-import os, sys, string
+# external modules
+import sys
+sys.path.append('/opt/inveneo/lib/python/inveneo')
+import os, string
 import cgi
 import cgitb; cgitb.enable()  # XXX remove this for production systems
 from IPy import IP
 from subprocess import Popen, PIPE
-
-sys.path.append('/opt/inveneo/lib/python/inveneo')
 import configfiles
+
+# executables
+HOSTNAME = '/bin/hostname'
 
 ERR_PREFIX = 'err_'
 errors = {}
@@ -28,6 +32,11 @@ form = cgi.FieldStorage()
 ##
 # Basic validation of individual values
 ##
+hostname = form.getfirst("hostname", "hub-server")
+if hostname == '':
+    errors['hostname'] = 'Invalid hostname'
+hostname_previous = form.getfirst("hostname_previous", None)
+
 wan_interface = form.getfirst("wan_interface", "").lower()
 if not wan_interface in ['off', 'ethernet', 'modem']:
     errors['wan_interface'] = 'Invalid WAN interface'
@@ -129,6 +138,14 @@ except:
 ##
 # Write the config files (when no errors were found in their values)
 ##
+
+# hostname
+if hostname_previous and hostname_previous != hostname and \
+        'hostname' not in errors.keys():
+    (sout, serr) = Popen([HOSTNAME, hostname], stdout=PIPE,
+            stderr=PIPE).communicate() 
+    if serr:
+        errors['hostname'] = serr
 
 # /etc/resolv.conf
 valset = set(['dns_0', 'dns_1'])

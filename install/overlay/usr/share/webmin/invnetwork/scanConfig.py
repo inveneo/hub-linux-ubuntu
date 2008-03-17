@@ -7,15 +7,18 @@ scanConfig.py - scan some config files and return interesting values in
 Copyright (c) 2007 Inveneo, inc. All rights reserved.
 """
 
-import os, sys, traceback
+# external modules
+import sys
+sys.path.append('/opt/inveneo/lib/python/inveneo')
+import os, traceback
 from subprocess import Popen, PIPE
 from IPy import IP
-
-sys.path.append('/opt/inveneo/lib/python/inveneo')
 import configfiles
 
+# executables
 CHKCONFIG = '/usr/sbin/sysv-rc-conf'
 DHCPD = 'dhcp3-server'
+HOSTNAME = '/bin/hostname'
 
 # values for potential display on the webpage form
 formvals = {}
@@ -78,6 +81,11 @@ output = Popen(command, stdout=PIPE).communicate()[0]
 tokens = output.split()
 level2 = tokens[2]
 formvals['lan_dhcp_on'] = level2.split(':')[1]
+
+# get hostname
+command = [HOSTNAME]
+output = Popen(command, stdout=PIPE).communicate()[0]
+formvals['hostname'] = output
 
 # report the findings
 #sys.stdout.write(urlencode(formvals))

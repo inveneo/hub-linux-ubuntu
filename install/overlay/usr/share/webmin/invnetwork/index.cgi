@@ -74,28 +74,76 @@ sub get_cgi {
 
 sub draw_form {
     print &ui_form_start('processForm.cgi', 'post');
-    print &ui_columns_start(['Network', 'Settings']);
-    print &ui_columns_row(['WAN', &wan_stuff], ['align="center"', '']);
-    print &ui_columns_row(['LAN', &in_a_box(&lan_stuff)],
-        ['align="center"', '']);
-    print &ui_columns_end();
+    print &general_stuff;
+    print &wan_stuff;
+    print &lan_stuff;
     print &ui_submit('Submit');
     print &ui_form_end();
     print "<b>Further Operations:</b><br><br>";
-    print &ui_form_start('dhcpd-stop.cgi');
-    print &ui_submit('Stop DHCP server');
-    print &ui_form_end();
-    print &ui_form_start('dhcpd-restart.cgi');
-    print &ui_submit('Restart DHCP server');
-    print &ui_form_end();
+    print '>' . join(' ',@access) . '<';
+    if ($access{'apply'}) {
+        $pid = &is_dhcpd_running();
+        if ($pid) {
+            print "<form action=restart.cgi>\n";
+            print "<input type=hidden name=pid value=$pid>\n";
+            print "<tr> <td><input type=submit" .
+            " value=\"$text{'index_buttapply'}\"></td>\n";
+            print "<td>$text{'index_apply'} \n";
+            print "</td></tr>\n";
+            print "</form>\n";
+
+            print "<form action=stop.cgi>\n";
+            print "<input type=hidden name=pid value=$pid>\n";
+            print "<tr> <td><input type=submit" .
+            " value=\"$text{'index_stop'}\"></td>\n";
+            print "<td>$text{'index_stopdesc'} \n";
+            print "</td></tr>\n";
+            print "</form>\n";
+        }
+        else {
+            print "<form action=start.cgi>\n";
+            print "<tr> <td><input type=submit" .
+            " value=\"$text{'index_buttstart'}\"></td>\n";
+            print "<td>$text{'index_start'} \n";
+            print "</td> </tr>\n";
+            print "</form>\n";
+        }
+    }
+}
+
+sub general_stuff {
+    return
+    &ui_columns_start(['General', 'Settings', 'Errors']) .
+    &ui_columns_row(
+        ['Hostname:',
+        &ui_textbox('hostname', $in{'hostname'}, 20),
+        &error_text('hostname')],
+        ['align="right"', '', '']) .
+    &ui_hidden('hostname_previous', $in{'hostname'}) .
+    &ui_columns_row(
+        ['Primary DNS:',
+        &ui_textbox('dns_0', $in{'dns_0'}, 20),
+        &error_text('dns_0')],
+        ['align="right"', '', '']) .
+    &ui_columns_row(
+        ['Secondary DNS:',
+        &ui_textbox('dns_1', $in{'dns_1'}, 20),
+        &error_text('dns_1')],
+        ['align="right"', '', '']) .
+    &ui_columns_end();
 }
 
 sub wan_stuff {
-    return &ui_radio_table('wan_interface', $in{'wan_interface'},
-    [ [ 'off',      'Off',      '&nbsp;' ],
-      [ 'ethernet', 'Ethernet', &in_a_box(&eth0_stuff) ],
-      [ 'modem',    'Modem',    &in_a_box(&modem_stuff) ]
-      ]);
+    return
+    &ui_columns_start(['WAN']) .
+    &ui_columns_row([
+        &ui_radio_table('wan_interface', $in{'wan_interface'},
+            [ [ 'off',      'Off',      '&nbsp;' ],
+            [ 'ethernet', 'Ethernet', &in_a_box(&eth0_stuff) ],
+            [ 'modem',    'Modem',    &in_a_box(&modem_stuff) ] ])
+        ]
+    ) .
+    &ui_columns_end();
 }
 
 sub eth0_stuff {
@@ -121,16 +169,6 @@ sub eth0_static_stuff {
         ['Gateway:',
         &ui_textbox('wan_gateway', $in{'wan_gateway'}, 20),
         &error_text('wan_gateway')],
-        ['align="right"', '', '']) .
-    &ui_columns_row(
-        ['Primary DNS:',
-        &ui_textbox('dns_0', $in{'dns_0'}, 20),
-        &error_text('dns_0')],
-        ['align="right"', '', '']) .
-    &ui_columns_row(
-        ['Secondary DNS:',
-        &ui_textbox('dns_1', $in{'dns_1'}, 20),
-        &error_text('dns_1')],
         ['align="right"', '', '']) .
     &ui_columns_end();
 }
@@ -181,12 +219,15 @@ sub modem_stuff {
 }
 
 sub lan_stuff {
-    return &ui_columns_start() .
+    return
+    &ui_columns_start(['LAN', 'Settings', 'Errors']) .
     &ui_columns_row(
         ['IP Address:',
         &ui_textbox('lan_address', $in{'lan_address'}, 20),
         &error_text('lan_address')],
         ['align="right"', '', '']) .
+    &ui_hidden('lan_address_previous', $in{'lan_address'}) .
+    &ui_hidden('lan_netmask', '255.255.255.0') .
     &ui_columns_row(
         ['Gateway:',
         &ui_textbox('lan_gateway', $in{'lan_gateway'}, 20),
@@ -206,6 +247,5 @@ sub lan_stuff {
         &ui_textbox('lan_dhcp_range_end', $in{'lan_dhcp_range_end'}, 3),
         &error_text('lan_dhcp_range_end')],
         ['align="right"', '', '']) .
-    &ui_columns_end() .
-    &ui_hidden('lan_netmask', '255.255.255.0');
+    &ui_columns_end();
 }
