@@ -453,12 +453,13 @@ class EtcNetworkInterfaces(ConfigFileBase):
                     tokens = line.split()
                     if tokens and tokens[0].lower() == 'auto':
                         # this is an auto stanza
-                        newline = 'auto'
+                        matches = []
                         for iface in tokens[1:]:
                             if iface in self.autoset:
-                                newline += ' ' + iface
+                                matches.append(iface)
                                 found_auto.add(iface)
-                        newlines.append(newline + '\n')
+                        if len(matches) > 0:
+                            newlines.append('auto %s\n' % ' '.join(matches))
                     else:
                         # nope: just some random stuff to copy through
                         newlines.append(line)
