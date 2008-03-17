@@ -5,7 +5,6 @@ require '../invlib/validation.pl';
 use raidalertconfig; 
 &ReadParse();
 
-
 sub validate_input {
         my $configFileMap = shift;
         my @errors = (); 
@@ -81,6 +80,7 @@ print <<END;
 </script> 
 END
 
+
 # read the form vaules
 if ( defined $in{'form_post'} ) {
         #insert items from the http request into the map
@@ -89,18 +89,22 @@ if ( defined $in{'form_post'} ) {
         }
         @errors = validate_input($configFileMap);
         if ( @errors > 0 ) {
-            for $str (@errors) {
-                print "<p><font color='#ff0000'>- $str</font>";
-            }
-            print "<br><br>";
+                for $str (@errors) {
+                        print "<p><font color='#ff0000'>- $str</font>";
+                }
+                print "<br><br>";
         } else {
-            #save the changed settings
-            write_config_data($configFileMap);
+                # default flag values if not set 
+                $configFileMap->{"SMTP_REQUIRES_AUTHENTICATION"} = "0" if !defined($configFileMap->{"SMTP_REQUIRES_AUTHENTICATION"});
+                $configFileMap->{"MONITOR_SMTP_TLS"} = "0" if !defined($configFileMap->{"MONITOR_SMTP_TLS"});
+                #save the changed settings
+                write_config_data($configFileMap);
         }
 } else {
         #read the map values from the config file
         $configFileMap = read_config_items(@items); 
 }
+
 
 #print the form
 
@@ -114,20 +118,24 @@ if ( defined $in{'form_post'} ) {
         print_row_title("&nbsp;","&nbsp;");
 
         my $smtp_auth = $configFileMap->{"SMTP_REQUIRES_AUTHENTICATION"} eq 1 ? "checked" : "";
-        printf("<tr><td><b>Use Secure Connection?</b></td><td><input name='MONITOR_SMTP_TLS' type='checkbox' value='1' %s></input></td></tr>",$configFileMap->{"MONITOR_SMTP_TLS"} eq "1" ? 'checked' : '');
-        print_row_title("Server requires authentication:","<input $smtp_auth name='SMTP_REQUIRES_AUTHENTICATION' value='1' type='checkbox' onchange='handle_auth_changed(this);'/></input>");
-
-        input_box_row("MONITOR_SMTP_USERNAME","SMTP User Name",$configFileMap->{"MONITOR_SMTP_USERNAME"});
-        printf("<tr><td><b>SMTP Password</b><td><input name='MONITOR_SMTP_PASSWORD' type='password' size='32' value='%s'></input></td></tr>", $configFileMap->{"MONITOR_SMTP_PASSWORD"});
+        print_row_title("Use Secure Connection?", "<input name='MONITOR_SMTP_TLS' type='checkbox' value='1' " . ($configFileMap->{"MONITOR_SMTP_TLS"} eq "1" ? 'checked' : '') . "></input>");
         print_row_title("&nbsp;","&nbsp;");
+
+        print_row_title("Server requires authentication:","<input $smtp_auth name='SMTP_REQUIRES_AUTHENTICATION' value='1' type='checkbox' onchange='handle_auth_changed(this);'/></input>");
+        input_box_row("MONITOR_SMTP_USERNAME","SMTP User Name",$configFileMap->{"MONITOR_SMTP_USERNAME"});
+        print_row_title("SMTP Password","<input name='MONITOR_SMTP_PASSWORD' type='password' size='32' value='" . $configFileMap->{"MONITOR_SMTP_PASSWORD"} . "'></input>");
+        print_row_title("&nbsp;","&nbsp;");
+
         print "<tr><td><h4>Message Contents</h4></td></tr>";
         input_box_row("MONITOR_SMTP_SENDER","From Address",$configFileMap->{"MONITOR_SMTP_SENDER"});
         input_box_row("MONITOR_SMTP_RECIPIENT","To Address",$configFileMap->{"MONITOR_SMTP_RECIPIENT"});
-        printf("<tr><td><b>Subject</b></td><td><input name='MONITOR_SMTP_DEFAULT_SUBJECT' size='80' value='%s'></input></td></tr>", $configFileMap->{"MONITOR_SMTP_DEFAULT_SUBJECT"});
-        printf("<tr><td><b>Message</b></td><td><textarea name='MONITOR_SMTP_DEFAULT_MESSAGE' rows='5' cols='80'>%s</textarea></td></tr>", $configFileMap->{"MONITOR_SMTP_DEFAULT_MESSAGE"});
+        input_box_row("MONITOR_SMTP_DEFAULT_SUBJECT","Subject",$configFileMap->{"MONITOR_SMTP_DEFAULT_SUBJECT"});
+        print_row_title("Message",sprintf("<textarea name='MONITOR_SMTP_DEFAULT_MESSAGE' rows='5' cols='80'>%s</textarea>",$configFileMap->{"MONITOR_SMTP_DEFAULT_MESSAGE"}));
+
         print "<tr><td colspan='2'>" . &ui_submit("Update Settings") . "</td></tr>";
         print "</table>"; 
         print &ui_form_end();
-
+        
+        # update the disabled state of name and pw fields based on the config file.
         print "<script type='text/javascript'>handle_auth_changed(document.forms[0].elements.SMTP_REQUIRES_AUTHENTICATION);</script>";
         &ui_print_footer("/", $text{'index'});
