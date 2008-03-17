@@ -144,9 +144,11 @@ organizationalUnitName_default	= Inveneo IT
 
 commonName			= Common Name (eg, YOUR name)
 commonName_max			= 64
+commonName_default		= *.local
 
 emailAddress			= Email Address
 emailAddress_max		= 64
+emailAddress_default		= it@inveneo.org
 
 # SET-ex3			= SET extension number 3
 
