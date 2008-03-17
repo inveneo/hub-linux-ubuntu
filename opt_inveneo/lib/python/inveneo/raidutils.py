@@ -151,19 +151,34 @@ def send_email_notice(config, subject='', message=''):
         
     success = True
     message = subject + "\n\n" + message
+    
+    s = None
+    sender=config.get_as_str('MONITOR_SMTP_SENDER')
+    rcpt=config.get_as_str('MONITOR_SMTP_RECIPIENT')
+    host=config.get_as_str('MONITOR_SMTP_HOSTNAME')
+    port=config.get_as_int('MONITOR_SMTP_PORT',25)
+    
     try:
-        syslog.syslog("Opening SMTP connection")
-        s = smtplib.SMTP(config.get_as_str('MONITOR_SMTP_HOSTNAME'), config.get_as_int('MONITOR_SMTP_PORT',25))
+        syslog.syslog("Opening SMTP connection to host: '%s' on port: '%d'" % (host,port))
+        s = smtplib.SMTP(host, port)
+    except Exception, e:
+        syslog.syslog("Unable to open SMTP connection: %s" % e)
+        return False
+    
+    try:
         s.ehlo()
-        
+
         if use_tls:
+            syslog.syslog("Starting TLS")
             s.starttls()
             
         s.ehlo()
         if username != '' and password != '':
+            syslog.syslog("Authenticating as: %s" % username)
             s.login(username, password)
         
-        s.sendmail(config.get_as_str('MONITOR_SMTP_SENDER'), config.get_as_str('MONITOR_SMTP_RECIPIENT'), message)
+        syslog.syslog("Sending message from: '%s' to: '%s'" % (sender,rcpt))
+        s.sendmail(sender, rcpt, message)
     except Exception, e:
         syslog.syslog("Unable to send message. Exception: %s" % e)
         success=False
