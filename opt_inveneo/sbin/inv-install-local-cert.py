@@ -24,6 +24,8 @@ class InstallSelfSignedCert:
 	pem=os.path.join(constants.INV_HUB_CERTS_PATH, constants.INV_HUB_PEM)
 	pkey=os.path.join(constants.INV_HUB_CERTS_PATH, constants.INV_HUB_PRIV_KEY)
 
+	sys.stdout.write("key: %s\ncert: %s\npem: %s\n" % (pkey,cert,pem))
+
 	# try to erase old files	
 	for f in (cert,pem,pkey):
             fileutils.safe_delete_node(f)
@@ -39,11 +41,11 @@ class InstallSelfSignedCert:
         # create self-signed cert from the key
         with open(cert,'w') as f:
             sp.Popen(['openssl','req','-new','-x509','-nodes','-sha1','-days','3650','-key',pkey,'-config',cnf,'-batch'], \
-                     stdout=f)
+                     stdout=f).wait()
 
         # create pem file
         with open(pem,'w') as f:
-            sp.Popen(['cat',pkey,cert],stdout=f)
+            sp.Popen(['cat',pkey,cert],stdout=f).wait()
 
 if __name__ == '__main__':
     if len(sys.argv) != 1:
