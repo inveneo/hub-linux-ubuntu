@@ -6,6 +6,8 @@ import StringIO
 import mmap
 import sys
 import os
+import os.path
+import shutil
 import re
 sys.path.append('/opt/inveneo/lib/python')
 from inveneo import utils
@@ -112,6 +114,23 @@ def replace_in_file(t, r, fn):
     buf.close()
     
 
+def safe_delete_node(node):
+    """removes file system node whether link or directory
+    and returns True or False, no exceptions
+    """
+    
+    if not os.path.lexists(node):
+        return True
+    
+    try:
+        if os.path.islink(node) or not os.path.isdir(node):
+            os.remove(node)
+        else:
+            shutil.rmtree(node)
+    except:
+        return False
+    return True
+    
 # a main for testing
 if __name__ == "__main__":
     # sanitize PATH                                                                                                             
