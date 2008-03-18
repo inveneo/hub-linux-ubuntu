@@ -34,7 +34,6 @@ if hostname == '':
     errors['hostname'] = 'Invalid hostname'
 elif len(hostname.split()) > 1:
     errors['hostname'] = 'Invalid hostname'
-hostname_previous = form.getfirst("hostname_previous", None)
 
 wan_interface = form.getfirst("wan_interface", "").lower()
 if not wan_interface in ['off', 'ethernet', 'modem']:
@@ -139,34 +138,41 @@ except:
 ##
 
 # hostname
-if hostname_previous and hostname_previous != hostname and \
-        'hostname' not in errors.keys():
+hostname_changed = False
+if 'hostname' not in errors.keys():
     o = configfiles.EtcHostname()
-    o.hostname = hostname
-    o.write()
-    (sout, serr) = Popen(['/bin/hostname', '-F', '/etc/hostname'],
-            stdout=PIPE, stderr=PIPE).communicate() 
-    if serr:
-        errors['hostname'] = serr
+    previous = o.hostname
+    if hostname != previous:
+        o.hostname = hostname
+        o.write()
+        hostname_changed = True
 
 # /etc/resolv.conf
+dns_changed = False
 valset = set(['dns_0', 'dns_1'])
 if len(valset.intersection(set(errors.keys()))) == 0:
     o = configfiles.EtcResolvConf()
+    previous = set(o.nameservers)
+    current = set([])
     dns_0 = ip_dns_0.strNormal()
+    current.add(dns_0)
     if len(o.nameservers) > 0:
         o.nameservers[0] = dns_0
     else:
         o.nameservers.append(dns_0)
     if dns_1:
+        current.add(dns_1)
         dns_1 = ip_dns_1.strNormal()
         if len(o.nameservers) > 1:
             o.nameservers[1] = dns_1
         else:
             o.nameservers.append(dns_1)
+    if current != previous:
+        dns_changed = True
     o.write()
 
 # /etc/wvdial.conf
+# XXX also need to write /etc/ppp/peers/dod
 valset = set(['ppp_modem', 'ppp_phone', 'ppp_username', 'ppp_password', \
         'ppp_baud', 'ppp_idle_seconds', 'ppp_init1', 'ppp_init2'])
 if len(valset.intersection(set(errors.keys()))) == 0:
@@ -222,6 +228,7 @@ if len(valset.intersection(set(errors.keys()))) == 0:
     o.write()
 
 # /etc/dhcp3/dhcp.conf
+dhcp_changed = False
 valset = set(['lan_address', 'lan_netmask', 'lan_network', 'lan_gateway', \
         'lan_dhcp_range_start', 'lan_dhcp_range_end'])
 if len(valset.intersection(set(errors.keys()))) == 0:
@@ -245,14 +252,35 @@ if len(valset.intersection(set(errors.keys()))) == 0:
 # Act on config file changes
 ##
 
-# XXX start/restart/stop DHCP server
-command = "/etc/init.d/dhcp3-server"
-if bool_lan_dhcp_on:
-    arg = "force-reload"
-else:
-    arg = "stop"
-#(sout, serr) = Popen([command, arg], stdout=PIPE, stderr=PIPE).communicate() 
-#errors['lan_dhcp_on'] = "sout='%s', serr='%s'" % (sout, serr)
+# reload the hostname
+if hostname_changed:
+    (sout, serr) = Popen(['/bin/hostname', '-F', '/etc/hostname'],
+            stdout=PIPE, stderr=PIPE).communicate() 
+    if serr:
+        errors['hostname'] = serr
+        hostname_changed = False
+
+# XXX restart networking
+
+# XXX restart pppd
+
+# restart the nameserver
+if dns_changed:
+    (sout, serr) = Popen(['/etc/init.d/bind9', 'reload'],
+            stdout=PIPE, stderr=PIPE).communicate()
+
+# restart the DHCP server
+if dhcp_changed:
+    command = "/etc/init.d/dhcp3-server"
+    if bool_lan_dhcp_on:
+        arg = "force-reload"
+    else:
+        arg = "stop"
+    '''
+    (sout, serr) = Popen([command, arg],
+            stdout=PIPE, stderr=PIPE).communicate() 
+    errors['lan_dhcp_on'] = "sout='%s', serr='%s'" % (sout, serr)
+    '''
 
 ##
 # Return to Webmin

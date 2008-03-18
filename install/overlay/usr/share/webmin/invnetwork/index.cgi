@@ -119,7 +119,6 @@ sub general_stuff {
         &ui_textbox('hostname', $in{'hostname'}, 20),
         &error_text('hostname')],
         ['align="right"', '', '']) .
-    &ui_hidden('hostname_previous', $in{'hostname'}) .
     &ui_columns_row(
         ['Primary DNS:',
         &ui_textbox('dns_0', $in{'dns_0'}, 20),
@@ -226,7 +225,6 @@ sub lan_stuff {
         &ui_textbox('lan_address', $in{'lan_address'}, 20),
         &error_text('lan_address')],
         ['align="right"', '', '']) .
-    &ui_hidden('lan_address_previous', $in{'lan_address'}) .
     &ui_hidden('lan_netmask', '255.255.255.0') .
     &ui_columns_row(
         ['Gateway:',
