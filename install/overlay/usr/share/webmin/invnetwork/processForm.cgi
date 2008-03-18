@@ -32,6 +32,8 @@ form = cgi.FieldStorage()
 hostname = form.getfirst("hostname", "hub-server")
 if hostname == '':
     errors['hostname'] = 'Invalid hostname'
+else:
+    hostname = hostname.split()[0]
 hostname_previous = form.getfirst("hostname_previous", None)
 
 wan_interface = form.getfirst("wan_interface", "").lower()
