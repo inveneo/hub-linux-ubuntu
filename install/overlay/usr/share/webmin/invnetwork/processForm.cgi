@@ -16,9 +16,6 @@ from IPy import IP
 from subprocess import Popen, PIPE
 import configfiles
 
-# executables
-HOSTNAME = '/bin/hostname'
-
 ERR_PREFIX = 'err_'
 errors = {}
 form = cgi.FieldStorage()
@@ -142,8 +139,11 @@ except:
 # hostname
 if hostname_previous and hostname_previous != hostname and \
         'hostname' not in errors.keys():
-    (sout, serr) = Popen([HOSTNAME, hostname], stdout=PIPE,
-            stderr=PIPE).communicate() 
+    o = configfiles.EtcHostname()
+    o.hostname = hostname
+    o.write()
+    (sout, serr) = Popen(['/bin/hostname', '-F', '/etc/hostname'],
+            stdout=PIPE, stderr=PIPE).communicate() 
     if serr:
         errors['hostname'] = serr
 
