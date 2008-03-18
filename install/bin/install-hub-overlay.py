@@ -124,6 +124,9 @@ def pre_overlay_transfer(overlay_root, dest):
     except OSError, ex:
         pass # must not have been there
 
+    # remove useless openprinting HP ppds (everyone should use the hpijs drivers)
+    shutil.rmtree(path.join(dest,'usr','share','ppd','openprinting','HP'),True)
+
 def post_overlay_transfer(overlay_root, dest):
     # HACK: Fix Squid perms 
     uinfo=pwd.getpwnam('proxy')
