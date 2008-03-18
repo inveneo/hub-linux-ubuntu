@@ -79,15 +79,20 @@ class EtcHostname(ConfigFileBase):
     def __init__(self):
         """Initialize self from config file, parsing out metadata."""
         ConfigFileBase.__init__(self, '/etc/hostname')
-        self.hostname = self._parse_line(self.lines[0])
+        self.hostname = None
+        for line in self.lines:
+            hostname = self._parse_line(line)
+            if hostname:
+                self.hostname = hostname
 
     def _parse_line(self, line):
         """Parse out the interesting bits of one line.
         
         Returns the first word on the line, else None."""
-        list = line.split()
-        if len(list) > 0:
-            return list[0]
+        if not line.startswith('#'):
+            list = line.split()
+            if len(list) == 1:
+                return list[0]
         return None
 
     def _update_lines(self):
@@ -95,7 +100,12 @@ class EtcHostname(ConfigFileBase):
         
         Returns a list of lines that probably have newlines at the end."""
         newlines = []
-        newlines.append("%s\n" % self.hostname)
+        for line in self.lines:
+            hostname = self._parse_line(line)
+            if hostname:
+                newlines.append("%s\n" % self.hostname)
+            else:
+                newlines.append(line)
         return newlines
 
     def __str__(self):
