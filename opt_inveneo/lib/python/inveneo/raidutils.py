@@ -11,7 +11,6 @@ from os import path
 import StringIO
 import subprocess as sp
 import traceback
-sys.path.append('/opt/inveneo/lib/python')
 import constants, fileutils, diskutils
 
 

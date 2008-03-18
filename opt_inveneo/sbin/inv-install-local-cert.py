@@ -7,7 +7,6 @@ import sys
 import syslog
 import subprocess as sp
 import os.path
-sys.path.append('/opt/inveneo/lib/python')
 from inveneo import constants, fileutils
 
 class InstallSelfSignedCert:

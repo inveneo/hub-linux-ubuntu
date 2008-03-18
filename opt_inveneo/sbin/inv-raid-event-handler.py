@@ -5,7 +5,6 @@ import sys
 import syslog
 from time import sleep
 import subprocess as sp
-sys.path.append('/opt/inveneo/lib/python')
 from inveneo import constants, fileutils, raidutils, pidfile
 
 class RaidEventHandler:

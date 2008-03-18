@@ -4,7 +4,6 @@
 import sys
 import re
 import subprocess as sp
-sys.path.append('/opt/inveneo/lib/python')
 
 SERIAL_MATCHER=re.compile(r'Serial Number:\s*(\S+)')
 

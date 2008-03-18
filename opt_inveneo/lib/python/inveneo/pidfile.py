@@ -11,7 +11,6 @@ import sys
 import os
 import traceback
 import signal
-sys.path.append('/opt/inveneo/lib/python')
 
 PID_DIR=os.path.join('/','var','run')
 

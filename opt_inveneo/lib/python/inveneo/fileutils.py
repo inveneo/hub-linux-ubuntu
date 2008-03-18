@@ -9,7 +9,6 @@ import os
 import os.path
 import shutil
 import re
-sys.path.append('/opt/inveneo/lib/python')
 from inveneo import utils
 
 PROP_PARSER=re.compile("^\s*(?!#)(\S+)\s*=\s*(.+?)\s*$")

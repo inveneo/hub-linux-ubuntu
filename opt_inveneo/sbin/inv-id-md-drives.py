@@ -3,7 +3,6 @@
 
 import sys
 import syslog
-sys.path.append('/opt/inveneo/lib/python')
 from inveneo import constants, raidutils, fileutils, diskutils
 from time import sleep
 
