@@ -71,6 +71,42 @@ class ConfigFileBase(object):
         fout.writelines(self.lines)
         fout.close()
 
+class EtcHostname(ConfigFileBase):
+    """Hostname
+    
+    This file is trivial: a single value."""
+
+    def __init__(self):
+        """Initialize self from config file, parsing out metadata."""
+        ConfigFileBase.__init__(self, '/etc/hostname')
+        self.hostname = self._parse_line(self.lines[0])
+
+    def _parse_line(self, line):
+        """Parse out the interesting bits of one line.
+        
+        Returns the first word on the line, else None."""
+        list = line.split()
+        if len(list) > 0:
+            return list[0]
+        return None
+
+    def _update_lines(self):
+        """Return original list of lines updated by current metadata.
+        
+        Returns a list of lines that probably have newlines at the end."""
+        newlines = []
+        newlines.append("%s\n" % self.hostname)
+        return newlines
+
+    def __str__(self):
+        """Return entire config file as string, modified by current metadata."""
+        return string.join(self._update_lines(), '')
+
+    def write(self, makeBackup = True):
+        """Rewrite the config file, perhaps making a backup of the old one."""
+        self.lines = self._update_lines()
+        ConfigFileBase.write(self, makeBackup)
+
 class EtcResolvConf(ConfigFileBase):
     """DNS configuration.
     
@@ -522,5 +558,12 @@ if __name__ == '__main__':
     print "==================================================="
     o = EtcResolvConf()
     print "* Nameservers =", o.nameservers
+    print "* File contents:\n----------------------\n%s" % str(o)
+
+    print "==================================================="
+    print "Parsing /etc/hostname"
+    print "==================================================="
+    o = EtcHostname()
+    print "* Hostname =", o.hostname
     print "* File contents:\n----------------------\n%s" % str(o)
 
