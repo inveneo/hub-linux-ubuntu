@@ -18,7 +18,6 @@ import configfiles
 # executables
 CHKCONFIG = '/usr/sbin/sysv-rc-conf'
 DHCPD = 'dhcp3-server'
-HOSTNAME = '/bin/hostname'
 
 # values for potential display on the webpage form
 formvals = {}
@@ -74,6 +73,10 @@ for subnet, sobj in o.subnets.iteritems():
         formvals['lan_dhcp_range_start'] = s_start_ip.split('.')[3]
         formvals['lan_dhcp_range_end']   = s_end_ip.split('.')[3]
 
+# grab the hostname
+o = configfiles.EtcHostname()
+formvals['hostname'] = o.hostname
+
 # scan the running daemons for DHCP
 # XXX shouldn't this actually look for an existing startup script instead?
 command = [CHKCONFIG, '--list', DHCPD]
@@ -81,11 +84,6 @@ output = Popen(command, stdout=PIPE).communicate()[0]
 tokens = output.split()
 level2 = tokens[2]
 formvals['lan_dhcp_on'] = level2.split(':')[1]
-
-# get hostname
-command = [HOSTNAME]
-output = Popen(command, stdout=PIPE).communicate()[0]
-formvals['hostname'] = output
 
 # report the findings
 #sys.stdout.write(urlencode(formvals))
