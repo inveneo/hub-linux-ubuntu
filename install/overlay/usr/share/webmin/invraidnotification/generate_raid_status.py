@@ -41,7 +41,6 @@ def main():
 
         for logical_name,drive_state in drives_in_array:
                 serial_num=diskutils.id_for_device('/dev/%s' % logical_name)
-                serial_num='def456'
                 drive_num=get_drive_number(config,serial_num,num_expected)
                 all_drive_information.append( (drive_num, logical_name, serial_num, drive_state) )
 
