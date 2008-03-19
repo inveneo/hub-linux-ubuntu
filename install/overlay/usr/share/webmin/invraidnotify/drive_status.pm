@@ -1,0 +1,2 @@
+use enum qw(ALL_DRIVES_OK, DRIVE_1_FAILED, DRIVE_2_FAILED);
+
