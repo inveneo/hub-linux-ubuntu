@@ -226,6 +226,62 @@ class EtcWvdialConf(ConfigFileBase):
         self.lines = self._update_lines()
         ConfigFileBase.write(self, makeBackup)
 
+class EtcPppPeersDod(ConfigFileBase):
+    """Dial On Demand configuration.
+    
+    This file is mostly just keywords or key/value pairs."""
+
+    def __init__(self):
+        """Initialize self from config file, parsing out metadata."""
+        ConfigFileBase.__init__(self, '/etc/ppp/peers/dod')
+        self.metadata = {}
+        for line in self.lines:
+            (key, value) = self._parse_line(line)
+            if key:
+                self.metadata[key] = value
+
+    def _parse_line(self, line):
+        """Parse out the interesting bits of one line.
+        
+        Returns (key, value) or (None, None).
+        See 'man 8 pppd' for syntax of the options file."""
+        eq = line.find(' ')
+        if eq > 0:
+            key = line[0:eq].strip().lower()
+            value = line[eq+1:].strip()
+            return (key, value)
+        return (None, None)
+
+    def _update_lines(self):
+        """Return original list of lines updated by current metadata.
+        
+        Returns a list of lines that probably have newlines at the end."""
+        newlines = []
+        found_keys = set()
+
+        # alter existing lines that have metadata overrides
+        for line in self.lines:
+            (key, value) = self._parse_line(line)
+            if key and self.metadata.has_key(key):
+                line = "%s %s\n" % (key, self.metadata[key])
+                found_keys.add(key)
+            newlines.append(line)
+
+        # add lines for metadata not yet existing in file
+        meta_keys = set(self.metadata.keys())
+        for key in meta_keys.difference(found_keys):
+            newlines.append("%s %s\n" % (key, self.metadata[key]))
+        return newlines
+
+    def __str__(self):
+        """Return entire config file as string, modified by current metadata."""
+        return string.join(self._update_lines(), '')
+
+    def write(self, makeBackup = True):
+        """Rewrite the config file, perhaps making a backup of the old one."""
+        self.lines = self._update_lines()
+        ConfigFileBase.write(self, makeBackup)
+
 class EtcDhcp3DhcpConf(ConfigFileBase):
     """DHCP configuration.
     
@@ -542,9 +598,30 @@ if __name__ == '__main__':
     """Test these classes in a limited way."""
 
     print "==================================================="
+    print "Parsing /etc/hostname"
+    print "==================================================="
+    o = EtcHostname()
+    print "* Hostname =", o.hostname
+    print "* File contents:\n----------------------\n%s" % str(o)
+
+    print "==================================================="
+    print "Parsing /etc/resolv.conf"
+    print "==================================================="
+    o = EtcResolvConf()
+    print "* Nameservers =", o.nameservers
+    print "* File contents:\n----------------------\n%s" % str(o)
+
+    print "==================================================="
     print "Parsing /etc/wvdial.conf"
     print "==================================================="
     o = EtcWvdialConf()
+    print "* Metadata =", o.metadata
+    print "* File contents:\n----------------------\n%s" % str(o)
+
+    print "==================================================="
+    print "Parsing /etc/ppp/peers/dod"
+    print "==================================================="
+    o = EtcPppPeersDod()
     print "* Metadata =", o.metadata
     print "* File contents:\n----------------------\n%s" % str(o)
 
@@ -561,19 +638,5 @@ if __name__ == '__main__':
     o = EtcNetworkInterfaces()
     print "* Auto Start =", o.autoset
     print "* Interfaces =", o.ifaces
-    print "* File contents:\n----------------------\n%s" % str(o)
-
-    print "==================================================="
-    print "Parsing /etc/resolv.conf"
-    print "==================================================="
-    o = EtcResolvConf()
-    print "* Nameservers =", o.nameservers
-    print "* File contents:\n----------------------\n%s" % str(o)
-
-    print "==================================================="
-    print "Parsing /etc/hostname"
-    print "==================================================="
-    o = EtcHostname()
-    print "* Hostname =", o.hostname
     print "* File contents:\n----------------------\n%s" % str(o)
 
