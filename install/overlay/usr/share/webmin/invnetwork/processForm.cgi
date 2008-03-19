@@ -171,8 +171,7 @@ if len(valset.intersection(set(errors.keys()))) == 0:
         dns_changed = True
     o.write()
 
-# /etc/wvdial.conf
-# XXX also need to write /etc/ppp/peers/dod
+# /etc/wvdial.conf and /etc/ppp/peers/dod
 valset = set(['ppp_modem', 'ppp_phone', 'ppp_username', 'ppp_password', \
         'ppp_baud', 'ppp_idle_seconds', 'ppp_init1', 'ppp_init2'])
 if len(valset.intersection(set(errors.keys()))) == 0:
@@ -185,6 +184,11 @@ if len(valset.intersection(set(errors.keys()))) == 0:
     o.metadata['idle seconds'] = ppp_idle_seconds
     o.metadata['init1']        = ppp_init1
     o.metadata['init2']        = ppp_init2
+    o.write()
+
+    o = configfiles.EtcPppPeersDod()
+    o.metadata['idle'] = ppp_idle_seconds
+    # XXX should also do modem?
     o.write()
 
 # /etc/network/interfaces
