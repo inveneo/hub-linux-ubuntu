@@ -7,7 +7,7 @@ php5-mysql	install
 phpmyadmin	install
 sysv-rc-conf    install
 ntp             install
-network-manager install
+# network-manager install
 mdadm           install
 rssh		install
 ca-certificates install
