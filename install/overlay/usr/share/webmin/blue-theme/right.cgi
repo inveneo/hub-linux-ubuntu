@@ -106,7 +106,7 @@ if ($level == 0) {
 		}
 
         $raidStatus = `/usr/share/webmin/invraidnotify/generate_raid_status.py`;
-        print "<tr><td><b>Raid Status</b></td>\n";
+        print "<tr><td valign='top'><b>Raid Status</b></td>\n";
         print "<td>$raidStatus</td></tr>";
 	print "</table>\n";
 
