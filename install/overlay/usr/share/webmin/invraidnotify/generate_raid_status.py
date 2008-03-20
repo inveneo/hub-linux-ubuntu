@@ -33,40 +33,19 @@ def get_drive_info_for_array(config,raid_dev):
                 
                 if serial_num==None:
                         serial_num=None
-                        drive_num=None
+                        drive_num=-1
                 else:
-                        drive_num=str(get_drive_number(config,serial_num,num_expected))
+                        drive_num=get_drive_number(config,serial_num,num_expected)
                 all_drive_information.append( (drive_num, logical_name, serial_num, drive_state) )
 
         for drive_num,serial_num in missing_drives:
                 logical_name='None'
                 drive_state='missing'
                 all_drive_information.append( (drive_num, logical_name, serial_num, drive_state) )
-        
+
         all_drive_information.sort(lambda x,y: cmp(x[0],y[0]))
 
         return [raid_dev,all_drive_information];
-
-def print_one_drive_info(single_drive_info):
-        drive_num = single_drive_info[0]
-        drive_logical_name = single_drive_info[1]
-        drive_serial = single_drive_info[2]
-        drive_state = single_drive_info[3]
-
-        if drive_num == None:
-                drive_num = "" 
-
-        if drive_serial == None:
-                drive_serial = "" 
-        else:
-                drive_serial = "(%s)" % drive_serial
-
-        if drive_state == "missing" or drive_state == "faulty":
-                drive_state = "<font color='red'>%s</font>" % drive_state 
-        else:
-                drive_state = "<font color='green'>%s</font>" % drive_state
-
-        print "<td><table><tr><td>Drive %s: %s%s</td></tr><tr><td>State: %s</td></tr></table></td>" % ( drive_num, drive_logical_name, drive_serial, drive_state )
 
 def print_header_information(all_array_drive_info): 
         print "<tr><td class='header'>&nbsp;</td>"
@@ -84,6 +63,7 @@ def print_array_information(all_array_drive_info):
             for drive_num, logical_name, serial_num, drive_state in array_drives:
                 print "<td class='%s'>Name: %s<br>Status: %s</td>" % (drive_state, logical_name, drive_state)
             print "</tr>"
+
 def print_css_definitions():
         print "<style type='text/css'>"
         print ".header { background-color: #cccccc; }"
