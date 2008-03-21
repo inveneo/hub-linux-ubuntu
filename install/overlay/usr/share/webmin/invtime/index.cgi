@@ -8,6 +8,7 @@ require '../time/time-lib.pl';
 
 my $hour, $min, $sec;
 my $day, $month, $year;
+my $msg;
 
 #   ------
 sub isLeap
@@ -123,10 +124,15 @@ if ( defined $in{'form_post'} ) {
                 print "<br><br>";
         } else {
                 #print "date: $month, $day, $year<br>time: $hour, $min, $sec<br>";
-                set_system_time($sec, $min, $hour, $day, $month-1, $year);
                 &set_current_timezone($in{'zone'});
+                set_system_time($sec, $min, $hour, $day, $month-1, $year);
+                $msg = 'The date/time information was updated.';
         }
 } 
+
+if ( defined $msg ) {
+    print "<p>$msg</p><br><br>";
+}
 
 print "<h2>Time Management</h2>";
 
