@@ -126,6 +126,7 @@ if ( defined $in{'form_post'} ) {
                 #print "date: $month, $day, $year<br>time: $hour, $min, $sec<br>";
                 &set_current_timezone($in{'zone'});
                 set_system_time($sec, $min, $hour, $day, $month-1, $year);
+                set_hardware_time($sec, $min, $hour, $day, $month-1, $year);
                 $msg = 'The date/time information was updated.';
         }
 } 
