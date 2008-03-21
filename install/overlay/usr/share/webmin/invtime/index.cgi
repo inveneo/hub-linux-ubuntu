@@ -153,7 +153,7 @@ print <<HTML;
 </tr>
 HTML
 
-$hourHtml = generate_select('hour',"",options([1..12],[1..12]),[$hour]);
+$hourHtml = generate_select('hour',"",options([0..23],[0..23]),[$hour]);
 $minHtml = generate_select('min',"",options([0..59],[0..59]),[$min]);
 $secHtml = generate_select('sec',"",options([0..59],[0..59]),[$sec]);
 print <<HTML;
