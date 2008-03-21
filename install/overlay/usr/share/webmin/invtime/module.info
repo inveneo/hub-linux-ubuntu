@@ -1,0 +1,8 @@
+desc=Inveneo Time Management
+longdesc=Modify system and os time/date
+risk=low medium high
+category=system
+depends=1.360
+version=1.360
+name=Inveneo Time Mananger
+os_support=debian-linux generic-linux
