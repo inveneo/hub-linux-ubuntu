@@ -19,7 +19,7 @@ if ($error_string eq "") {
 #    foreach $key (keys %in) {
 #        print "'" . $key . "'='" . $in{$key} . "'<br>";
 #    }
-    print "<font color='orange'>" . $in{'message'} . "</font>";
+    print "<font color='orange'>" . $in{'message'} . "</font><br>";
     &draw_form;
 } else {
     print &in_red('Internal Error:') . "<br>";
@@ -79,36 +79,6 @@ sub draw_form {
     print &lan_stuff;
     print &ui_submit('Submit');
     print &ui_form_end();
-    print "<b>Further Operations:</b><br><br>";
-    print '>' . join(' ',@access) . '<';
-    if ($access{'apply'}) {
-        $pid = &is_dhcpd_running();
-        if ($pid) {
-            print "<form action=restart.cgi>\n";
-            print "<input type=hidden name=pid value=$pid>\n";
-            print "<tr> <td><input type=submit" .
-            " value=\"$text{'index_buttapply'}\"></td>\n";
-            print "<td>$text{'index_apply'} \n";
-            print "</td></tr>\n";
-            print "</form>\n";
-
-            print "<form action=stop.cgi>\n";
-            print "<input type=hidden name=pid value=$pid>\n";
-            print "<tr> <td><input type=submit" .
-            " value=\"$text{'index_stop'}\"></td>\n";
-            print "<td>$text{'index_stopdesc'} \n";
-            print "</td></tr>\n";
-            print "</form>\n";
-        }
-        else {
-            print "<form action=start.cgi>\n";
-            print "<tr> <td><input type=submit" .
-            " value=\"$text{'index_buttstart'}\"></td>\n";
-            print "<td>$text{'index_start'} \n";
-            print "</td> </tr>\n";
-            print "</form>\n";
-        }
-    }
 }
 
 sub general_stuff {
@@ -136,6 +106,7 @@ sub wan_stuff {
     return
     &ui_columns_start(['WAN']) .
     &ui_columns_row([
+        &error_text('wan_interface'),
         &ui_radio_table('wan_interface', $in{'wan_interface'},
             [ [ 'off',      'Off',      '&nbsp;' ],
             [ 'ethernet', 'Ethernet', &in_a_box(&eth0_stuff) ],
@@ -146,7 +117,8 @@ sub wan_stuff {
 }
 
 sub eth0_stuff {
-    return &ui_radio_table('wan_method', $in{'wan_method'},
+    return &error_text('wan_method') .
+    &ui_radio_table('wan_method', $in{'wan_method'},
     [ ['dhcp',   'DHCP Client', '&nbsp'],
       ['static', 'Static', &in_a_box(&eth0_static_stuff)]
       ]);
@@ -226,6 +198,9 @@ sub lan_stuff {
         &error_text('lan_address')],
         ['align="right"', '', '']) .
     &ui_hidden('lan_netmask', '255.255.255.0') .
+    &error_text('lan_netmask') .
+    &error_text('lan_network') .
+    &error_text('lan_network_range') .
     &ui_columns_row(
         ['Gateway:',
         &ui_textbox('lan_gateway', $in{'lan_gateway'}, 20),

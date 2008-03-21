@@ -17,8 +17,87 @@ from subprocess import Popen, PIPE
 import configfiles
 
 ERR_PREFIX = 'err_'
+
 errors = {}
 form = cgi.FieldStorage()
+
+# CGI validation helpers
+def required_single_word(name, default=None):
+    """Returns valid word, else None.
+    On error, puts error string in global errors list."""
+    value = form.getfirst(name, default)
+    if value:
+        if value.find(' ') >= 0:
+            errors[name] = 'Cannot contain a space'
+            value = None
+    else:
+        errors[name] = 'Required'
+    return value
+
+def required_ip(name, default=None):
+    """Returns valid IP, else None.
+    On error, puts error string in global errors list."""
+    value = form.getfirst(name, default)
+    if value:
+        try:
+            value = IP(value)
+        except:
+            errors[name] = 'Invalid IP address'
+            value = None
+    else:
+        errors[name] = 'Required'
+    return value
+
+def optional_ip(name, default=None):
+    """Returns valid IP, else None.
+    On error, puts error string in global errors list."""
+    value = form.getfirst(name, default)
+    if value:
+        try:
+            value = IP(value)
+        except:
+            errors[name] = 'Invalid IP address'
+            value = None
+    return value
+
+def choose_from_list(name, list, default=None):
+    """Returns valid choice from provided list, else None.
+    On error, puts error string in global errors list."""
+    value = form.getfirst(name, default)
+    if not value.lower() in list:
+        errors[name] = 'Value not in list'
+        value = None
+    return value
+
+def optional_integer(name, default=None):
+    """Returns valid integer, else None.
+    On error, puts error string in global errors list."""
+    value = form.getfirst(name, default)
+    if value:
+        try:
+            value = int(value)
+        except:
+            errors[name] = 'Invalid integer'
+            value = None
+    return value
+
+# other helpers
+def no_error_in_any_of(namelist):
+    """Returns true if no name in list generated an error."""
+    return len(set(namelist).intersection(set(errors.keys()))) == 0
+
+def get_network(ip_address, ip_netmask):
+    """Given IP objects for address and netmask, return one for network.
+    Return None if error."""
+    try:
+        ip_network = IP(ip_address.int() & ip_netmask.int())
+    except:
+        ip_network = None
+    return ip_network
+
+def str_or_empty(value):
+    """Given a value or None, returns str(value) or empty string."""
+    return [str(value), ''][value == None]
 
 # uncomment this section for some debugging
 #print "Content-Type: text/html"
@@ -29,117 +108,66 @@ form = cgi.FieldStorage()
 ##
 # Basic validation of individual values
 ##
-hostname = form.getfirst("hostname", "hub-server")
-if hostname == '':
-    errors['hostname'] = 'Invalid hostname'
-elif len(hostname.split()) > 1:
-    errors['hostname'] = 'Invalid hostname'
+hostname = required_single_word('hostname')
+ip_dns_0 = required_ip('dns_0')
+ip_dns_1 = optional_ip('dns_1')
 
-wan_interface = form.getfirst("wan_interface", "").lower()
-if not wan_interface in ['off', 'ethernet', 'modem']:
-    errors['wan_interface'] = 'Invalid WAN interface'
-wan_method = form.getfirst("wan_method", "").lower()
-if not wan_method in ['dhcp', 'static']:
-    errors['wan_method'] = 'Invalid WAN method'
-wan_address = form.getfirst("wan_address", "").lower()
-try:
-    ip_wan_address = IP(wan_address)
-except:
-    errors['wan_address'] = 'Invalid IP address'
-wan_netmask = form.getfirst("wan_netmask", "").lower()
-try:
-    ip_wan_netmask = IP(wan_netmask)
-except:
-    errors['wan_netmask'] = 'Invalid netmask'
-wan_gateway = form.getfirst("wan_gateway", "").lower()
-try:
-    ip_wan_gateway = IP(wan_gateway)
-except:
-    errors['wan_gateway'] = 'Invalid gateway address'
-dns_0 = form.getfirst("dns_0", None)
-try:
-    ip_dns_0 = IP(dns_0)
-except:
-    errors['dns_0'] = 'Invalid IP address'
-dns_1 = form.getfirst("dns_1", None)
-if dns_1:
-    try:
-        ip_dns_1 = IP(dns_1)
-    except:
-        errors['dns_1'] = 'Invalid IP address'
+wan_interface  = choose_from_list('wan_interface', ['off', 'ethernet', 'modem'])
+wan_method     = choose_from_list('wan_method', ['dhcp', 'static'])
+if wan_method == 'dhcp':
+    ip_wan_address = optional_ip('wan_address')
+    ip_wan_netmask = optional_ip('wan_netmask')
+    ip_wan_gateway = optional_ip('wan_gateway')
+elif wan_method == 'static':
+    ip_wan_address = required_ip('wan_address')
+    ip_wan_netmask = required_ip('wan_netmask')
+    ip_wan_gateway = required_ip('wan_gateway')
 
-ppp_modem    = form.getfirst("ppp_modem", "/dev/modem")
-ppp_phone    = form.getfirst("ppp_phone", "")
-ppp_username = form.getfirst("ppp_username", "")
-ppp_password = form.getfirst("ppp_password", "")
-ppp_baud     = form.getfirst("ppp_baud", "9600")
-try:
-    int(ppp_baud)
-except:
-    errors['ppp_baud'] = 'Must be an integer'
-ppp_idle_seconds = form.getfirst("ppp_idle_seconds", "60")
-try:
-    int(ppp_idle_seconds)
-except:
-    errors['ppp_idle_seconds'] = 'Must be an integer'
-ppp_init1 = form.getfirst("ppp_init1", "ATZ")
-ppp_init2 = form.getfirst("ppp_init2", "")
+ppp_modem            = form.getfirst('ppp_modem')
+ppp_phone            = form.getfirst('ppp_phone')
+ppp_username         = form.getfirst('ppp_username')
+ppp_password         = form.getfirst('ppp_password')
+int_ppp_baud         = optional_integer('ppp_baud')
+int_ppp_idle_seconds = optional_integer('ppp_idle_seconds')
+ppp_init1            = form.getfirst('ppp_init1')
+ppp_init2            = form.getfirst('ppp_init2')
 
-lan_address = form.getfirst("lan_address", "192.168.100.1").lower()
-try:
-    ip_lan_address = IP(lan_address)
-except:
-    errors['lan_address'] = 'Invalid IP address'
-lan_netmask = form.getfirst("lan_netmask", "255.255.255.0").lower()
-try:
-    ip_lan_netmask = IP(lan_netmask)
-except:
-    errors['lan_netmask'] = 'Invalid netmask'
-lan_gateway = form.getfirst("lan_gateway", "192.168.100.1").lower()
-try:
-    ip_lan_gateway = IP(lan_gateway)
-except:
-    errors['lan_gateway'] = 'Invalid gateway address'
-
-bool_lan_dhcp_on = form.getfirst("lan_dhcp_on", "off") == "on"
-
-lan_dhcp_range_start = form.getfirst("lan_dhcp_range_start", "100").lower()
-i = 0
-try:
-    i = int(lan_dhcp_range_start)
-except:
-    errors['lan_dhcp_range_start'] = 'Must be an integer'
-if (i < 1) or (254 < i):
-    errors['lan_dhcp_range_start'] = 'Must be between 1 and 254'
-
-lan_dhcp_range_end = form.getfirst("lan_dhcp_range_end", "200").lower()
-i = 0
-try:
-    i = int(lan_dhcp_range_end)
-except:
-    errors['lan_dhcp_range_end'] = 'Must be an integer'
-if (i < 1) or (254 < i):
-    errors['lan_dhcp_range_end'] = 'Must be between 1 and 254'
+ip_lan_address = required_ip('lan_address')
+ip_lan_netmask = required_ip('lan_netmask')
+ip_lan_gateway = required_ip('lan_gateway')
+bool_lan_dhcp_on = form.getfirst("lan_dhcp_on", "off").lower() == "on"
+int_lan_dhcp_range_start = optional_integer('lan_dhcp_range_start', '100')
+if int_lan_dhcp_range_start:
+    if (int_lan_dhcp_range_start < 1) or (254 < int_lan_dhcp_range_start):
+        errors['lan_dhcp_range_start'] = 'Must be between 1 and 254'
+int_lan_dhcp_range_end = optional_integer('lan_dhcp_range_end', '200')
+if int_lan_dhcp_range_end:
+    if (int_lan_dhcp_range_end < 1) or (254 < int_lan_dhcp_range_end):
+        errors['lan_dhcp_range_end'] = 'Must be between 1 and 254'
+if int_lan_dhcp_range_start and int_lan_dhcp_range_end:
+    if (int_lan_dhcp_range_end < int_lan_dhcp_range_start):
+        errors['lan_dhcp_range_start'] = 'Must start before end'
+        errors['lan_dhcp_range_end']   = 'Must end after start'
 
 ##
 # Higher level "business" logic
 ##
-try:
-    ip_lan_network = IP(ip_lan_address.int() & ip_lan_netmask.int())
-except:
-    errors['lan_network'] = 'Invalid network'
+ip_lan_network = get_network(ip_lan_address, ip_lan_netmask)
+if not ip_lan_network:
+    errors['lan_network'] = 'Invalid LAN network'
+
 try:
     ip_lan_network_range = IP('%s/%s' % (ip_lan_network, ip_lan_netmask))
 except:
-    errors['lan_network_range'] = 'Invalid network range'
+    errors['lan_network_range'] = 'Invalid LAN network range'
 
 ##
 # Write the config files (when no errors were found in their values)
 ##
 
-# hostname
+# /etc/hostname
 hostname_changed = False
-if 'hostname' not in errors.keys():
+if no_error_in_any_of(['hostname']):
     o = configfiles.EtcHostname()
     previous = o.hostname
     if hostname != previous:
@@ -149,20 +177,19 @@ if 'hostname' not in errors.keys():
 
 # /etc/resolv.conf
 dns_changed = False
-valset = set(['dns_0', 'dns_1'])
-if len(valset.intersection(set(errors.keys()))) == 0:
+if no_error_in_any_of(['dns_0', 'dns_1']):
     o = configfiles.EtcResolvConf()
     previous = set(o.nameservers)
-    current = set([])
+    current = set()
     dns_0 = ip_dns_0.strNormal()
     current.add(dns_0)
     if len(o.nameservers) > 0:
         o.nameservers[0] = dns_0
     else:
         o.nameservers.append(dns_0)
-    if dns_1:
-        current.add(dns_1)
+    if ip_dns_1:
         dns_1 = ip_dns_1.strNormal()
+        current.add(dns_1)
         if len(o.nameservers) > 1:
             o.nameservers[1] = dns_1
         else:
@@ -172,30 +199,29 @@ if len(valset.intersection(set(errors.keys()))) == 0:
     o.write()
 
 # /etc/wvdial.conf and /etc/ppp/peers/dod
-valset = set(['ppp_modem', 'ppp_phone', 'ppp_username', 'ppp_password', \
-        'ppp_baud', 'ppp_idle_seconds', 'ppp_init1', 'ppp_init2'])
-if len(valset.intersection(set(errors.keys()))) == 0:
+if no_error_in_any_of(['ppp_modem', 'ppp_phone', 'ppp_username', \
+        'ppp_password', 'ppp_baud', 'ppp_idle_seconds', 'ppp_init1', \
+        'ppp_init2']):
     o = configfiles.EtcWvdialConf()
-    o.metadata['modem']        = ppp_modem
-    o.metadata['phone']        = ppp_phone
-    o.metadata['username']     = ppp_username
-    o.metadata['password']     = ppp_password
-    o.metadata['baud']         = ppp_baud
-    o.metadata['idle seconds'] = ppp_idle_seconds
-    o.metadata['init1']        = ppp_init1
-    o.metadata['init2']        = ppp_init2
+    o.metadata['modem']        = str_or_empty(ppp_modem)
+    o.metadata['phone']        = str_or_empty(ppp_phone)
+    o.metadata['username']     = str_or_empty(ppp_username)
+    o.metadata['password']     = str_or_empty(ppp_password)
+    o.metadata['baud']         = str_or_empty(int_ppp_baud)
+    o.metadata['idle seconds'] = str_or_empty(int_ppp_idle_seconds)
+    o.metadata['init1']        = str_or_empty(ppp_init1)
+    o.metadata['init2']        = str_or_empty(ppp_init2)
     o.write()
 
     o = configfiles.EtcPppPeersDod()
-    o.metadata['idle'] = ppp_idle_seconds
+    if int_ppp_idle_seconds: o.metadata['idle'] = str(int_ppp_idle_seconds)
     # XXX should also do modem?
     o.write()
 
 # /etc/network/interfaces
 lan_address_changed = False
-valset = set(['wan_method', 'wan_address', 'wan_netmask', 'wan_gateway', \
-        'lan_address', 'lan_netmask', 'lan_gateway'])
-if len(valset.intersection(set(errors.keys()))) == 0:
+if no_error_in_any_of(['wan_method', 'wan_address', 'wan_netmask', \
+        'wan_gateway', 'lan_address', 'lan_netmask', 'lan_gateway']):
     o = configfiles.EtcNetworkInterfaces()
     if o.ifaces.has_key('eth0'):
         wan = o.ifaces['eth0']
@@ -205,14 +231,17 @@ if len(valset.intersection(set(errors.keys()))) == 0:
                       '  post-down /opt/inveneo/sbin/wan-firewall.sh eth0 down']
     wan.iface = 'eth0'
     wan.method = wan_method
-    wan.address = ip_wan_address
-    wan.netmask = ip_wan_netmask
-    wan.gateway = ip_wan_gateway
+    if ip_wan_address: wan.address = ip_wan_address
+    if ip_wan_netmask: wan.netmask = ip_wan_netmask
+    if ip_wan_gateway: wan.gateway = ip_wan_gateway
 
     if o.ifaces.has_key('eth1'):
         lan = o.ifaces['eth1']
         if lan.address != ip_lan_address:
             lan_address_changed = True
+            old_ip_lan_address = lan.address
+            old_ip_lan_netmask = lan.netmask
+            old_ip_lan_gateway = lan.gateway
     else:
         lan = o.add_iface('eth1', 'static')
     lan.iface = 'eth1'
@@ -233,20 +262,24 @@ if len(valset.intersection(set(errors.keys()))) == 0:
 
 # /etc/dhcp3/dhcp.conf
 dhcp_changed = False
-valset = set(['lan_address', 'lan_netmask', 'lan_network', 'lan_gateway', \
-        'lan_dhcp_range_start', 'lan_dhcp_range_end'])
-if len(valset.intersection(set(errors.keys()))) == 0:
+if no_error_in_any_of(['lan_address', 'lan_netmask', 'lan_network', \
+        'lan_gateway', 'lan_dhcp_range_start', 'lan_dhcp_range_end']):
     o = configfiles.EtcDhcp3DhcpConf()
     lan_network = ip_lan_network.strNormal()
     lan_netmask = ip_lan_netmask.strNormal()
     if o.subnets.has_key(lan_network):
         dhcp = o.subnets[lan_network]
     else:
+        # things are moving around...
         dhcp = o.add_subnet(lan_network, lan_netmask)
+        if lan_address_changed:
+            old_lan_network = \
+                get_network(old_ip_lan_address, old_ip_lan_netmask).strNormal()
+            o.subnets.pop(old_lan_network, None)
     dhcp.subnet   = ip_lan_network
     dhcp.netmask  = ip_lan_netmask
-    dhcp.start_ip = ip_lan_network_range[int(lan_dhcp_range_start)]
-    dhcp.end_ip   = ip_lan_network_range[int(lan_dhcp_range_end)]
+    dhcp.start_ip = ip_lan_network_range[int_lan_dhcp_range_start]
+    dhcp.end_ip   = ip_lan_network_range[int_lan_dhcp_range_end]
     dhcp.options['routers'] = ip_lan_gateway.strNormal()
     dhcp.options['domain-name'] = '"local"'
     dhcp.options['domain-name-servers'] = ip_lan_address.strNormal()
