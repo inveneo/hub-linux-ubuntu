@@ -108,6 +108,19 @@ sub set_defaults {
     }
 } 
 
+
+# set_hardware_time(secs, mins, hours, day, month, year)
+sub set_hardware_time2
+{
+my ($second, $minute, $hour, $date, $month, $year) = @_;
+$month++;
+$year += 1900;
+my $format = "--set --date='$month/$date/$year $hour:$minute:$second'";
+my $flags = &get_hwclock_flags();
+my $out = &backquote_logged("hwclock $flags $format 2>&1");
+return $? ? $out : undef;
+}
+
 &ui_print_header(undef, $module_info{'desc'}, "", undef, 1, 1);
 
 #print "system time is " . join(':', @syst) . "<br>";
@@ -126,7 +139,7 @@ if ( defined $in{'form_post'} ) {
                 #print "date: $month, $day, $year<br>time: $hour, $min, $sec<br>";
                 &set_current_timezone($in{'zone'});
                 set_system_time($sec, $min, $hour, $day, $month-1, $year);
-                set_hardware_time($sec, $min, $hour, $day, $month-1, $year);
+                set_hardware_time2(zeropad($sec,2), zeropad($min,2), zeropad($hour,2), zeropad($day,2), zeropad($month-1,2), zeropad($year-1900,4));
                 $msg = 'The date/time information was updated.';
         }
 } 
