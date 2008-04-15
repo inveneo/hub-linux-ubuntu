@@ -17,6 +17,7 @@ screen  install
 lynx    install
 zip	install
 unzip	install
+minicom install
 
 # printing
 cupsys          install
@@ -26,6 +27,7 @@ hpijs           install
 hpijs-ppds      install
 foo2zjs         install
 openprinting-ppds install
+hp-ppd	install
 
 # cd/dvd burning
 wodim           install
