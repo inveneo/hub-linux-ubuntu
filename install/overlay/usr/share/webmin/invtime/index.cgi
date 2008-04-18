@@ -1,217 +1,216 @@
 #!/usr/bin/perl
-# Either redirects to link.cgi, if a URL has been set, or asks for a URL
-require '../invlib/validation.pl';
-require '../invlib/form.pm';
-require '../time/freebsd-lib.pl';
-require '../time/time-lib.pl';
-&ReadParse();
 
-my $hour, $min, $sec;
-my $day, $month, $year;
-my $msg;
+require "../time/time-lib.pl";
+require "../time/linux-lib.pl";
 
-#   ------
-sub isLeap
-#   ------
-{
-    my $year = shift;
-    return 0 if $year % 4;
-    return 1 if $year < 1753;
-    return 1 if $year % 100;
-    return 1 unless $year % 400;
-    return 0;
+local ($rawdate, $rawhwdate, %system_date, $rawtime, %hw_date, $txt);
+$txt = "";
+
+&error($text{ 'acl_error' }) if( $access{ 'sysdate' } && $access{ 'hwdate' } );
+
+=pod
+&ui_print_header(undef, $text{ 'index_title' }, "", "index", 1, 1, undef,
+    &help_search_link("date hwclock", "man"),
+    qq(<script src="time.js"></script>\n),
+    qq(onLoad="timeInit(); setTimeout('timeUpdate()', 5000);"));
+=cut
+&ui_print_header(undef, $module_info{'desc'}, "", undef, 1, 1, undef, undef,
+    qq(<script src="time.js"></script>\n),
+    qq(onLoad="timeInit(); setTimeout('timeUpdate()', 5000);"));
+
+if (!$access{'sysdate'} && !&has_command("date")) {
+    print &text( 'error_cnf', "<tt>date</tt>"),"<p>\n";
+    &ui_print_footer("/", $text{'index'});
+    exit;
+}
+if (!$access{'hwdate'} && $config{'hwtime'} && !&has_command("hwclock")) {
+    print &text( 'error_cnf', "<tt>hwclock</tt>"),"<p>\n";
+    &ui_print_footer("/", $text{'index'});
+    exit;
 }
 
-#   -------
-sub valDate
-#   -------
-{
-    my ($year, $month, $day) = @_;
-    my $daysinm = [
-       [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
-       [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]];
-    return 0 if $year < 1 or $year > 9999;
-    return 0 if $month < 1 or $month > 12;
-    return 0 if $day < 1 or
-       $day > $daysinm->[isLeap($year)]->[$month - 1];
-    return 0 if $year == 1752 and $month == 9 and
-       ($day > 2 and $day < 14);
-    return 1;
-}
+# Get the time zone
+if ($access{'timezone'} && &has_timezone()) {
+    print "<h2>Time Zone</h2>\n";
+    print "<form action=save_timezone.cgi>\n";
+    print "<table border width=100%>\n";
+    print "<tr $tb> <td><b>$text{'index_tzheader'}</b></td> </tr>\n";
+    print "<tr $cb> <td><table>\n";
 
-sub validate_input {
-        my @errors = (); 
-        if ( valDate($year,$month,$day) eq 0 ) {
-            push(@errors, "An invalid date was provided.");
-        } 
-        return @errors;
-}
-
-sub isSelectedValue {
-        local ($thisValue, $selectedValues) = @_;
-        foreach $value (@{$selectedValues}) {
-                return 1 if ( $thisValue == $value );
-        }
-        return 0;
-}
-
-sub generate_select {
-        local ($name, $onclick, $children, $selectedValues) = @_;
-        local $retVal="";
-
-        if (defined($onclick)) {
-            $onclickHtml = "onclick='$onclick'";
-        } else {
-            $onclickHtml = "";
-        }
-
-        $retVal .= "<select name='$name' $onclickHtml>";
-        foreach $option (@$children) {
-            $label = ${$option}[0];
-            $value = ${$option}[1];
-            $selected = isSelectedValue($value, $selectedValues) ? "selected" : ""; 
-            $retVal .= "<option value='$value' $selected>$label</option>";
-        }
-
-        $retVal .= "</select>";
-        return $retVal;
-}
-
-sub options {
-        local ($labels, $values) = @_;
-        local $x;
-        local $retVal = [];
-        local $size = @{$labels};
-        for ( $x=0; $x<$size; $x++ ) {
-                push(@{$retVal}, [${$labels}[$x],${$values}[$x]]);                
-        }
-        return $retVal;
-}
-
-
-sub set_defaults {
-    if ( defined $in{'form_post'} ) {
-        $hour = $in{'hour'};
-        $min = $in{'min'};
-        $sec = $in{'sec'};        
-        $day = $in{'day'};
-        $month = $in{'month'};
-        $year = $in{'year'};
-    } else {
-        @syst = get_system_time();
-        $hour = $syst[2];
-        $min = $syst[1];
-        $sec = $syst[0];        
-        $day = $syst[3];
-        $month = $syst[4]+1;
-        $year = $syst[5]-100+2000;
-    }
-} 
-
-
-# set_hardware_time(secs, mins, hours, day, month, year)
-sub set_hardware_time2
-{
-my ($second, $minute, $hour, $date, $month, $year) = @_;
-$month++;
-$year += 1900;
-my $format = "--set --date='$month/$date/$year $hour:$minute:$second'";
-my $flags = &get_hwclock_flags();
-my $out = &backquote_logged("hwclock $flags $format 2>&1");
-return $? ? $out : undef;
-}
-
-&ui_print_header(undef, $module_info{'desc'}, "", undef, 1, 1);
-
-#print "system time is " . join(':', @syst) . "<br>";
-#print "hardware time is " . join(':',get_hardware_time());
-
-# read the form vaules
-set_defaults();
-if ( defined $in{'form_post'} ) {
-        @errors = validate_input();
-        if ( @errors > 0 ) {
-                for $str (@errors) {
-                        print "<p><font color='#ff0000'>- $str</font>";
-                }
-                print "<br><br>";
-        } else {
-                #print "date: $month, $day, $year<br>time: $hour, $min, $sec<br>";
-                &set_current_timezone($in{'zone'});
-                set_system_time($sec, $min, $hour, $day, $month-1, $year);
-                set_hardware_time2(zeropad($sec,2), zeropad($min,2), zeropad($hour,2), zeropad($day,2), zeropad($month-1,2), zeropad($year-1900,4));
-                $msg = 'The date/time information was updated.';
-        }
-} 
-
-if ( defined $msg ) {
-    print "<p>$msg</p><br><br>";
-}
-
-print "<h2>Time Management</h2>";
-
-print &ui_form_start("index.cgi");
-print "<input type='hidden' name='form_post' value='1'></input>";
-print "<table cellpadding='5'>";
-$monthHtml = generate_select('month',"",options([1..12],[1..12]),[$month]);
-$dayHtml = generate_select('day',"",options([1..31],[1..31]),[$day]);
-$yearHtml = generate_select('year',"",options([1965..2099],[1965..2099]),[$year]);
-print <<HTML;
-<tr>
-        <td><b>Date</b></td>
-</tr>
-<tr>
-        <td>Month:</td><td>$monthHtml</td>
-        <td>Day:</td><td>$dayHtml</td>
-        <td>Year:</td><td>$yearHtml</td>
-</tr>
-HTML
-
-$hourHtml = generate_select('hour',"",options([0..23],[0..23]),[$hour]);
-$minHtml = generate_select('min',"",options([0..59],[0..59]),[$min]);
-$secHtml = generate_select('sec',"",options([0..59],[0..59]),[$sec]);
-print <<HTML;
-<tr>
-        <td><b>Time</b></td>
-</tr>
-<tr>
-        <td>Hour:</td><td>$hourHtml</td>
-        <td>Min:</td><td>$minHtml</td>
-        <td>Second:</td><td>$secHtml</td>
-</tr>
-HTML
-
-@zones = &list_timezones();
-$cz = &get_current_timezone();
-$found = 0;
-
-print "</table>";
-print "<table>";
-print "<tr> <td><b>Timezone:</b></td></tr>\n";
-print "<tr><td colspan='6'><select name=zone>\n";
-foreach $z (@zones) {
+    @zones = &list_timezones();
+    $cz = &get_current_timezone();
+    $found = 0;
+    print "<tr> <td><b>$text{'index_tz'}</b></td>\n";
+    print "<td><select name=zone>\n";
+    foreach $z (@zones) {
         if ($z->[0] =~ /^(.*)\/(.*)$/) {
-                $pfx = $1;
+            $pfx = $1;
         } else {
-                $pfx = undef;
+            $pfx = undef;
         }
         if ($pfx ne $lastpfx && $z ne $zones[0]) {
-                print "<option value=''>----------\n";
+            print "<option value=''>----------\n";
         }
         $lastpfx = $pfx;
         printf "<option value=%s %s>%s\n",
-                $z->[0], $cz eq $z->[0] ? "selected" : "",
-                $z->[1] ? "$z->[0] ($z->[1])" : $z->[0];
+            $z->[0], $cz eq $z->[0] ? "selected" : "",
+            $z->[1] ? "$z->[0] ($z->[1])" : $z->[0];
         $found = 1 if ($cz eq $z->[0]);
-}
-if (!$found && $cz) {
-        printf "<option value=%s %s>%s\n",
-                $cz, "selected", $cz;
-}
-print "</select></td> </tr>\n";
-print "<tr><td colspan='7'><input type='submit' value='Save'></input></td></tr>";
-print "</table>";
+    }
+    if (!$found && $cz) {
+        printf "<option value=%s %s>%s\n", $cz, "selected", $cz;
+    }
+    print "</select></td> </tr>\n";
 
-print &ui_form_end();
+    print "</table></td></tr></table>\n";
+    print "<input type=submit value='Set Time Zone'></form>\n";
+}
 
-&ui_print_footer("/", $text{'index'});
+print "<hr>\n";
+
+# Get the system time
+@tm = &get_system_time();
+$system_date{ 'second' } = $tm[0];
+$system_date{ 'minute' } = $tm[1];
+$system_date{ 'hour' } = $tm[2];
+$system_date{ 'date' } = $tm[3];
+$system_date{ 'month' } = &number_to_month($tm[4]);
+$system_date{ 'year' } = $tm[5]+1900;
+$system_date{ 'day' } = &number_to_weekday($tm[6]);
+
+if( !$access{'sysdate'} ) {
+    print "<h2>System Time</h2>\n";
+    print "<form action=apply.cgi>";
+    print &tabletime( %system_date, 0 );
+    print "<input type=submit name=action value='Set System Time', \\>";
+    print "</form>";
+} else {
+   # Just show current time
+   print &tabletime( %system_date, 1 );
+}
+
+=pod
+if( ( !$access{ 'sysdate' } && &has_command( "date" ) || !$access{ 'hwdate' } && &has_command( "hwclock" ) ) && $access{'ntp'} )
+{
+	# Show time server input
+	print(
+	"<p><form action=apply.cgi>",
+	  "<table nosave border width=\"100%\">",
+		"<tr $tb>",
+		  "<td colspan=2><b>", &hlink( $text{ 'index_timeserver' }, "timeserver" ), "</b></td>",
+		"</tr>",
+		"<tr $cb><td><table width=100%>",
+		  "<td><b>",$text{ 'index_addresses' }, "</b></td>",
+		  "<td>",&p_entry( "timeserver", $config{'timeserver'}, 40 ),
+		  "</td> </tr>\n");
+
+	# Show hardware time checkbox
+	if ($config{'hwtime'}) {
+		print "<tr $cb> <td></td> <td>\n";
+		printf "<input type=checkbox name=hardware value=1 %s> %s\n",
+			$config{'timeserver_hardware'} ? "checked" : "",
+			$text{'index_hardware2'};
+		print "</td> </tr>\n";
+		}
+
+	# Show schedule input
+	&foreign_require("cron", "cron-lib.pl");
+	$job = &find_cron_job();
+	print "<tr $cb> <td><b>$text{'index_sched'}</b></td>\n";
+	printf "<td><input type=radio name=sched value=0 %s> %s\n",
+		$job ? "" : "checked", $text{'no'};
+	printf "<input type=radio name=sched value=1 %s> %s</td> </tr>\n",
+		$job ? "checked" : "", $text{'index_schedyes'};
+
+	print "<tr $cb> <td colspan=2><table border width=100%>\n";
+	$job ||= { 'mins' => '0',
+		   'hours' => '0',
+		   'days' => '*',
+		   'months' => '*',
+		   'weekdays' => '*' };
+	&cron::show_times_input($job);
+	print "</table></td> </tr>\n";
+
+	print "</table></td></tr></table>\n";
+	print "<input type=submit name=action value='$text{'index_sync'}'></form>";
+}
+=cut
+
+&ui_print_footer( "/", $text{ 'index' } );
+
+sub tabletime {
+    my ( %src, $ro ) = @_,
+    %assoc_day = (
+        "Mon", $text{ 'day_1' },
+        "Tue", $text{ 'day_2' },
+        "Wed", $text{ 'day_3' },
+        "Thu", $text{ 'day_4' },
+        "Fri", $text{ 'day_5' },
+        "Sat", $text{ 'day_6' },
+        "Sun", $text{ 'day_0' } ),
+    %assoc_month = (
+        "Jan", $text{ 'month_1' },
+        "Feb", $text{ 'month_2' },
+        "Mar", $text{ 'month_3' },
+        "Apr", $text{ 'month_4' },
+        "May", $text{ 'month_5' },
+        "Jun", $text{ 'month_6' },
+        "Jul", $text{ 'month_7' },
+        "Aug", $text{ 'month_8' },
+        "Sep", $text{ 'month_9' },
+        "Oct", $text{ 'month_10' },
+        "Nov", $text{ 'month_11' },
+        "Dec", $text{ 'month_12' } );
+
+    $rv =
+    "<table nosave border width='100%'>".
+    "<tr ". $cb. ">".
+      "<td nosave><b>". $text{ 'day' }. "</b></td>\n".
+      "<td nosave><b>". $text{ 'date' }. "</b></td>\n".
+      "<td nosave><b>". $text{ 'month' }. "</b></td>\n".
+      "<td nosave><b>". $text{ 'year' }. "</b></td>\n".
+      "<td><b>". $text{ 'hour' }. "</b></td>\n".
+    "</tr>\n";
+
+    if (!$ro) {
+        $rv .= "<tr ". $cb. ">".
+        "<td>". ($assoc_day{ $src{ 'day' } } || $src{'day'})."</td>\n".
+        "<td>". &p_select( "date", $src{ 'date' }, ( 1..31 ) ). "</td>\n".
+        "<td>". &p_select_wdl( "month",
+            $assoc_month{ $src{ 'month' } }, "01",
+            ( $text{ 'month_1' }, "02",
+                $text{ 'month_2' }, "03",
+                $text{ 'month_3' }, "04",
+                $text{ 'month_4' }, "05",
+                $text{ 'month_5' }, "06",
+                $text{ 'month_6' }, "07",
+                $text{ 'month_7' }, "08",
+                $text{ 'month_8' }, "09",
+                $text{ 'month_9' }, "10",
+                $text{ 'month_10' }, "11",
+                $text{ 'month_11' }, "12",
+                $text{ 'month_12' } ) ). "</td>\n".
+        "<td>". &p_select( "year", $src{ 'year' }, ( 1969..2037 ) ). "</td>\n".
+        "<td>". &p_select( "hour", &zeropad($src{ 'hour' }, 2),
+            ( "00", "01", "02", "03", "04", "05", "06", "07", "08",
+                "09", 10..23 )). "\n:".
+            &p_select( "minute", &zeropad($src{ 'minute' }, 2),
+            ("00","01","02","03","04","05","06","07","08","09",10..59)). ":".
+            &p_select( "second", &zeropad($src{ 'second' }, 2),
+            ( "00", "01", "02", "03", "04", "05", "06", "07", "08",
+                "09", 10..59)). "</td>\n".
+        "</tr>\n".
+        "</table>";
+    } else {
+        $rv .= "<tr $cb>".
+        "<td>". ($assoc_day{ $src{ 'day' } } || $src{'day'}). "</td>\n".
+        "<td>". $src{'date'}. "</td>\n".
+        "<td>". $src{'month'}. "</td>\n".
+        "<td>". $src{'year'}. "</td>\n".
+        "<td>". $src{'hour'}. ":".
+        $src{'minute'}. ":".
+        $src{'second'}. "</td>\n".
+        "</tr></table>\n";
+    }
+    return $rv;
+}
