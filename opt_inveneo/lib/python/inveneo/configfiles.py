@@ -184,6 +184,10 @@ class EtcHosts(ConfigFileBase):
         for line in self.lines:
             (ip, names) = self._parse_line(line)
             if ip:
+                try:
+                    ipobj = IP(ip)
+                except:
+                    continue # bad IP: ignore
                 self.ips[ip] = names
 
     def _parse_line(self, line):
@@ -210,15 +214,19 @@ class EtcHosts(ConfigFileBase):
         for line in self.lines:
             (ip, names) = self._parse_line(line)
             if ip:
-                if self.ips.has_key(ip):
-                    line = "%s %s\n" % (ip, ' '.join(self.ips[ip]))
+                try:
+                    ipobj = IP(ip)
+                except:
+                    continue # bad IP: ignore
+                if ip in self.ips:
+                    line = "%s %s\n" % (ip, string.join(self.ips[ip], ' '))
                     found_ips.add(ip)
-                newlines.append(line)
+                    newlines.append(line)
 
         # add lines for ips not yet existing in file
         all_ips = set(self.ips.keys())
         for ip in all_ips.difference(found_ips):
-            newlines.append("%s %s\n" % (ip, ' '.join(self.ips[ip])))
+            newlines.append("%s %s\n" % (ip, string.join(self.ips[ip], ' ')))
         return newlines
 
     def __str__(self):
@@ -268,7 +276,7 @@ class EtcWvdialConf(ConfigFileBase):
         # alter existing lines that have metadata overrides
         for line in self.lines:
             (key, value) = self._parse_line(line)
-            if self.metadata.has_key(key):
+            if key in self.metadata:
                 line = "%s = %s\n" % (key, self.metadata[key])
                 found_keys.add(key)
             newlines.append(line)
@@ -324,7 +332,7 @@ class EtcPppPeersDod(ConfigFileBase):
         # alter existing lines that have metadata overrides
         for line in self.lines:
             (key, value) = self._parse_line(line)
-            if key and self.metadata.has_key(key):
+            if key and (key in self.metadata):
                 line = "%s %s\n" % (key, self.metadata[key])
                 found_keys.add(key)
             newlines.append(line)
@@ -450,7 +458,7 @@ class EtcDhcp3DhcpConf(ConfigFileBase):
                 # we are inside a section: are we done yet?
                 if self.SubnetSection.ends(line):
                     # insert metadata instead, if there is any
-                    if self.subnets.has_key(subnet_name):
+                    if subnet_name in self.subnets:
                         newlines.extend(self.subnets[subnet_name].lines())
                         found_keys.add(subnet_name)
                     subnet_name = None
@@ -604,7 +612,7 @@ class EtcNetworkInterfaces(ConfigFileBase):
                 # we are inside an interface stanza: are we done yet?
                 if self.InterfaceStanza.ends(line):
                     # insert metadata instead, if there is any
-                    if self.ifaces.has_key(iface_name):
+                    if iface_name in self.ifaces:
                         newlines.extend(self.ifaces[iface_name].lines())
                         found_keys.add(iface_name)
                     iface_name = None
@@ -623,7 +631,8 @@ class EtcNetworkInterfaces(ConfigFileBase):
                                 matches.append(iface)
                                 found_auto.add(iface)
                         if len(matches) > 0:
-                            newlines.append('auto %s\n' % ' '.join(matches))
+                            newlines.append('auto %s\n' % \
+                                    string.join(matches, ' '))
                     else:
                         # nope: just some random stuff to copy through
                         newlines.append(line)
