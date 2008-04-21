@@ -169,10 +169,72 @@ class EtcResolvConf(ConfigFileBase):
         self.lines = self._update_lines()
         ConfigFileBase.write(self, makeBackup)
 
+class EtcHosts(ConfigFileBase):
+    """The static table lookup for host names.
+    
+    This file is lines of: IP_address canonical_hostname [aliases...]
+    Comments begin with # at any point in line.
+    There are other rules for hostnames, which we ignore at present."""
+
+    def __init__(self):
+        """Initialize self from config file, parsing out metadata."""
+        ConfigFileBase.__init__(self, '/etc/hosts')
+        self.ips = {}
+
+        for line in self.lines:
+            (ip, names) = self._parse_line(line)
+            if ip:
+                self.ips[ip] = names
+
+    def _parse_line(self, line):
+        """Parse out the interesting bits of one line.
+        
+        Returns (ip, names) tuple, where names is a list of aliases,
+        else (None, None)."""
+        list = line.split('#')
+        meat = list[0].split()
+        if len(meat) > 1:
+            ip = meat[0]
+            names = meat[1:]
+            return (ip, names)
+        return (None, None)
+
+    def _update_lines(self):
+        """Return original list of lines updated by current metadata.
+        
+        Returns a list of lines that probably have newlines at the end."""
+        newlines = []
+        found_ips = set()
+
+        # write out non-nameserver lines first
+        for line in self.lines:
+            (ip, names) = self._parse_line(line)
+            if ip:
+                if self.ips.has_key(ip):
+                    line = "%s %s\n" % (ip, ' '.join(self.ips[ip]))
+                    found_ips.add(ip)
+                newlines.append(line)
+
+        # add lines for ips not yet existing in file
+        all_ips = set(self.ips.keys())
+        for ip in all_ips.difference(found_ips):
+            newlines.append("%s %s\n" % (ip, ' '.join(self.ips[ip])))
+        return newlines
+
+    def __str__(self):
+        """Return entire config file as string, modified by current metadata."""
+        return string.join(self._update_lines(), '')
+
+    def write(self, makeBackup = True):
+        """Rewrite the config file, perhaps making a backup of the old one."""
+        self.lines = self._update_lines()
+        ConfigFileBase.write(self, makeBackup)
+
 class EtcWvdialConf(ConfigFileBase):
     """Wvdial configuration.
     
-    This file is easy: mostly just key/value pairs."""
+    This file is easy: mostly just key/value pairs.
+    We only store the ones we are interested in."""
 
     def __init__(self):
         """Initialize self from config file, parsing out metadata."""
@@ -182,7 +244,7 @@ class EtcWvdialConf(ConfigFileBase):
         for line in self.lines:
             (key, value) = self._parse_line(line)
             if key in ['modem', 'phone', 'username', 'password', 'baud', \
-                    'idle seconds', 'init1', 'init2']:
+                    'idle seconds', 'init1', 'init2', 'carrier check']:
                 self.metadata[key] = value
 
     def _parse_line(self, line):
@@ -602,35 +664,42 @@ if __name__ == '__main__':
     print "==================================================="
     o = EtcHostname()
     print "* Hostname =", o.hostname
-    print "* File contents:\n----------------------\n%s" % str(o)
+    print "* File contents:\n----------------\n%s" % str(o)
 
     print "==================================================="
     print "Parsing /etc/resolv.conf"
     print "==================================================="
     o = EtcResolvConf()
     print "* Nameservers =", o.nameservers
-    print "* File contents:\n----------------------\n%s" % str(o)
+    print "* File contents:\n----------------\n%s" % str(o)
+
+    print "==================================================="
+    print "Parsing /etc/hosts"
+    print "==================================================="
+    o = EtcHosts()
+    print "* IPs =", o.ips
+    print "* File contents:\n----------------\n%s" % str(o)
 
     print "==================================================="
     print "Parsing /etc/wvdial.conf"
     print "==================================================="
     o = EtcWvdialConf()
     print "* Metadata =", o.metadata
-    print "* File contents:\n----------------------\n%s" % str(o)
+    print "* File contents:\n----------------\n%s" % str(o)
 
     print "==================================================="
     print "Parsing /etc/ppp/peers/dod"
     print "==================================================="
     o = EtcPppPeersDod()
     print "* Metadata =", o.metadata
-    print "* File contents:\n----------------------\n%s" % str(o)
+    print "* File contents:\n----------------\n%s" % str(o)
 
     print "==================================================="
     print "Parsing /etc/dhcp3/dhcp.conf"
     print "==================================================="
     o = EtcDhcp3DhcpConf()
     print "* Subnets =", o.subnets
-    print "* File contents:\n----------------------\n%s" % str(o)
+    print "* File contents:\n----------------\n%s" % str(o)
 
     print "==================================================="
     print "Parsing /etc/network/interfaces"
@@ -638,5 +707,5 @@ if __name__ == '__main__':
     o = EtcNetworkInterfaces()
     print "* Auto Start =", o.autoset
     print "* Interfaces =", o.ifaces
-    print "* File contents:\n----------------------\n%s" % str(o)
+    print "* File contents:\n----------------\n%s" % str(o)
 
