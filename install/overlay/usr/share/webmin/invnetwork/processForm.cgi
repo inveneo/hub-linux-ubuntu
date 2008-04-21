@@ -223,7 +223,7 @@ lan_address_changed = False
 if no_error_in_any_of(['wan_method', 'wan_address', 'wan_netmask', \
         'wan_gateway', 'lan_address', 'lan_netmask', 'lan_gateway']):
     o = configfiles.EtcNetworkInterfaces()
-    if o.ifaces.has_key('eth0'):
+    if 'eth0' in o.ifaces:
         wan = o.ifaces['eth0']
     else:
         wan = o.add_iface('eth0', wan_method)
@@ -235,7 +235,7 @@ if no_error_in_any_of(['wan_method', 'wan_address', 'wan_netmask', \
     if ip_wan_netmask: wan.netmask = ip_wan_netmask
     if ip_wan_gateway: wan.gateway = ip_wan_gateway
 
-    if o.ifaces.has_key('eth1'):
+    if 'eth1' in o.ifaces:
         lan = o.ifaces['eth1']
         if lan.address != ip_lan_address:
             lan_address_changed = True
@@ -267,7 +267,7 @@ if no_error_in_any_of(['lan_address', 'lan_netmask', 'lan_network', \
     o = configfiles.EtcDhcp3DhcpConf()
     lan_network = ip_lan_network.strNormal()
     lan_netmask = ip_lan_netmask.strNormal()
-    if o.subnets.has_key(lan_network):
+    if lan_network in o.subnets:
         dhcp = o.subnets[lan_network]
     else:
         # things are moving around...

@@ -24,26 +24,27 @@ formvals = {}
 
 # collect the interfaces
 o = configfiles.EtcNetworkInterfaces()
-wan = o.ifaces['eth0']
-lan = o.ifaces['eth1']
-ppp = o.ifaces['ppp0']
+wan = o.ifaces.get('eth0', None)
+lan = o.ifaces.get('eth1', None)
+ppp = o.ifaces.get('ppp0', None)
+
+if 'eth0' in o.autoset:
+    formvals['wan_interface'] = 'ethernet'
+elif 'ppp0' in o.autoset:
+    formvals['wan_interface'] = 'modem'
+else:
+    formvals['wan_interface'] = 'off'
 
 if wan:
-    formvals['wan_interface'] = 'ethernet'
     if wan.method:  formvals['wan_method']  = wan.method
     if wan.address: formvals['wan_address'] = wan.address.strNormal()
     if wan.netmask: formvals['wan_netmask'] = wan.netmask.strNormal()
     if wan.gateway: formvals['wan_gateway'] = wan.gateway.strNormal()
-else:
-    formvals['wan_interface'] = 'off'
 
 if lan:
     if lan.address: formvals['lan_address'] = lan.address.strNormal()
     if lan.netmask: formvals['lan_netmask'] = lan.netmask.strNormal()
     if lan.gateway: formvals['lan_gateway'] = lan.gateway.strNormal()
-
-if 'ppp0' in o.autoset:
-    formvals['wan_interface'] = 'modem'
 
 # collect the DNS servers
 o = configfiles.EtcResolvConf()
