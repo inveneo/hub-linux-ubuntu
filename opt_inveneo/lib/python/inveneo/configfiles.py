@@ -315,14 +315,18 @@ class EtcPppPeersDod(ConfigFileBase):
     def _parse_line(self, line):
         """Parse out the interesting bits of one line.
         
-        Returns (key, value) or (None, None).
-        See 'man 8 pppd' for syntax of the options file."""
-        eq = line.find(' ')
-        if eq > 0:
-            key = line[0:eq].strip().lower()
-            value = line[eq+1:].strip()
+        Returns (key, value) or (key, None) or (None, None).
+        See 'man 8 pppd' for syntax of the options file, and to see
+        how badly we are ignoring the format here."""
+        # XXX we really need to pay attention to double quotes, comments,
+        # and backslashes!
+        if len(line) == 0: return (None, None)
+        space = line.find(' ')
+        if space > 0:
+            key = line[0:space].strip()
+            value = line[space+1:].strip()
             return (key, value)
-        return (None, None)
+        return (line.strip(), None)
 
     def _update_lines(self):
         """Return original list of lines updated by current metadata.
@@ -335,7 +339,11 @@ class EtcPppPeersDod(ConfigFileBase):
         for line in self.lines:
             (key, value) = self._parse_line(line)
             if key and (key in self.metadata):
-                line = "%s %s\n" % (key, self.metadata[key])
+                value = self.metadata[key]
+                if value:
+                    line = "%s %s\n" % (key, value)
+                else:
+                    line = "%s\n" % key
                 found_keys.add(key)
             newlines.append(line)
 
