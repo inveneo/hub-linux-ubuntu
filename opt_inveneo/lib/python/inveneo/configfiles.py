@@ -222,6 +222,8 @@ class EtcHosts(ConfigFileBase):
                     line = "%s %s\n" % (ip, string.join(self.ips[ip], ' '))
                     found_ips.add(ip)
                     newlines.append(line)
+            else:
+                newlines.append(line)
 
         # add lines for ips not yet existing in file
         all_ips = set(self.ips.keys())
