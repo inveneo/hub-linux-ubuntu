@@ -22,6 +22,7 @@ ERR_PREFIX = 'err_'
 def required_single_word(name, default=None):
     """Returns valid word, else None.
     On error, puts error string in global errors list."""
+
     global form, errors
 
     value = form.getfirst(name, default)
@@ -36,6 +37,7 @@ def required_single_word(name, default=None):
 def required_ip(name, default=None):
     """Returns valid IP, else None.
     On error, puts error string in global errors list."""
+
     global form, errors
 
     value = form.getfirst(name, default)
@@ -52,6 +54,7 @@ def required_ip(name, default=None):
 def optional_ip(name, default=None):
     """Returns valid IP, else None.
     On error, puts error string in global errors list."""
+
     global form, errors
 
     value = form.getfirst(name, default)
@@ -66,6 +69,7 @@ def optional_ip(name, default=None):
 def choose_from_list(name, list, default=None):
     """Returns valid choice from provided list, else None.
     On error, puts error string in global errors list."""
+
     global form, errors
 
     value = form.getfirst(name, default)
@@ -77,6 +81,7 @@ def choose_from_list(name, list, default=None):
 def optional_integer(name, default=None):
     """Returns valid integer, else None.
     On error, puts error string in global errors list."""
+
     global form, errors
 
     value = form.getfirst(name, default)
@@ -91,6 +96,7 @@ def optional_integer(name, default=None):
 # other helpers
 def no_error_in_any_of(namelist):
     """Returns true if no name in list generated an error."""
+
     global errors
 
     return len(set(namelist).intersection(set(errors.keys()))) == 0
@@ -111,6 +117,7 @@ def str_or_empty(value):
 # work sections
 def validate_inputs():
     """Basic validation of individual input values."""
+
     global form, errors
     global hostname, ip_dns_0, ip_dns_1, wan_interface, wan_method
     global ip_wan_address, ip_wan_netmask, ip_wan_gateway
@@ -154,6 +161,7 @@ def validate_inputs():
 
 def business_logic():
     """Higher level 'business logic'."""
+
     global errors
     global ip_lan_address, ip_lan_netmask, ip_lan_gateway
     global ip_lan_network, ip_lan_network_range
@@ -181,6 +189,7 @@ def business_logic():
 
 def rewrite_config_files(flags):
     """Rewrite the config files. Set flags for actions taken."""
+
     global errors
     global hostname, ip_dns_0, ip_dns_1, wan_interface, wan_method
     global ip_wan_address, ip_wan_netmask, ip_wan_gateway
@@ -202,7 +211,8 @@ def rewrite_config_files(flags):
 
     # /etc/hosts
     o = configfiles.EtcHosts()
-    o.ips['127.0.1.1'] = [hostname, hostname + '.local']
+    o.ips['127.0.1.1'] = \
+            [hostname, hostname + '.local', hostname + '.localdomain']
     o.write()
 
     # /etc/resolv.conf
@@ -228,7 +238,7 @@ def rewrite_config_files(flags):
         flags.discard('dns_changed')
     o.write()
 
-    # /etc/wvdial.conf and /etc/ppp/peers/dod
+    # /etc/wvdial.conf
     o = configfiles.EtcWvdialConf()
     o.metadata['modem']        = str_or_empty(ppp_modem)
     o.metadata['phone']        = str_or_empty(ppp_phone)
@@ -240,10 +250,14 @@ def rewrite_config_files(flags):
     o.metadata['init2']        = str_or_empty(ppp_init2)
     o.write()
 
+    # /etc/ppp/peers/dod
     o = configfiles.EtcPppPeersDod()
+    if ppp_modem:
+        o.metadata['ttyname'] = ppp_modem
+    if int_ppp_baud:
+        o.metadata['speed'] = str(int_ppp_baud)
     if int_ppp_idle_seconds:
         o.metadata['idle'] = str(int_ppp_idle_seconds)
-    # XXX should also do modem?
     o.write()
 
     # /etc/network/interfaces
