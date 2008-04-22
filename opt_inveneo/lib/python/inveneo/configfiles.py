@@ -326,7 +326,15 @@ class EtcPppPeersDod(ConfigFileBase):
             key = line[0:space].strip()
             value = line[space+1:].strip()
             return (key, value)
-        return (line.strip(), None)
+        # look for two special-case pain-in-the-butt values
+        key = line.strip()
+        if key.startswith('/'):
+            # XXX (somewhat bogus) assumption that we've found modem name
+            return ('ttyname', key)
+        elif key[0].isdigit():
+            # XXX (somewhat bogus) assumption that we've found baud rate
+            return ('speed', key)
+        return (key, None)
 
     def _update_lines(self):
         """Return original list of lines updated by current metadata.
@@ -341,7 +349,10 @@ class EtcPppPeersDod(ConfigFileBase):
             if key and (key in self.metadata):
                 value = self.metadata[key]
                 if value:
-                    line = "%s %s\n" % (key, value)
+                    if (key == 'ttyname') or (key == 'speed'):
+                        line = "%s\n" % value
+                    else:
+                        line = "%s %s\n" % (key, value)
                 else:
                     line = "%s\n" % key
                 found_keys.add(key)
@@ -350,7 +361,14 @@ class EtcPppPeersDod(ConfigFileBase):
         # add lines for metadata not yet existing in file
         meta_keys = set(self.metadata.keys())
         for key in meta_keys.difference(found_keys):
-            newlines.append("%s %s\n" % (key, self.metadata[key]))
+            value = self.metadata[key]
+            if value:
+                if (key == 'ttyname') or (key == 'speed'):
+                    newlines.append("%s\n" % value)
+                else:
+                    newlines.append("%s %s\n" % (key, value))
+            else:
+                newlines.append("%s\n" % key)
         return newlines
 
     def __str__(self):
