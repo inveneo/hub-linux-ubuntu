@@ -127,14 +127,14 @@ def validate_inputs():
     wan_interface = choose_from_list('wan_interface', \
             ['off', 'ethernet', 'modem'])
     wan_method = choose_from_list('wan_method', ['dhcp', 'static'])
-    if wan_method == 'dhcp':
-        ip_wan_address = optional_ip('wan_address')
-        ip_wan_netmask = optional_ip('wan_netmask')
-        ip_wan_gateway = optional_ip('wan_gateway')
-    elif wan_method == 'static':
+    if wan_method == 'static':
         ip_wan_address = required_ip('wan_address')
         ip_wan_netmask = required_ip('wan_netmask')
         ip_wan_gateway = required_ip('wan_gateway')
+    else:
+        ip_wan_address = optional_ip('wan_address')
+        ip_wan_netmask = optional_ip('wan_netmask')
+        ip_wan_gateway = optional_ip('wan_gateway')
 
     ppp_modem            = form.getfirst('ppp_modem')
     ppp_phone            = form.getfirst('ppp_phone')
@@ -175,7 +175,7 @@ def business_logic():
         if (int_lan_dhcp_range_end < 1) or (254 < int_lan_dhcp_range_end):
             errors['lan_dhcp_range_end'] = 'Must be between 1 and 254'
     if int_lan_dhcp_range_start and int_lan_dhcp_range_end:
-        if (int_lan_dhcp_range_end < int_lan_dhcp_range_start):
+        if (int_lan_dhcp_range_end <= int_lan_dhcp_range_start):
             errors['lan_dhcp_range_start'] = 'Must start before end'
             errors['lan_dhcp_range_end']   = 'Must end after start'
 
@@ -192,32 +192,37 @@ def rewrite_config_files(flags):
 
     # /etc/hostname
     o = configfiles.EtcHostname()
-    previous = o.hostname
-    if hostname != previous:
+    previous_hostname = o.hostname
+    if hostname != previous_hostname:
         o.hostname = hostname
         o.write()
         flags.add('hostname_changed')
     else:
         flags.discard('hostname_changed')
 
+    # /etc/hosts
+    o = configfiles.EtcHosts()
+    o.ips['127.0.1.1'] = [hostname, hostname + '.local']
+    o.write()
+
     # /etc/resolv.conf
     o = configfiles.EtcResolvConf()
-    previous = set(o.nameservers)
-    current = set()
+    previous_nameservers = set(o.nameservers)
+    current_nameservers = set()
     dns_0 = ip_dns_0.strNormal()
-    current.add(dns_0)
+    current_nameservers.add(dns_0)
     if len(o.nameservers) > 0:
         o.nameservers[0] = dns_0
     else:
         o.nameservers.append(dns_0)
     if ip_dns_1:
         dns_1 = ip_dns_1.strNormal()
-        current.add(dns_1)
+        current_nameservers.add(dns_1)
         if len(o.nameservers) > 1:
             o.nameservers[1] = dns_1
         else:
             o.nameservers.append(dns_1)
-    if current != previous:
+    if current_nameservers != previous_nameservers:
         flags.add('dns_changed')
     else:
         flags.discard('dns_changed')
@@ -343,6 +348,7 @@ def restart_services(flags):
 ##
 form = cgi.FieldStorage()
 errors = {}
+flags = set()
 
 # uncomment this section for some debugging
 #print "Content-Type: text/html"
@@ -353,7 +359,6 @@ errors = {}
 validate_inputs()
 business_logic()
 if len(errors) < 1:
-    flags = set()
     rewrite_config_files(flags)
     restart_services(flags)
 
