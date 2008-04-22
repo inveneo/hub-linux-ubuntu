@@ -14,12 +14,26 @@ $ERR_PREFIX = 'err_';
 # draw the page
 &ui_print_header(undef, $module_info{'desc'}, "");     
 
+print "<style type='text/css'>\n";
+print "p.good {";
+print " border-style: solid; border-width: thin; padding: 0.5em;";
+print " color: green}\n";
+print "p.bad  {";
+print " border-style: solid; border-width: thin; padding: 0.5em;";
+print " color: red}\n";
+print "</style>\n";
+
 $error_string = &get_cgi;
 if ($error_string eq "") {
 #    foreach $key (keys %in) {
 #        print "'" . $key . "'='" . $in{$key} . "'<br>";
 #    }
-    print "<font color='blue'>" . $in{'message'} . "</font><br>";
+    if ($in{'good_news'}) {
+        print "<p class='good'>" . $in{'good_news'} . "</p><br>";
+    }
+    if ($in{'bad_news'}) {
+        print "<p class='bad'>" . $in{'bad_news'} . "</p><br>";
+    }
     &draw_form;
 } else {
     print &in_red('Internal Error:') . "<br>";
@@ -36,13 +50,10 @@ sub in_red {
 
 sub error_text {
     local ($key) = @_;
-    return &in_red($in{$ERR_PREFIX . $key});
-}
-
-sub in_a_box {
-    local ($html) = @_;
-    return '<div style="border-style:solid; border-width:thin">' . $html .
-        '</div>';
+    if ($in{$ERR_PREFIX . $key}) {
+        return "<p class='bad'>" . $in{$ERR_PREFIX . $key} . "</p>";
+    }
+    return "";
 }
 
 # Fill global %in with CGI parameters, else from output of scanConfig.py

@@ -368,14 +368,14 @@ for key in form.keys():
     qs = configfiles.appendQueryString(qs, key, form[key].value)
 
 if len(errors) == 0:
-    qs = configfiles.appendQueryString(qs, 'message', \
+    qs = configfiles.appendQueryString(qs, 'good_news', \
             'Your settings have been saved.')
 else:
     # errors go back as key/val where key is the special prefix followed by
     # the control name, and val is the error message
     for key, value in errors.iteritems():
         qs = configfiles.appendQueryString(qs, ERR_PREFIX + key, value)
-    qs = configfiles.appendQueryString(qs, 'message', 'There were errors...')
+    qs = configfiles.appendQueryString(qs, 'bad_news', 'There were errors...')
 
 # redirect to (possibly moved) webmin page
 if 'lan_address_changed' in flags:
