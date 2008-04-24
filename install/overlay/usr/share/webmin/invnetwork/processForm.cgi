@@ -8,23 +8,27 @@ Copyright (c) 2007 Inveneo, inc. All rights reserved.
 
 # external modules
 import sys
-sys.path.append('/opt/inveneo/lib/python/inveneo')
 import os, string
 import cgi
 import cgitb; cgitb.enable()  # XXX remove this for production systems
 from IPy import IP
 from subprocess import Popen, PIPE
-import configfiles
+
+sys.path.append('/opt/inveneo/lib/python/inveneo')
+import configfiles, processes
 
 ERR_PREFIX = 'err_'
+
+HOSTNAME_CHANGED    = 'hostname_changed'
+DNS_CHANGED         = 'dns_changed'
+LAN_ADDRESS_CHANGED = 'lan_address_changed'
+DHCP_CHANGED        = 'dhcp_changed'
 
 # CGI validation helpers
 def required_single_word(name, default=None):
     """Returns valid word, else None.
     On error, puts error string in global errors list."""
-
     global form, errors
-
     value = form.getfirst(name, default)
     if value:
         if value.find(' ') >= 0:
@@ -37,9 +41,7 @@ def required_single_word(name, default=None):
 def required_ip(name, default=None):
     """Returns valid IP, else None.
     On error, puts error string in global errors list."""
-
     global form, errors
-
     value = form.getfirst(name, default)
     if value:
         try:
@@ -54,9 +56,7 @@ def required_ip(name, default=None):
 def optional_ip(name, default=None):
     """Returns valid IP, else None.
     On error, puts error string in global errors list."""
-
     global form, errors
-
     value = form.getfirst(name, default)
     if value:
         try:
@@ -69,9 +69,7 @@ def optional_ip(name, default=None):
 def choose_from_list(name, list, default=None):
     """Returns valid choice from provided list, else None.
     On error, puts error string in global errors list."""
-
     global form, errors
-
     value = form.getfirst(name, default)
     if not value.lower() in list:
         errors[name] = 'Value not in list'
@@ -81,9 +79,7 @@ def choose_from_list(name, list, default=None):
 def optional_integer(name, default=None):
     """Returns valid integer, else None.
     On error, puts error string in global errors list."""
-
     global form, errors
-
     value = form.getfirst(name, default)
     if value:
         try:
@@ -96,9 +92,7 @@ def optional_integer(name, default=None):
 # other helpers
 def no_error_in_any_of(namelist):
     """Returns true if no name in list generated an error."""
-
     global errors
-
     return len(set(namelist).intersection(set(errors.keys()))) == 0
 
 def get_network(ip_address, ip_netmask):
@@ -113,6 +107,19 @@ def get_network(ip_address, ip_netmask):
 def str_or_empty(value):
     """Given a value or None, returns str(value) or empty string."""
     return [str(value), ''][value == None]
+
+def execute(cmdlist):
+    """Executes the given command line, returning stdout and stderr strings."""
+    (sout, serr) = Popen(cmdlist, stdout=PIPE, stderr=PIPE).communicate() 
+    return (sout, serr)
+
+def trigger(flag_list):
+    """Lets you know if any of the flags in your list are set."""
+    global flags
+    for flag in flag_list:
+        if flag in flags:
+            return True
+    return False
 
 # work sections
 def validate_inputs():
@@ -205,15 +212,9 @@ def rewrite_config_files(flags):
     if hostname != previous_hostname:
         o.hostname = hostname
         o.write()
-        flags.add('hostname_changed')
+        flags.add(HOSTNAME_CHANGED)
     else:
-        flags.discard('hostname_changed')
-
-    # /etc/hosts
-    o = configfiles.EtcHosts()
-    o.ips['127.0.1.1'] = \
-            [hostname, hostname + '.local', hostname + '.localdomain']
-    o.write()
+        flags.discard(HOSTNAME_CHANGED)
 
     # /etc/resolv.conf
     o = configfiles.EtcResolvConf()
@@ -233,9 +234,15 @@ def rewrite_config_files(flags):
         else:
             o.nameservers.append(dns_1)
     if current_nameservers != previous_nameservers:
-        flags.add('dns_changed')
+        flags.add(DNS_CHANGED)
     else:
-        flags.discard('dns_changed')
+        flags.discard(DNS_CHANGED)
+    o.write()
+
+    # /etc/hosts
+    o = configfiles.EtcHosts()
+    o.ips['127.0.1.1'] = \
+            [hostname, hostname + '.local', hostname + '.localdomain']
     o.write()
 
     # /etc/wvdial.conf
@@ -261,7 +268,7 @@ def rewrite_config_files(flags):
     o.write()
 
     # /etc/network/interfaces
-    flags.discard('lan_address_changed')
+    flags.discard(LAN_ADDRESS_CHANGED)
     o = configfiles.EtcNetworkInterfaces()
     if 'eth0' in o.ifaces:
         wan = o.ifaces['eth0']
@@ -279,7 +286,7 @@ def rewrite_config_files(flags):
     if 'eth1' in o.ifaces:
         lan = o.ifaces['eth1']
         if lan.address != ip_lan_address:
-            flags.add('lan_address_changed')
+            flags.add(LAN_ADDRESS_CHANGED)
             old_ip_lan_address = lan.address
             old_ip_lan_netmask = lan.netmask
             old_ip_lan_gateway = lan.gateway
@@ -291,6 +298,12 @@ def rewrite_config_files(flags):
     lan.netmask = ip_lan_netmask
     lan.gateway = ip_lan_gateway
 
+    if not 'ppp0' in o.ifaces:
+        ppp = o.add_iface('ppp0', 'ppp')
+        ppp.extras = [ \
+                '  pre-up /opt/inveneo/sbin/wan-firewall.sh ppp0 up', \
+                '  post-down /opt/inveneo/sbin/wan-firewall.sh ppp0 down']
+
     o.autoset.discard('eth0')
     o.autoset.discard('ppp0')
     if wan_interface == 'ethernet':
@@ -301,16 +314,16 @@ def rewrite_config_files(flags):
     o.write()
 
     # /etc/dhcp3/dhcp.conf
-    flags.discard('dhcp_changed')
+    flags.discard(DHCP_CHANGED)
     o = configfiles.EtcDhcp3DhcpConf()
     lan_network = ip_lan_network.strNormal()
     lan_netmask = ip_lan_netmask.strNormal()
     if lan_network in o.subnets:
         dhcp = o.subnets[lan_network]
     else:
-        # things are moving around...
         dhcp = o.add_subnet(lan_network, lan_netmask)
-        if lan_address_changed:
+        if trigger([LAN_ADDRESS_CHANGED]):
+            # things are moving around...
             old_lan_network = get_network(old_ip_lan_address,
                         old_ip_lan_netmask).strNormal()
             o.subnets.pop(old_lan_network, None)
@@ -326,37 +339,62 @@ def rewrite_config_files(flags):
 def restart_services(flags):
     """Act on config file changes, guided by flags."""
 
-    # reload the hostname
-    if 'hostname_changed' in flags:
-        (sout, serr) = Popen(['/bin/hostname', '-F', '/etc/hostname'],
-                stdout=PIPE, stderr=PIPE).communicate() 
+    # get list of currently executing processes
+    procs = processes.ProcSnap()
+
+    # maybe reload the hostname
+    if trigger([HOSTNAME_CHANGED]):
+        (sout, serr) = execute(['/bin/hostname', '-F', '/etc/hostname'])
         if serr:
             errors['hostname'] = serr
-            flags.discard('hostname_changed')
+            flags.discard(HOSTNAME_CHANGED)
 
-    # XXX restart networking
+    # maybe restart networking
+    if trigger([HOSTNAME_CHANGED, LAN_ADDRESS_CHANGED]):
+        script = '/etc/init.d/networking'
+        (sout, serr) = execute([script, 'stop'])
+        if not serr:
+            (sout, serr) = execute([script, 'start'])
 
-    # XXX restart pppd
+    '''
+    # maybe restart the nameserver
+    if trigger([DNS_CHANGED]):
+        script = '/etc/init.d/bind9'
+        (sout, serr) = execute([script, 'stop'])
+        if not serr:
+            (sout, serr) = execute([script, 'start'])
+    '''
 
-    # XXX restart avahi, samba, DNS, Apache
+    # maybe restart the DHCP server
+    if trigger([DHCP_CHANGED]):
+        process = '/usr/sbin/dhcpd3'
+        script  = '/etc/init.d/dhcp3-server'
+        if procs.is_running(process):
+            (sout, serr) = execute([script, 'stop'])
+            if not serr:
+                (sout, serr) = execute([script, 'start'])
 
-    # restart the nameserver
-    if 'dns_changed' in flags:
-        (sout, serr) = Popen(['/etc/init.d/bind9', 'reload'],
-                stdout=PIPE, stderr=PIPE).communicate()
+    # maybe restart Samba
+    if trigger([HOSTNAME_CHANGED, LAN_ADDRESS_CHANGED]):
+        process = '/usr/sbin/smbd'
+        script = '/etc/init.d/samba'
+        if procs.is_running(process):
+            (sout, serr) = execute([script, 'stop'])
+            if not serr:
+                (sout, serr) = execute([script, 'start'])
 
-    # restart the DHCP server
-    if 'dhcp_changed' in flags:
-        command = "/etc/init.d/dhcp3-server"
-        if bool_lan_dhcp_on:
-            arg = "force-reload"
-        else:
-            arg = "stop"
-        '''
-        (sout, serr) = Popen([command, arg],
-                stdout=PIPE, stderr=PIPE).communicate() 
-        errors['lan_dhcp_on'] = "sout='%s', serr='%s'" % (sout, serr)
-        '''
+    # maybe restart Apache
+    if trigger([LAN_ADDRESS_CHANGED]):
+        process = '/usr/sbin/apache2'
+        script = '/etc/init.d/apache2'
+        if procs.is_running(process):
+            (sout, serr) = execute([script, 'stop'])
+            if not serr:
+                (sout, serr) = execute([script, 'start'])
+
+    # maybe restart Avahi
+    # XXX how?
+
 ##
 # START HERE
 ##
@@ -392,7 +430,7 @@ else:
     qs = configfiles.appendQueryString(qs, 'bad_news', 'There were errors...')
 
 # redirect to (possibly moved) webmin page
-if 'lan_address_changed' in flags:
+if trigger([LAN_ADDRESS_CHANGED]):
     urlbase = 'https://%s:10000' % ip_lan_address.strNormal()
 else:
     urlbase = ''
