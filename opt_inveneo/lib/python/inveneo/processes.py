@@ -9,7 +9,7 @@ the system process list.
 Copyright (c) 2008 Inveneo, inc. All rights reserved.
 """
 
-import string
+import string, os.path
 from subprocess import Popen, PIPE
 
 class ProcSnap(object):
@@ -43,6 +43,20 @@ class ProcSnap(object):
                 retval.append([pid, cmd, args])
         return retval
 
+    def is_running(self, procname):
+        """A rudimentary answer to whether given procname is running.
+        If procname contains slash(es), assume exact full path, else
+        just look for any proc with given basename."""
+        if procname.find('/') >= 0:
+            cmp = lambda x,y: x == y
+        else:
+            cmp = lambda x,y: x == os.path.basename(y)
+        for (pid, vals) in self.procs.iteritems():
+            (ppid, cmd, args) = vals
+            if cmp(procname, cmd):
+                return True
+        return False
+
     def __str__(self):
         """Return entire data structure as a string."""
         lines = []
@@ -57,10 +71,14 @@ if __name__ == '__main__':
     """Exercise the class."""
     o = ProcSnap()
 
+    print "===== ALL OF IT ====="
+    print str(o)
+
     print "===== Top Dogs ====="
     for (pid, cmd, args) in o.toplevel():
         print '%d %s %s' % (pid, cmd, args)
 
-    print "===== ALL OF IT ====="
-    print str(o)
+    print "===== Some Queries ====="
+    print 'sshd running: %s' % str(o.is_running('sshd'))
+    print '/foo/sshd running: %s' % str(o.is_running('/foo/sshd'))
 
