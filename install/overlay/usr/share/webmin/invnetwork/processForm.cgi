@@ -350,6 +350,7 @@ def restart_services(flags):
             flags.discard(HOSTNAME_CHANGED)
 
     # maybe restart networking
+    # this also does avahi
     if trigger([HOSTNAME_CHANGED, LAN_ADDRESS_CHANGED]):
         script = '/etc/init.d/networking'
         (sout, serr) = execute([script, 'stop'])
@@ -391,9 +392,6 @@ def restart_services(flags):
             (sout, serr) = execute([script, 'stop'])
             if not serr:
                 (sout, serr) = execute([script, 'start'])
-
-    # maybe restart Avahi
-    # XXX how?
 
 ##
 # START HERE
