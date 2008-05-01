@@ -7,15 +7,15 @@ Copyright (c) 2007 Inveneo, inc. All rights reserved.
 """
 
 # external modules
-import sys
-import os, string
+import sys, os, string
+from os.path import abspath, dirname, join
 import cgi
 import cgitb; cgitb.enable()  # XXX remove this for production systems
 from IPy import IP
 from subprocess import Popen, PIPE
 
 sys.path.append('/opt/inveneo/lib/python/inveneo')
-import configfiles, processes
+import configfiles
 
 ERR_PREFIX = 'err_'
 
@@ -23,6 +23,8 @@ HOSTNAME_CHANGED    = 'hostname_changed'
 DNS_CHANGED         = 'dns_changed'
 LAN_ADDRESS_CHANGED = 'lan_address_changed'
 DHCP_CHANGED        = 'dhcp_changed'
+
+RESTARTER = 'restarter.py'
 
 # CGI validation helpers
 def required_single_word(name, default=None):
@@ -107,11 +109,6 @@ def get_network(ip_address, ip_netmask):
 def str_or_empty(value):
     """Given a value or None, returns str(value) or empty string."""
     return [str(value), ''][value == None]
-
-def execute(cmdlist):
-    """Executes the given command line, returning stdout and stderr strings."""
-    (sout, serr) = Popen(cmdlist, stdout=PIPE, stderr=PIPE).communicate() 
-    return (sout, serr)
 
 def trigger(flag_list):
     """Lets you know if any of the flags in your list are set."""
@@ -339,59 +336,37 @@ def rewrite_config_files(flags):
 def restart_services(flags):
     """Act on config file changes, guided by flags."""
 
-    # get list of currently executing processes
-    procs = processes.ProcSnap()
+    tasks = []
 
     # maybe reload the hostname
     if trigger([HOSTNAME_CHANGED]):
-        (sout, serr) = execute(['/bin/hostname', '-F', '/etc/hostname'])
-        if serr:
-            errors['hostname'] = serr
-            flags.discard(HOSTNAME_CHANGED)
+        tasks.append('hostname')
 
     # maybe restart networking
     # this also does avahi
     if trigger([HOSTNAME_CHANGED, LAN_ADDRESS_CHANGED]):
-        script = '/etc/init.d/networking'
-        (sout, serr) = execute([script, 'stop'])
-        if not serr:
-            (sout, serr) = execute([script, 'start'])
+        tasks.append('networking')
 
     '''
     # maybe restart the nameserver
     if trigger([DNS_CHANGED]):
-        script = '/etc/init.d/bind9'
-        (sout, serr) = execute([script, 'stop'])
-        if not serr:
-            (sout, serr) = execute([script, 'start'])
+        tasks.append('bind')
     '''
 
     # maybe restart the DHCP server
     if trigger([DHCP_CHANGED]):
-        process = '/usr/sbin/dhcpd3'
-        script  = '/etc/init.d/dhcp3-server'
-        if procs.is_running(process):
-            (sout, serr) = execute([script, 'stop'])
-            if not serr:
-                (sout, serr) = execute([script, 'start'])
+        tasks.append('dhcp')
 
     # maybe restart Samba
     if trigger([HOSTNAME_CHANGED, LAN_ADDRESS_CHANGED]):
-        process = '/usr/sbin/smbd'
-        script = '/etc/init.d/samba'
-        if procs.is_running(process):
-            (sout, serr) = execute([script, 'stop'])
-            if not serr:
-                (sout, serr) = execute([script, 'start'])
+        tasks.append('samba')
 
     # maybe restart Apache
     if trigger([LAN_ADDRESS_CHANGED]):
-        process = '/usr/sbin/apache2'
-        script = '/etc/init.d/apache2'
-        if procs.is_running(process):
-            (sout, serr) = execute([script, 'stop'])
-            if not serr:
-                (sout, serr) = execute([script, 'start'])
+        tasks.append('apache')
+
+    path = abspath(dirname(sys.argv[0]))
+    return Popen(['nohup', join(path, RESTARTER)] + tasks + ['&']).pid
 
 ##
 # START HERE
@@ -410,7 +385,7 @@ validate_inputs()
 business_logic()
 if len(errors) < 1:
     rewrite_config_files(flags)
-    restart_services(flags)
+    pid = restart_services(flags)
 
 # return all form values, plus error/info messages
 qs = ''
