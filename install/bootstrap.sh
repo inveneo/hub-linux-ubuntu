@@ -66,10 +66,10 @@ fi
 cd /tmp
 
 echo "checking out /opt/inveneo"
-svn co http://svn.inveneo.org/repos/hub-linux-ubuntu/trunk/opt_inveneo /opt/inveneo
+svn co http://svn.inveneo.org/repos/hub-linux-ubuntu/branches/hardy-port/opt_inveneo /opt/inveneo
 
 echo "checking out /opt/install"
-svn co http://svn.inveneo.org/repos/hub-linux-ubuntu/trunk/install /opt/install
+svn co http://svn.inveneo.org/repos/hub-linux-ubuntu/branches/hardy-port/install /opt/install
 
 echo "copying in APT settings"
 cp -a /opt/install/overlay/etc/apt /etc
