@@ -103,8 +103,6 @@ libapache2-mod-python   install
 python-mysqldb          install
 python-ipy              install
 
-
-
 # dev, not needed in production but not a bad idea to have...
 subversion	install
 build-essential install
