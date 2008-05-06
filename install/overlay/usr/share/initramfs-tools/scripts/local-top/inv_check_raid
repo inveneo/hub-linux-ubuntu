@@ -3,7 +3,7 @@
 MDADM_CONF=/etc/mdadm/mdadm.conf
 MAX_WAIT=7 # in seconds
 PREREQ="udev"
-DEVICES="sda sdb" 
+DEVICES="%DRIVE_TYPE%a %DRIVE_TYPE%b" 
 
 prereqs()
 {
