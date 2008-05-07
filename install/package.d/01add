@@ -64,7 +64,8 @@ avahi-utils	install
 mysql-server    install
 webmin	        install
 asterisk	install
-asterisk-web-vmail	install
+# XXX does not exist anymore
+# asterisk-web-vmail	install
 perl-suid	install
 python-asterisk	install
 zaptel		                        install
