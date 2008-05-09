@@ -69,8 +69,7 @@ asterisk	install
 perl-suid	install
 python-asterisk	install
 zaptel		                        install
-# XXX does not exist anymore
-# zaptel-modules-2.6.22-14-generic	install
+zaptel-modules-2.6.24-16-generic        install
 smartmontools	install
 beep	        install
 
