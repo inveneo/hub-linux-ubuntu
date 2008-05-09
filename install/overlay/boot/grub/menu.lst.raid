@@ -50,16 +50,16 @@ hiddenmenu
 #
 # Put static boot stanzas before and/or after AUTOMAGIC KERNEL LIST
 
-title		Ubuntu 7.10, kernel 2.6.22-14-generic (hd0)
+title		Ubuntu 7.10, kernel 2.6.24-16-generic (hd0)
 root		(hd0,0)
-kernel		/boot/vmlinuz-2.6.22-14-generic root=/dev/md0 ro quiet splash
-initrd		/boot/initrd.img-2.6.22-14-generic
+kernel		/boot/vmlinuz-2.6.24-16-generic root=/dev/md0 ro quiet splash
+initrd		/boot/initrd.img-2.6.24-16-generic
 quiet
 
-title		Ubuntu 7.10, kernel 2.6.22-14-generic (hd1)
+title		Ubuntu 7.10, kernel 2.6.24-16-generic (hd1)
 root		(hd1,0)
-kernel		/boot/vmlinuz-2.6.22-14-generic root=/dev/md0 ro quiet splash
-initrd		/boot/initrd.img-2.6.22-14-generic
+kernel		/boot/vmlinuz-2.6.24-16-generic root=/dev/md0 ro quiet splash
+initrd		/boot/initrd.img-2.6.24-16-generic
 quiet
 
 ### BEGIN AUTOMAGIC KERNELS LIST
@@ -141,10 +141,10 @@ quiet
 
 ## ## End Default Options ##
 
-title		Ubuntu 7.10, kernel 2.6.22-14-generic
+title		Ubuntu 7.10, kernel 2.6.24-16-generic
 root		(hd0,0)
-kernel		/boot/vmlinuz-2.6.22-14-generic root=/dev/md0 ro quiet splash
-initrd		/boot/initrd.img-2.6.22-14-generic
+kernel		/boot/vmlinuz-2.6.24-16-generic root=/dev/md0 ro quiet splash
+initrd		/boot/initrd.img-2.6.24-16-generic
 quiet
 
 title		Ubuntu 7.10, kernel 2.6.22-14-generic (recovery mode)
