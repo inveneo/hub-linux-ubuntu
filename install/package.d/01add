@@ -18,6 +18,8 @@ lynx    install
 zip	install
 unzip	install
 minicom install
+p7zip-full install
+p7zip-rar	install
 
 # printing
 cupsys          install
