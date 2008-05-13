@@ -1,9 +1,11 @@
 #!/usr/bin/perl
 # Show server or domain information
+
 do './web-lib.pl';
 &init_config();
 do './ui-lib.pl';
 &ReadParse();
+&load_theme_library();
 if (&get_product_name() eq "usermin") {
 	$level = 3;
 	}
@@ -17,8 +19,14 @@ foreach $o (split(/\0/, $in{'open'})) {
 	$open{$o} = 1;
 	}
 
-&popup_header();
+&popup_header(undef, &capture_function_output(\&theme_prehead));
 print "<center>\n";
+
+# Webmin logo
+#if (&get_product_name() eq 'webmin') {
+#	print "<a href=http://www.webmin.com/ target=_new><img src=images/webmin-blue.png border=0></a><p>\n";
+#	}
+
 if ($level == 0) {
 	# Show general system information
 	print "<table width=70%>\n";
@@ -42,6 +50,24 @@ if ($level == 0) {
 	$tm = localtime(time());
 	print "<tr> <td><b>$text{'right_time'}</b></td>\n";
 	print "<td>$tm</td> </tr>\n";
+
+	# System uptime
+	$out = &backquote_command("uptime");
+	$uptime = undef;
+	if ($out =~ /up\s+(\d+)\s+days,\s+(\d+):(\d+)/) {
+		# up 198 days,  2:06
+		$uptime = &text('right_updays', int($1), int($2), int($3));
+		}
+	elsif ($out =~ /up\s+(\d+):(\d+)/) {
+		$uptime = &text('right_uphours', int($1), int($2));
+		}
+	elsif ($out =~ /up\s+(\d+)\s+mins/) {
+		$uptime = &text('right_upmins', int($1));
+		}
+	if ($uptime) {
+		print "<tr> <td><b>$text{'right_uptime'}</b></td>\n";
+		print "<td>$uptime</td> </tr>\n";
+		}
 
 	# Load and memory info
 	if (&foreign_check("proc")) {
@@ -88,14 +114,14 @@ if ($level == 0) {
 		foreach $m (@mounted) {
 			if ($m->[2] eq "ext2" || $m->[2] eq "ext3" ||
 			    $m->[2] eq "reiserfs" || $m->[2] eq "ufs" ||
-			    $m->[1] =~ /^\/dev\//) {
+			    $m->[2] eq "zfs" ||$m->[1] =~ /^\/dev\//) {
 				($t, $f) = &mount::disk_space($m->[2], $m->[0]);
 				$total += $t*1024;
 				$free += $f*1024;
 				}
 			}
 		if ($total) {
-			print "<tr><td><b>$text{'right_disk'}</b></td>\n";
+			print "<tr> <td><b>$text{'right_disk'}</b></td>\n";
 			print "<td>",&text('right_used',
 				   &nice_size($total),
 				   &nice_size($total-$free)),"</td> </tr>\n";
