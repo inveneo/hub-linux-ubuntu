@@ -1,8 +1,12 @@
 #!/bin/bash
 
+# SVN Report
+REPO="http://svn.inveneo.org/repos/hub-linux-ubuntu/trunk"
+
 # work in /tmp
 cd /tmp
 
+# Pwd for root
 PWD='$1$9dREJf0D$q79s8EjHbvxEWYeWXc4RT/'
 
 # Set root pwd
@@ -66,10 +70,10 @@ fi
 cd /tmp
 
 echo "checking out /opt/inveneo"
-svn co http://svn.inveneo.org/repos/hub-linux-ubuntu/trunk/opt_inveneo /opt/inveneo
+svn co $REPO/opt_inveneo /opt/inveneo
 
 echo "checking out /opt/install"
-svn co http://svn.inveneo.org/repos/hub-linux-ubuntu/trunk/install /opt/install
+svn co $REPO/install /opt/install
 
 echo "copying in APT settings"
 cp -a /opt/install/overlay/etc/apt /etc
