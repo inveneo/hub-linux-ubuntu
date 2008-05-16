@@ -68,8 +68,12 @@ def fix_owners(opt_root):
     # fix asterisk ownership
     uinfo=pwd.getpwnam('asterisk')
     path.walk(path.join(overlay,'etc','asterisk'), \
-         folder_visitor, \
-         lambda f: os.chown(f, uinfo[2],uinfo[3]))
+              folder_visitor, \
+              lambda f: os.chown(f, uinfo[2],uinfo[3]))
+
+    path.walk(path.join(overlay,'usr','share','asterisk'), \
+              folder_visitor, \
+              lambda f: os.chown(f, uinfo[2],uinfo[3]))
 
     # fix inveneo home ownership
     uinfo=pwd.getpwnam('inveneo')
