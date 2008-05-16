@@ -1,0 +1,470 @@
+<!--
+ * Asterisk-GUI	-	an Asterisk configuration interface
+ *
+ * Top level for configuration file
+ *
+ * Copyright (C) 2006-2007, Digium, Inc.
+ *
+ * Mark Spencer <markster@digium.com>
+ * Pari Nannapaneni <pari@digium.com>
+ *
+ * See http://www.asterisk.org for more information about
+ * the Asterisk project. Please do not directly contact
+ * any of the maintainers of this project for assistance;
+ * the project provides a web site, mailing lists and IRC
+ * channels for your use.
+ *
+ * This program is free software, distributed under the terms of
+ * the GNU General Public License Version 2. See the LICENSE file
+ * at the top of the source tree.
+ *
+-->
+<script>
+var browser_alert = "Your browser is not supported by this version of GUI !<BR><A href='http://www.getfirefox.com' style='font-size: 13px; font-family:arial,sans-serif,Helvetica,Trebuchet MS; color : #6C74A3;' target='_blank'>We recommend using Firefox</A>";
+</script>
+<script src="scripts/prototype.js"></script>
+<script src="scripts/astman.js"></script>
+<link href="stylesheets/schwing.css" media="all" rel="Stylesheet" type="text/css" />
+<script>
+var FXO_PORTS_DETECTED = []; // so that we donot have to parse ztscan output each time where we want this list
+var FXS_PORTS_DETECTED = []; // so that we donot have to parse ztscan output each time where we want this list
+// note that the above FXO_PORTS_DETECTED, FXS_PORTS_DETECTED are the actual 'analog FXS, FXO' ports 
+// and NOT the channels on a digital span with FXS or FXO signalling
+var hwcfgfile = 'gui_confighw.conf'; // file to store configured hardware information
+var CONFIGURED_FXOPORTS = '';
+var CONFIGURED_FXSPORTS = '';
+var REQUIRE_RESTART = false; // this flag is used to know if there are any updates in zapchan settings
+// like if a FXS is assigned to a user or an analog trunk is created or something 
+// if this flag is true - we want to throw alert 'on ApplySettings' saying that a restart is required
+
+var eventeater = new Object;
+var loggedon = -1;
+var accordion;
+var tooltip_default = "Move the mouse over to a field to see tooltips";
+var asterisk_guitools_inextconf = 0;
+eventeater.pingstatus = false;
+var keepPinging;
+var has_digital = 0;
+var needs_reloadzap = 0;
+var int_handle;
+var MainScreenPanels = [];
+var newMSpanel = function(s){
+	var r = {};
+	r.PanelName = s[0];
+	r.FileName = s[1];
+	r.PanelDesc = s[2];
+	MainScreenPanels.push(r);
+};
+var ABOUT_TORELOAD_GUI = false ; // If the gui is being reloaded from some where else, this flag is used in some setTimeout functions to know whether to proceed or abort actions.
+
+function get_FXOFXSPORTS(c){
+	var y;
+	FXO_PORTS_DETECTED = [];
+	FXS_PORTS_DETECTED = [];
+
+	for( var d in c ){ if (c.hasOwnProperty(d) ) {
+		c[d].each( 
+			function( item ) {
+				if( item.beginsWith('port') && item.contains('FXO') && !item.contains('FAILED') ){ // we are looking for item if it is in the format 'port=4,FXO'
+					y = item.split('=')[1].split(',')[0];
+					FXO_PORTS_DETECTED.push(y);
+				}
+				if( item.beginsWith('port') && item.contains('FXS') && !item.contains('FAILED') ){ // we are looking for item if it is in the format 'port=4,FXO'
+					y = item.split('=')[1].split(',')[0];
+					FXS_PORTS_DETECTED.push(y);
+				}
+			}
+		);
+	}}
+
+
+	var hwcfgfile_parse = function(n){
+		if( n == "ERROR: CONFIG FILE NOT FOUND"){
+			// hwcfgfile does not exist, proceed to Ztscan
+			CONFIGURED_FXSPORTS = '';
+			CONFIGURED_FXOPORTS = '';
+
+		}else{
+			for( var l in n ){ if(n.hasOwnProperty(l)){ // l is location
+				if(l=='ANALOGPORTS'){
+					CONFIGURED_FXSPORTS = n[l]['FXS'];
+					CONFIGURED_FXOPORTS = n[l]['FXO'];
+				}else{ }
+			}}
+		}
+
+		if( CONFIGURED_FXOPORTS != FXO_PORTS_DETECTED.join(',') || CONFIGURED_FXSPORTS != FXS_PORTS_DETECTED.join(',') ){
+			if( !ABOUT_TORELOAD_GUI ){
+			alert('Changes detected in your Analog Hardware !! \n\n' +
+				'You have to reconfigure any previously assigned \n'
+				+ ' FXS stations or Analog Service Providers. \n\n'
+				+ "Note: Your Analog Hardware will not work properly until\n " 
+				+ " you click 'Apply Changes' button in the 'Setup Hardware' panel" );
+			}
+		}
+	};
+	config2json(hwcfgfile, 1, hwcfgfile_parse);
+}
+
+function fit_toScreen(){
+	var t = ASTGUI.displayHeight();
+	var minimumheight = 150;
+	var c =_$('configpanel'); 
+	c.WIH = t;
+	_$('TOP_MAINTABLE').rows[1].cells[0].height = (t - 70) ;
+	var pnameheight = 22;
+	c.pnameheight = pnameheight;
+	var panels = returnpanels();
+	var pheight = (( t - 70)  - (pnameheight*panels.length) ) ;
+	if(pheight > minimumheight){
+		c.pheight = pheight;
+	}else{
+		pheight = minimumheight;
+		c.pheight = minimumheight ;
+	}
+
+	if( c.childNodes.length ){
+		var s;
+		for( var r=0; r < panels.length; r++ ){
+			s = panels[r].page.split(".html")[0];
+			if( _$(s+"_U").style.visibility == "visible" ){
+				_$(s+"_U").style.height = pheight;
+			}
+		}
+	}
+
+	setTimeout( function(){_$('mainscreen').style.height = (panels.length * 22) + pheight ;}, 1500 );
+}
+
+function createpanels(){
+	var t,u,v;
+	var a = _$('configpanel');
+
+//	ASTGUI.events.add(a, 'mouseover', my_tooltip);
+//	ASTGUI.events.add(a, 'mouseout', default_tooltip);
+	ASTGUI.events.add(a, 'click', fghjhhs);
+
+	var panels = returnpanels();
+	var this_id ;
+	for( var r=0; r < panels.length; r++ ){
+		this_id = panels[r].page.split(".html")[0];
+
+		t = document.createElement("div");
+		t.className = "accordionTabTitleBar";
+		t.style.visibility = "hidden";
+		t.setAttribute('id', this_id );
+		t.height = a.pnameheight;
+		t.innerHTML = "<nobr><img style='vertical-align: middle;' src='images/accordion-icon.gif'><span style='margin-left: 0px; font-weight: bold;'>&nbsp;" + panels[r].caption + "</span></nobr>";
+
+		u = document.createElement("div");
+		u.className = "accordionTabContentBox";
+
+		u.style.borderStyle = "solid";
+		u.style.borderColor = "#1F669B";
+		u.style.borderWidth = "0px 1px";
+		u.style.margin = "0px";
+		u.style.overflow = "hidden";
+		u.style.backgroundImage = "url(images/panel.png)";
+		u.style.height = "1px";
+		u.style.visibility = "hidden";
+		u.setAttribute('id', this_id+"_U" );
+		u.innerHTML =panels[r].desc; 
+
+		a.appendChild(t);
+		a.appendChild(u);
+	}
+
+	_$( "home" ).style.visibility = "visible";
+	_$( "home_U" ).style.visibility = "visible";
+	_$( "home_U" ).style.height = a.pheight;
+}
+
+function my_tooltip(event){
+	var s = (event.srcElement)?event.srcElement:this;
+	show_Acctooltip(_$(s.id+"_U").innerHTML );
+}
+
+function default_tooltip(event){
+	var s = (event.srcElement)?event.srcElement:this;
+
+	_$(s.id).style.backgroundColor="#6B79A5";
+	_$(s.id).style.color="#CED7EF";
+	_$(s.id).style.fontWeight="normal";
+
+	show_Acctooltip("Move the mouse over to a field to see tooltips");
+}
+
+function fghjhhs(event){
+	var f = ASTGUI.events.getTarget(event);
+	var s = f;
+	if (f.nodeName.toLowerCase() == 'img' || f.nodeName.toLowerCase() == 'span' ){
+		s = f.parentNode.parentNode;
+	}
+	if ( s.className != 'accordionTabTitleBar' )return;
+	if( $('mainscreen').currentpage == s.id + ".html")return;
+	var t;
+
+	var panels = returnpanels();
+	for( var r=0; r < panels.length; r++ ){
+		t = panels[r].page.split(".html")[0];
+		_$( t + "_U" ).style.height = "1px";
+		_$( t + "_U" ).style.visibility = "hidden";
+	}
+	_$( s.id + "_U" ).style.height = _$('configpanel').pheight;
+	_$( s.id + "_U" ).style.visibility = "visible";
+
+	_$('AdvancedOptionsSelect').selectedIndex=-1;
+	_$('mainscreen').style.visibility = "hidden";
+	_$('mainscreen').src = s.id + ".html";
+	_$('mainscreen').currentpage = s.id + ".html";
+}
+
+function returnpanels(){
+	var panels = [];
+
+	var newpanel = function(s){
+		var r = {};
+		r.caption = s[0];
+		r.page = s[1];
+		r.desc = s[2];
+		panels.push(r);
+	}
+
+	newpanel( ["Home", "home.html", "Asterisk Configuration Panel - Please click on a panel to manage related features"]);
+	newpanel( ["Users", "users.html", "Users is a shortcut for quickly adding and removing all the necessary configuration components for any new phone."]);
+	newpanel( ["Conferencing", "meetme.html", "MeetMe conference bridging allows quick, ad-hoc conferences with or without security."]);
+	newpanel( ["Voicemail", "voicemail.html", "General settings for voicemail"]);
+	newpanel( ["Call Queues", "queues.html", "Call queues allow calls to be sequenced to one or more agents."]);
+	newpanel( ["Service Providers", "trunks.html", "Service Providers are outbound lines used to allow the system to make calls to the real world.  Trunks can be VoIP lines or traditional telephony lines."]);
+	newpanel( ["Setup Hardware", "digital.html", "Configure & setup your T1/E1/Analog Cards."]);
+	//newpanel( ["Manage IAXys", "iaxyprov.html", "(beta) Provision your IAXys."]);
+	newpanel( ["mISDN Config", "misdn.html", "mISDN configuration from the asterisk GUI"]); // Uncomment when mISDN is completed.
+	newpanel( ["Calling Rules", "numberplan.html", "The Calling Rules define dialing permissions and least cost routing rules."]);
+	newpanel( ["Incoming Calls", "incoming.html", "Define how your incoming calls should be handled & configure DID (Direct inward Dialing)"]);
+	newpanel( ["Voice Menus", "menus.html", "Menus allow for more efficient routing of calls from incoming callers. Also known as IVR (Interactive Voice Response) menus or Digital Receptionist"]);
+//	newpanel( ["Time Based Rules", "timerules.html", "define call routing rules based on date and time"]);
+	newpanel( ["Call Parking", "callparking.html", "configure call parking features"]);
+	newpanel( ["Ring Groups", "ringgroups.html", "define RingGroups to dial more than one extension"]);
+	newpanel( ["Record a Menu", "record.html", "Allows you to record custom voicemenus over a phone"]);
+	newpanel( ["Active Channels", "status.html", "Monitor active channels."]);
+	// newpanel( ["Graphs", "graphs.html", "View Graphs of your System Information."]);
+	newpanel( ["System Info", "sysinfo.html", "System Information."]);
+	newpanel( ["Asterisk Logs", "syslog.html", "Asterisk Log messages."]);
+	newpanel( ["Global SIP options", "sip.html", "Global SIP settings."]);
+	newpanel( ["Global IAX options", "iax.html", "Global IAX settings."]);
+	// newpanel( ["CDR Configuration", "cdr_conf.html", "CDR Engine Configuration."]); // Uncomment when cdr_conf.html is finished, there are still some errors. 
+	//newpanel( ["CDR Reader", "cdr_conf.html", "Read all your call records from Asterisk."]);
+	newpanel( ["File Editor", "feditor.html", "Edit Asterisk Config Files"]);
+	newpanel( ["Asterisk CLI", "cli.html", "Asterisk Command Line Interface"]);
+	//newpanel( ["GUI Access", "http_options.html", "GUI Access settings."]);
+	newpanel( ["Backup", "backup.html", "Backup Management."]);
+	/*
+	if( (asterisk_guirPath && !asterisk_guiANOW) || ( !asterisk_guirPath && !asterisk_guiANOW) ){ // if is BE 
+	newpanel( ["Provisioning", "provisioning.html", "Settings related to Polycom auto provisioning."]);
+	}
+	*/
+	newpanel( ["Options", "localexts.html", "Admin Settings"]);
+	return panels;
+}
+
+
+function pingevery(a){
+	window.setTimeout(makeping, 1000);
+	keepPinging = setInterval( makeping, a*250 );
+	astmanEngine.run_tool(asterisk_guiZtscan, function(t) { // run ztscan and then try loading ztscan.conf
+		setTimeout( function(){config2json('ztscan.conf', 0, get_FXOFXSPORTS);} , 200);
+		// leave some time for ztscan to generate ztscan.conf
+	});
+}
+
+function makeping(){
+	makerequest("","","action=ping", function(t){ if( t.match(asterisk_guipingerror) ){ window.location.href=window.location.href;} } );
+}
+
+eventeater.eventcb = function(msgs) {
+	if (loggedon == 1){
+		astmanEngine.pollEvents();
+	}
+}
+
+function setLoggedOn(onoff) {
+	if(!onoff){return;}
+	loggedon = 1;
+	var panels = returnpanels();
+	for( var r=0; r < panels.length; r++ ){
+		t = panels[r].page.split(".html")[0];
+		_$( t + "_U" ).style.height = "1px";
+		_$( t + "_U" ).style.visibility = "hidden";
+		_$( t ).style.visibility = "visible";
+	}
+	_$("home").style.visibility = "visible";
+	_$("home_U").style.height = _$('configpanel').pheight;
+	_$("home_U").style.visibility = "visible";
+}
+
+function loadscreen(srcbody) {
+	_$('mainscreen').style.visibility = "visible";
+}
+
+
+function show_Acctooltip(tip){
+	if( loggedon != 1){ return; }
+	_$('tooltip').innerHTML = tip ;
+
+}
+
+function registerajax() {
+	showdiv_statusmessage();
+	fit_toScreen();
+	ASTGUI.events.add( window , 'resize', fit_toScreen );
+	pao();
+	astmanEngine = new Astman();
+	astmanEngine.setURL(asterisk_rawmanPath );
+	createpanels();
+	var links_str = "";
+	if(asterisk_guirPath){ links_str += '<a href="#" onclick="system_link()">System Configuration</a><BR>'; }
+	links_str += '<a target="_extern" href="http://www.digium.com/en/company/profile/">About Digium</a>&nbsp;|&nbsp;';
+	if(asterisk_guiANOW){ links_str += '<a target="_extern" href="http://www.asterisknow.org/bugs">Report a Bug</a>&nbsp;|&nbsp;'
+		+ '<a target="_extern" href="http://www.asterisknow.org/help">Help</a>&nbsp;' ;
+	}
+	_$('linksToshow').innerHTML = links_str;
+	_$('mainscreen').src = "home.html" ;
+	if( navigator.userAgent.indexOf("MSIE") != -1 || navigator.userAgent.indexOf("Konqueror") != -1 || navigator.userAgent.indexOf("Safari") != -1 ){
+		gui_feedback(browser_alert, 'green');
+	}
+}
+
+function Logoff() {
+	if(!confirm("Are you sure ?")){ return true; }
+	makerequest("","","action=logoff", function(t){ window.location.href=window.location.href; } );
+}
+
+function system_link(){
+	var newwindow_href = 'https://' + location.hostname + ':8003';
+	window.open(newwindow_href ,'mainwindow','width=1024,height=768,resizable=no, scrollbars=yes, toolbar=no, location=no,status=yes, menubar=no')
+}
+
+function reboot(){
+	if(!confirm("Reboot System ?")){ return true; }
+	parent.astmanEngine.run_tool("init 6", callback = function(){ gui_feedback("Rebooting System!!", 'green'); });
+}
+
+function reloadConfig(){
+	_$('reloadconfig').style.visibility = "hidden";
+	window.setTimeout( function(){ _$('reloadconfig').style.visibility = "visible"; }, asterisk_guifbt );
+	//gui_feedback("Running ztcfg ");
+	//astmanEngine.run_tool('ztcfg', function(t) { // run ztcfg
+		astmanEngine.cliCommand('reload', function(t){ gui_feedback("Restarted Asterisk !!",'blue'); 
+			if(REQUIRE_RESTART == true){
+				alert('The changes you made requires a restart.\n' + 'Your hardware might not work properly until you reboot !!');
+				REQUIRE_RESTART = false;
+			}
+		}); // then reload asterisk
+	//});
+}
+
+
+function pao(){
+	var acb = _$('dimg');
+	var tmp_left = acb.offsetLeft -1;
+	var tmp_top = acb.offsetTop -1 ;
+	var tmp_parent = acb;
+	while(tmp_parent.offsetParent != document.body){
+		tmp_parent = tmp_parent.offsetParent;
+		tmp_left += tmp_parent.offsetLeft;
+	}
+	_$('AdvancedOptions').style.left = tmp_left + 700 ;
+	_$('AdvancedOptions').style.top = 1 ;
+	_$('AdvancedOptionsSelect').selectedIndex=-1;
+}
+
+function hide_advops(){
+	_$('AdvancedOptions').style.visibility = "hidden";
+
+	if ( _$('mainscreen').contentWindow.flipadvbasic  ){
+		_$('mainscreen').contentWindow.flipadvbasic();
+	}
+
+}
+
+function goto_advancedoption(){ 
+	_$('mainscreen').style.visibility = "hidden";
+	if( _$('AdvancedOptionsSelect').value == 'TOSETUP'){top.window.location.href = "./setup/install.html"; return;}
+
+	var t;
+	var panels = returnpanels();
+	for( var r=0; r < panels.length; r++ ){
+		t = panels[r].page.split(".html")[0];
+		_$( t + "_U" ).style.height = "1px";
+		_$( t + "_U" ).style.visibility = "hidden";
+	}
+	_$( "localexts_U" ).style.height = _$('configpanel').pheight;
+	_$( "localexts_U" ).style.visibility = "visible";
+
+	_$('mainscreen').src = _$('AdvancedOptionsSelect').value ;
+}
+</script>
+<head>
+	<title>Asterisk Configuration GUI</title>
+	<link rel="shortcut icon" href="images/favicon.ico" />
+</head>
+<body onload="registerajax()" topmargin=1>
+<table align="center" bgcolor="#dddddd" border="0" cellpadding="0" cellspacing="0" width="950" id="TOP_MAINTABLE">
+<tbody>
+	<tr height="47">
+		<td align="right" bgcolor="white" height="47" valign="bottom" id="dimg"><img src="images/digiumlogo.gif" align="left"></td>
+		<td align="center" bgcolor="white" valign="middle">
+		<div id="feedback_round" style="background-color: #FFFFFF; width: 400px; display: none;">
+			<div id="feedback" style="font-family: Arial,sans-serif,Helvetica,Trebuchet MS; font-size: 13px; font-weight: bold;"></div>
+		</div>
+		<input id="login_name" type="hidden">
+	</td>
+	<td align="right" bgcolor="white" valign="bottom" id='linksToshow'>
+	</td>
+</tr>
+<tr>	<td valign=top>
+		<div id="configpanel" style="border-bottom: 1px solid rgb(31, 102, 155); width: 150px;"></div>
+	</td>
+	<td id="screenholder" bgcolor="#efefef" valign="top" width="550">
+		<div id="titlebar" class="mainscreenTitleBar" style="position: absolute; top: 48px;">
+			<span style="margin-left: 4px; font-weight: bold;">Loading Screen&nbsp;<img src="images/dots.gif"></span>
+		</div>
+		<div id="borderbox" class="mainscreenBorderBox" height="100%"></div>
+		<iframe border="0" marginheight="0" marginwidth="0" id="mainscreen" style="position: absolute; top: 48px;" frameborder="0" scrolling="no" width="540"></iframe>
+	</td>
+	<td valign="top" width="250">
+		<div class="mainscreenTooltipBar" align="right">
+			<span id="reloadconfig" style="display:none">Activate Changes</span>&nbsp;&nbsp;&nbsp;<span id="logoutlink" style="display:none">Logout</span>&nbsp;
+		</div>
+		<div style="padding-top: 0pt; padding-bottom: 0pt;" id="tooltip_round" class="tooltip_round"><div style="background-color: rgb(221, 221, 221);"><span style="border-style: solid; border-color: rgb(206, 206, 206); border-width: 0px 1px; overflow: hidden; background-color: rgb(191, 191, 191); display: block; height: 1px; font-size: 1px; margin-left: 1px; margin-right: 1px;"></span><span style="border-style: solid; border-color: rgb(206, 206, 206); border-width: 0px 1px; overflow: hidden; background-color: rgb(191, 191, 191); display: block; height: 1px; font-size: 1px; margin-left: 0px; margin-right: 0px;"></span></div>
+		<div id="tooltip" style="margin-left: 4px; font-family: Trebuchet MS,Arial,Helvetica,sans-serif; font-size: 11px;">Move the mouse over to a field to see tooltips</div>
+		<div style="background-color: rgb(221, 221, 221);"><span style="border-style: solid; border-color: rgb(206, 206, 206); border-width: 0px 1px; overflow: hidden; background-color: rgb(191, 191, 191); display: block; height: 1px; font-size: 1px; margin-left: 0px; margin-right: 0px;"></span><span style="border-style: solid; border-color: rgb(206, 206, 206); border-width: 0px 1px; overflow: hidden; background-color: rgb(191, 191, 191); display: block; height: 1px; font-size: 1px; margin-left: 1px; margin-right: 1px;"></span></div></div>
+		<center> <div id="buynow_div" style="position:absolute; top:300px; width:240px; margin-left:4px;" align="center"></div>	</center>
+	</td>
+</tr>
+<tr><td colspan="3" align="center" height="18">
+		<div id="status" class="statusbar">Copyright 2006-2007 Digium, Inc.  Digium and Asterisk are registered <a href="http://www.digium.com/en/company/profile/trademarkpolicy.php">trademarks</a> of Digium, Inc.  All Rights Reserved. <i><a href="http://www.digium.com/en/company/profile/terms.php">Legal Information</a></i></div>
+		</td>
+</tr>
+</tbody></table>
+<div id="AdvancedOptions" style="display:none; position:absolute; z-index:1004; width:220px; background-color : #EFEFEF; padding : 2px 2px 4px 2px;">
+	<table cellpadding=1 cellspacing=0 border=0 width=220>
+		<tr>	<td align=right>Goto:&nbsp;</td>
+			<td align="center">
+			<select id="AdvancedOptionsSelect" class="input9" onchange="goto_advancedoption()">
+				<option value="moh.html">Music on Hold</option>
+				<option value="emailsettings.html">VM Email settings</option>
+				<option value="sip.html">Global SIP Settings</option>
+				<option value="iax.html">Global IAX Settings</option>
+			<!--	<option value="jabber.html">Jabber</option>
+				<option value="jingle.html">Jingle</option>
+				<option value="zapata.html">Zap Channel</option>	-->
+				<option value="options.html">Change Password</option>
+				<option value="TOSETUP">Setup Wizard</option>
+			</select>
+			</td>
+			<td align="right" valign="top"><span style="color: #909090; font-size: 8pt;cursor:pointer;" onclick="hide_advops();">X</span></td>
+		</tr>
+	</table>
+</div>
+</body>

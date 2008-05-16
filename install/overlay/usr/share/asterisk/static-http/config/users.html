@@ -1,0 +1,642 @@
+<!--
+ * Asterisk-GUI	-	an Asterisk configuration interface
+ *
+ * Create Users and assign them devices , dialplans etc
+ *
+ * Copyright (C) 2006-2007, Digium, Inc.
+ *
+ * Mark Spencer <markster@digium.com>
+ * Pari Nannapaneni <pari@digium.com>
+ *
+ * See http://www.asterisk.org for more information about
+ * the Asterisk project. Please do not directly contact
+ * any of the maintainers of this project for assistance;
+ * the project provides a web site, mailing lists and IRC
+ * channels for your use.
+ *
+ * This program is free software, distributed under the terms of
+ * the GNU General Public License Version 2. See the LICENSE file
+ * at the top of the source tree.
+ *
+-->
+<script src="scripts/prototype.js"></script>
+<script src="scripts/astman.js"></script>
+<script src="scripts/tooltip.js"></script>
+<link href="stylesheets/schwing.css" media="all" rel="Stylesheet" type="text/css" />
+<script>
+var origwidth;
+var widgets = new Object;
+var callbacks = new Object;
+var extencallbacks = new Object;
+var allcodecs = new Array;
+var fieldnames = ['callwaiting' ,'cancel' ,'cid_number' ,'context' ,'delete' ,'email' ,'fullname' ,'group' ,'hasagent' ,'hasdirectory' ,'hasiax' ,'hasmanager' ,'hassip' ,'hasvoicemail' ,'deletevoicemail' ,'host' ,'mailbox' ,'name' ,'new' ,'save' ,'secret' ,'threewaycalling' ,'vmsecret' ,'zapchan', 'registeriax', 'registersip','macaddress','autoprov','label','canreinvite','nat','dtmfmode', 'disallow','allow', 'insecure'];
+
+var localextenlength = 4;
+var allow_aliasextns = "no";
+var allow_an_extns = "no" ;
+
+var USER_ZAPCHAN = '' ; // this global variable is used to know if the selected user's zapchan is changed between
+// callbacks.postselect and callbacks.savechanges, if it is changed we set parent.REQUIRE_RESTART to true;
+// and if parent.REQUIRE_RESTART is true - we nolonger care about updating/keeping track of this variable anyway.
+
+function load_customerinfo(){
+	parent.$('buynow_div').innerHTML = "Need a phone, some software, or something else?<BR> Click on the 'Where to Buy' button to get directly to products.<BR/><BR/><input type=\"button\" id=\"buynow_button\" value=\"Where to Buy\">";
+
+	parent.$('buynow_button').onclick = function(){	 
+		win=window.open('','myWin');
+		document.buynow_form.target='myWin';
+		document.buynow_form.submit();
+	}
+}
+
+extencallbacks.format = function(t, x) {
+	if ((t.name != specialcontext)){ return null; }
+	return format_extension(_$('extensions'), t, x);
+}
+
+extencallbacks.loaded = function() {
+	merge_extensions(_$('devices'), _$('extensions'));
+	parent.loadscreen(this);
+	load_customerinfo();
+}
+
+extencallbacks.eachline = true;
+
+var add_DigitalChannels = function(k){ // k could be 'x', 'x-y'
+	var n, _zapchan = _$('zapchan') ;
+
+	if( k.contains('-') ){
+		var l = Number(k.split('-')[0]);
+		var m = Number(k.split('-')[1]);
+		for( n = l ; n <= m; n++ ){
+			ASTGUI.selectbox.append(_zapchan,"Channel #" + n, n);
+		}
+	}else{
+		n = Number(k);
+		ASTGUI.selectbox.append(_zapchan,"Channel #" + n, n);
+	}
+}
+
+
+callbacks.format = function(t) {
+	if ((t.name == 'general')){
+		if (t.fieldbyname['localextenlength'] && t.fieldbyname['localextenlength'].length){
+			localextenlength =  t.fieldbyname['localextenlength'] ;
+		}
+		if ( t.fieldbyname['allow_an_extns'] && t.fieldbyname['allow_an_extns'].length ){
+			allow_an_extns =  t.fieldbyname['allow_an_extns'] ;
+			if(allow_an_extns == "yes"){ $('name').setAttribute("pattern", '^[a-zA-Z0-9]*$'); }
+		}
+		if (t.fieldbyname['allow_aliasextns'] && t.fieldbyname['allow_aliasextns'].length){
+			allow_aliasextns =  t.fieldbyname['allow_aliasextns'] ;
+		}
+		return null;
+	}
+	
+	if ( t.name.beginsWith('span_') && t.fieldbyname['signalling'].beginsWith('fxo') && t.fieldbyname['zapchan'] ) {
+		add_DigitalChannels(t.fieldbyname['zapchan']);
+		return null;
+	}
+
+ 	if ( t.fieldbyname['context'] == asterisk_guiTDPrefix + t.name ) {
+		return null;
+	}
+	
+	if (t.fieldbyname['fullname'] && t.fieldbyname['fullname'].length ) {
+		return t.name + " -- " + t.fieldbyname['fullname'];
+	} else{
+		return t.name;
+	}
+}
+callbacks.loaded = function() {
+	_$('devices').contentEditable = 'true';
+	_$('devices').disabled = 0;
+
+	if( _$('zapchan').options.length == 0) {
+		_$('zapchan').style.display="none";
+		_$('noanaloglines').style.display="";
+	}
+
+	parent.astmanEngine.config2list("extensions.conf", _$('extensions'), new Array(), extencallbacks);
+}
+callbacks.sortfunc = function(a,b) {
+	return (a.name < b.name) ? -1 : 1;
+}
+callbacks.checkparams = function(box) {
+	_$('mailbox').value = _$('name').value;
+	_$('group').value = '';
+
+        if($('macaddress').value.length > 0) {
+                $('autoprov').value = "yes";
+                $('label').value = $('name').value;
+        } else {
+                $('autoprov').value = "no";
+                $('label').value = "";
+        }
+
+	return false;
+}
+callbacks.newcategory = function() {
+	var tmp = null;
+	var x;
+	var _devices = _$('devices');
+	gen = _devices.stored_config.catbyname['general'];
+	gen.fieldbyname['allow'] = 'all';
+	gen.fieldbyname['disallow'] = 'all';
+
+	tmp = objcopy(gen);
+	try{
+	if (gen){
+		x = gen.fieldbyname['userbase'];
+		for( var f=0; f < _devices.options.length ; f++ ){
+			if( x < _devices.options[f].innerHTML.split(' -- ')[0] ){ break; }
+			x++;
+		}
+	}else{
+		try{
+			x = ( parseInt( _devices.options[ _devices.options.length - 1 ].innerHTML.split(' -- ')[0] ) ) + 1;
+		}catch(err){
+			x = 6000; // a default value if one is not defined in users.conf's general context
+		}
+	}
+	if(isNaN(x)){x=6000;}
+	}catch(err){ x = 6000; }
+	tmp.name = x
+	return tmp;
+}
+callbacks.identifier = "extension";
+
+callbacks.beforeSaving = function(){
+	var _devices = _$('devices');
+	var _name = _$('name');
+	var _fullname = _$('fullname');
+
+	if(!_fullname.value.length){
+		gui_alert("Sorry, a User Name must be specified !");
+		_fullname.focus();
+		return false;
+	}
+	// check whether the length of extension is valid
+	if( localextenlength !=0 && (allow_an_extns == "no" && localextenlength !=  _name.value.length) ){
+		gui_alert( "Sorry, User Extension must be "+ localextenlength  + " digits !" );
+		return false;
+	}
+	if (!check_patternonfields( ['name', 'fullname', 'secret','email', 'cid_number'] ) ){
+		return false;
+	}
+
+        if( _$('macaddress').value.length != 12 && _$('macaddress').value.length != 0 ) {
+                alert("Sorry, Phone Serial must be 12 characters !");
+                _$('macaddress').focus();
+                return false;
+        }
+
+	if(allow_aliasextns == "no"){	// check whether the selected analog line is assigned to another user extension
+		var tmp_usedanaloglines = [] ;
+		for ( var i=1; i < _devices.stored_config.categories.length ; i++){
+			if ( _devices.stored_config.categories[i] != null ){
+			if ( _devices.stored_config.categories[i].fieldbyname['zapchan'] && _devices.stored_config.categories[i].fieldbyname.zapchan.length && _devices.stored_config.categories[i].name != _devices.value )
+				tmp_usedanaloglines.push( _devices.stored_config.categories[i].fieldbyname.zapchan);
+			}
+		}
+		if ( InArray(tmp_usedanaloglines,_$('zapchan').value)){
+			gui_alert("This Analog Phone has already been assigned to another user extension.\n Please select a different Phone");
+			return false;
+		}
+	}
+
+	if(_devices.value != _name.value){
+		for(var k=0; k<_devices.length; k++ ){
+			var tmp = _devices.options[k].innerHTML.split(' -- '); 
+			if( tmp[0] ==  _name.value ){
+				gui_alert("Sorry, an entry named " + _name.value + " already exists!");
+				return false;
+			}
+		}
+	}
+	_$('registeriax').checked =_$('hasiax').checked ;
+	_$('registersip').checked =_$('hassip').checked ;
+	return true;
+}
+
+callbacks.postselect = function(box, val) {
+	parent._$('tooltip').innerHTML = parent.tooltip_default ;
+	_$('codecs_text').innerHTML = '' ; 
+	if( box.selectedIndex == -1)
+		return true;
+	if(val == "reserved" ){
+		if( box.options[box.selectedIndex].text.toLowerCase().match("-- call queue") || box.options[box.selectedIndex].text.toLowerCase().match('call queue ')  ){
+			//parent.$('tooltip').innerHTML = " <font size=\"-2\" color=\"#FF0000\">Click on \'Call Queues\' panel to edit call queues </font>";
+			box.selectedIndex = -1;
+			gui_alert(" You can not edit the selected entry from here.\n Please click on the \'Call Queues\' panel to edit the selected entry");
+			return true;
+		}
+		if( box.options[box.selectedIndex].text.toLowerCase().match("-- conference bridge") || box.options[box.selectedIndex].text.toLowerCase().match('conference bridge ')  ){
+			//parent.$('tooltip').innerHTML = " <font size=\"-2\" color=\"#FF0000\">Click on \'Conferencing\' panel to edit a Conference Bridge</font>";
+			box.selectedIndex = -1;
+			gui_alert(" You can not edit the selected entry from here.\n Please click on the \'Conferencing\' panel to edit the selected entry");
+			return true;
+		}
+		if( box.options[box.selectedIndex].text.toLowerCase().match("-- check voicemail") || box.options[box.selectedIndex].text.toLowerCase().match('check voicemail ') ){
+			box.selectedIndex = -1;
+			//parent.$('tooltip').innerHTML = " <font size=\"-2\" color=\"#FF0000\">Click on \'Voicemail\' panel to edit Voicemail Preferences</font>";
+			gui_alert(" You can not edit the selected entry from here.\n Please click on the \'Voicemail\' panel to edit the selected entry");
+			return true;
+		}
+		if( box.options[box.selectedIndex].text.toLowerCase().match("-- voice menu") || box.options[box.selectedIndex].text.toLowerCase().match('voice menu ')     ){
+			box.selectedIndex = -1;
+			//parent.$('tooltip').innerHTML = " <font size=\"-2\" color=\"#FF0000\">Click on \'Voicemail\' panel to edit Voicemail Preferences</font>";
+			gui_alert(" You can not edit the selected entry from here.\n Please click on the \'Voice Menus\' panel to edit the selected entry");
+			return true;
+		}
+	}
+	showhide();
+	/* check to see if we need to display out email/voicemail settings. */
+	_$('codecs_text').innerHTML = 'disallow: '+ _$('disallow').value + ' <BR> allow:' + _$('allow').value ;
+
+	USER_ZAPCHAN = _$('zapchan').value ;
+}
+
+
+callbacks.savechanges = function(){
+	if( parent.REQUIRE_RESTART == false && _$('zapchan').value != USER_ZAPCHAN ){
+		parent.REQUIRE_RESTART = true;
+	}
+
+	var y =  _$('name').value ;
+	var uri1 = build_action('update', 0 , y , 'signalling', 'fxo_ks');  // set the signalling to fxo_ks
+	makerequest( 'u', 'users.conf' , uri1 , function(t){ } );
+}
+
+
+function dialplans_loaded(b){
+	var c =  b ;
+	var _context = _$('context') ;
+
+	for( var d in c ){
+		if ( c.hasOwnProperty(d) && d.substr(0,11) == 'numberplan-'  ) {
+			var txt = (c[d]['plancomment'])?unescape(c[d]['plancomment']) : d;
+			ASTGUI.selectbox.append(_context,txt, d);
+		}
+	}
+
+	parent.astmanEngine.config2list("users.conf", _$('devices'), widgets, callbacks);
+}
+
+function localajaxinit() {
+	ASTGUI.events.add(document, 'mouseover', show_tooltip);
+
+	/*
+	// Automatically open the related panel - like when this page is called using a back button
+	// This is working .. but is causing the current page to load twice.
+	for( var v=0; v < parent.panels.length ; v++){	
+		if ( parent.panels[v].name == "users"){
+			parent.accordion.showTabByIndex(v,true);			
+			break;
+		}
+	}
+	*/
+
+	setWindowTitle("User Extensions");
+	_$('devices').contentEditable = 'false';
+	for (var x =0; x < fieldnames.length; x++ ) {
+		widgets[fieldnames[x]] = _$(fieldnames[x]);
+		widgets[fieldnames[x]].disabled = true;
+	}
+	
+	load_codecs_fromast();
+	//parent.astmanEngine.config2list("zapscan.conf", _$('zapchan'), new Array(), phonecallbacks);
+}
+
+function load_codecs_fromast() {
+	
+	parent.astmanEngine.cliCommand('module show like codec_', function(resp) {
+		resp = resp.replace(/Response: Follows/, "");
+		resp = resp.replace(/Privilege: Command/, "");
+		resp = resp.replace(/--END COMMAND--/, "");
+		resp = resp.split("\n");
+		for(var i=0; resp[i] != undefined; i++) {
+			resp[i] = resp[i].split("_");
+			if(resp[i][1]) {
+				resp[i][1] = resp[i][1].split(/[. ]/); 
+				if(resp[i][1][0]) {
+					if(resp[i][1][0] == "a") {
+						continue; /* codec is a_mu, alaw to mulaw direct codec/decoder, not a codec preference. */
+					}
+					if(resp[i][1][0] == "g729a") { 
+						resp[i][1][0] = "g729"; 
+					}
+					/* make sure we add g729 to the global list */
+					allcodecs[i] = resp[i][1][0];
+				}
+			}
+		}
+		var _zapchan = _$('zapchan') ;
+		parent.FXS_PORTS_DETECTED.each( function(y) {
+			ASTGUI.selectbox.append( _zapchan,"Analog Port #" + y , y );
+		});
+
+		ASTGUI.selectbox.insert_before(_zapchan,"None", "", 0);
+		config2json('extensions.conf', 1, dialplans_loaded ) ;
+		return true;
+	});
+}
+
+
+function free_mem(){
+	parent.$('buynow_button').onclick = null;
+	parent.$('buynow_div').innerHTML = "";
+	if( navigator.userAgent.indexOf("MSIE") == -1 ){ return true; }
+	try{
+		widgets['save'].hostselectbox = null ;
+		widgets['cancel'].hostselectbox = null ;
+		widgets['new'].hostselectbox = null ;
+		widgets['delete'].hostselectbox = null ;
+		purge( document.body );
+	} catch(e){ }
+}
+
+
+CODECSETTINGS = {
+	selectbox_add: function(selectbox_id, codec){
+		switch(codec) {
+			case 'ulaw': ASTGUI.selectbox.append(selectbox_id,"u-law", "ulaw"); break;
+			case 'alaw': ASTGUI.selectbox.append(selectbox_id,"a-law", "alaw"); break;
+			case 'gsm': ASTGUI.selectbox.append(selectbox_id,"GSM", "gsm"); break;
+			case 'ilbc': ASTGUI.selectbox.append(selectbox_id,"ILBC", "ilbc"); break;
+			case 'speex': ASTGUI.selectbox.append(selectbox_id,"SPEEX", "speex"); break;
+			case 'g726': ASTGUI.selectbox.append(selectbox_id,"G.726", "g726"); break;
+			case 'adpcm': ASTGUI.selectbox.append(selectbox_id,"ADPCM", "adpcm"); break;
+			case 'lpc10': ASTGUI.selectbox.append(selectbox_id,"LPC10", "lpc10"); break;
+			case 'g729': ASTGUI.selectbox.append(selectbox_id,"G.729", "g729"); break;
+			default: break
+		}
+	},
+	selectbox_remove: function(selectbox_id,codec){
+		for (var x=0; x < $(selectbox_id).length; x++){
+			if( $(selectbox_id).options[x].value==codec ){	$(selectbox_id).remove(x); return true;}
+		}
+	},
+
+	update_div_setordercodecs:function(){
+		_$('disallowed').innerHTML=""; _$('allowed').innerHTML="";
+		if( _$('disallow').value == "all" && _$('allow').value =="all" ){ return true;}
+		if( _$('disallow').value == "all" ){
+			for(var i=0; i < allcodecs.length; i++) { /* Add the codecs that we have installed. */
+				if(allcodecs[i]) {
+				this.selectbox_add(_$('disallowed'), allcodecs[i]);
+				}
+			}
+		}else{
+			var tmp = _$('disallow').value.split(",");
+			for(var x=0; x < tmp.length; x++){ this.selectbox_add(_$("disallowed"), tmp[x]); }
+		}
+		if(_$('allow').value =="all"){
+			for(var i=0; i < allcodecs.length; i++) { /* Add the codecs that we have installed. */
+				if(allcodecs[i]) {
+					this.selectbox_add(_$('allowed'), allcodecs[i]);
+				}
+			}
+		}else{
+			var tmp = _$('allow').value.split(",");
+			for(var x=0; x < tmp.length; x++){
+				this.selectbox_add(_$("allowed"), tmp[x]);
+				this.selectbox_remove("disallowed",tmp[x]);
+			}
+		}
+	},
+
+	show_codecs: function(){
+		if( _$('devices').selectedIndex == -1 ){ return true; }
+		this.update_div_setordercodecs();
+		_$('codecs_content').style.display = "";
+		_$('bg_transparent').style.display ='';
+	},
+
+	enable_selectedcodec: function(){
+		if(_$('disallowed').selectedIndex == -1 ){return true;}
+		// add to allowed
+		this.selectbox_add(_$("allowed") ,  _$('disallowed').value );
+		// remove selected from disallowed
+		this.selectbox_remove("disallowed", _$('disallowed').value );
+		this.update_ordercodecs();
+	},
+
+	disable_selectedcodec: function(){
+		if(_$('allowed').selectedIndex == -1 ){return true;}
+		// add to disallowed
+		this.selectbox_add(_$("disallowed") ,  _$('allowed').value );
+		// remove selected from allowed
+		this.selectbox_remove("allowed", _$('allowed').value );
+		this.update_ordercodecs();
+	},
+
+	update_ordercodecs: function(){
+		var _allow = _$('allow') ;
+		var _allowed = _$('allowed') ;
+		var _disallow = _$('disallow');
+		var _disallowed = _$('disallowed');
+	
+		_disallow.value = "all";
+		_allow.value = "";
+
+		for (var x=0; x < _allowed.length ; x++){
+			if(x==0){
+				_allow.value = _allowed.options[x].value ; 
+			}else{
+				_allow.value = _allow.value + "," +  _allowed.options[x].value ; 
+			}
+		}
+		_$('save').disabled = false;
+		_$('cancel').disabled = false;
+
+		_$('codecs_text').innerHTML = 'disallow: '+ _disallow.value + ' <BR> allow:' + _allow.value ;
+	},
+	
+	disallow_all_refresh: function (){
+		_$('disallow').value = "all";
+		_$('disallowed').innerHTML=""; 	_$('allowed').innerHTML="";
+		_$('allow').value = "";
+		this.update_div_setordercodecs();
+		_$('disallow').value = "all";
+		_$('codecs_text').innerHTML = 'disallow: '+ _$('disallow').value + ' <BR> allow:' + _$('allow').value ;
+		_$('save').disabled = false;
+		_$('cancel').disabled = false;
+
+	},
+
+	codecs_hide: function (){
+		_$('codecs_content').style.display = 'none';
+		_$('bg_transparent').style.display ='none';
+	}
+}
+
+function showhide() {
+	var t = _$('hasvoicemail');
+	var fields_z = ['deletevoicemail', 'deletevoicemail_2', 'deletevoicemail_3']
+	if(t.checked) {
+		for(var x=0; x < fields_z.length; x++) {
+			_$(fields_z[x]).style.display="";
+		}
+	} else {
+		for(var x=0; x < fields_z.length; x++) {
+			_$(fields_z[x]).style.display="none";
+		}
+	}
+	return true;	
+}
+</script>
+<body id="foo" onload="localajaxinit()"  bgcolor="#EFEFEF" onunload="free_mem()">
+<div class="mainscreenTitleBar">
+	<span style="margin-left: 4px;font-weight:bold;">User and Phone Configuration</span>
+	<span style="cursor: pointer; cursor: hand;" onclick="window.location.href=window.location.href;" >&nbsp;<img src="images/refresh.png" title=" Refresh " border=0 >&nbsp;</span>
+</div>
+<div class="mainscreenContentBox" id="userscontent">
+<table class="mainscreenTable" align="center">
+	<tr valign="top">
+		<td colspan=2>User Extensions: </td>	
+	</tr>
+	<tr valign="top">
+		<td><select disabled size="25" id="devices" style="width:220px;"  class="input10"><option>Loading...</option></select></td>
+		<td style="width:311px; height: 415px"><select id='extensions' style='display:none;width:0px;height:0px'></select>
+			<div id='adjustments' style='width:310'>
+			<table cellspacing='0' cellpadding='0' width=310 border=0>
+			<tr valign="top">
+			<td align="center">
+				<table>
+				<tr><td class="field_text" tip="en,users,0">Extension:</td><td><input size='5' id='name' pattern='^\d*$' class="input8"></td></tr>
+				<tr><td class="field_text" tip="en,users,1">Name:</td><td><input size='20' id='fullname' pattern='^[a-zA-Z_0-9 ]*$' class="input8"></td></tr>
+				<tr><td class="field_text" tip="en,users,2">Password:</td><td><input size='5' id='secret' pattern='^[a-zA-Z_0-9]*$'  class="input8"></td></tr>
+				<tr><td class="field_text" tip="en,users,16">VM Password:</td><td><input size='5' id='vmsecret' pattern='^[0-9*]*$'  class="input8"></td></tr>
+				<tr><td class="field_text" tip="en,users,3">E-mail:</td><td><input size='20' id='email' pattern='^[0-9a-zA-Z\.\-\_\@]*$' class="input8"></td></tr>
+				<tr><td class="field_text" tip="en,users,4">Caller ID:</td><td><input size='12' id='cid_number'  pattern='^[\d\-]*$' class="input8"></td></tr>
+				<tr><td class="field_text" tip="en,users,5">Analog Phone:</td><td><select size="1" id='zapchan' style='width:140px' class="input8"></select>
+				<span id="noanaloglines" style="display:none" class="field_text"><I>&nbsp;No Analog lines detected.</I></span></td></tr>
+				<tr><td class="field_text" tip="en,users,6">Dial Plan:</td><td><select size='1' id='context' style='width:120px' class="input8"></select></td></tr>
+
+                                <tr>    <td class="field_text" tip="en,users,99">Phone Serial:</td>
+                                        <td>    <input size='14' id='macaddress' pattern='^[0-9a-f]*$' class="input8">
+                                                <input type='hidden' id='autoprov'><input type='hidden' id='label'>
+                                        </td>
+                                </tr>
+
+				<tr><td colspan='2' align='center'><input type='hidden' id='mailbox'><input type='hidden' id='group'><input type='checkbox' id='registersip' style="display:none"><input type='checkbox' id='registeriax' style="display:none"></td></tr>
+				</table>
+			</td>
+			</tr>
+			<tr><td align="center">
+				<fieldset style="width:280px">
+					<legend>&nbsp;Extension Options:&nbsp;</legend>
+				<table align='center' width=270 cellpadding=1 cellspacing=1>
+				<tr>
+					<td width=40 align=right><input onClick="showhide();" type='checkbox' id='hasvoicemail'></td>
+					<td class="field_text" tip="en,users,8">Voicemail</td>
+
+					<td align=right><input type='checkbox' id='hasdirectory'></td>
+					<td class="field_text" tip="en,users,9">In Directory</td>
+				</tr>
+				<tr id='deletevoicemail_3' style="display:none">
+					<td width=40 align=right><input style="display:none" type='checkbox' id='deletevoicemail'></td>
+					<td style="display:none" id='deletevoicemail_2' class="field_text" tip="en,users,25">Email Only</td>
+				</tr>
+				<tr>
+					<td align=right><input type='checkbox' id='hassip'></td>
+					<td class="field_text" tip="en,users,10">SIP</td>
+
+					<td align=right><input type='checkbox' id='hasiax'></td>
+					<td class="field_text" tip="en,users,11">IAX</td>
+				</tr>
+				<tr>
+					<td align=right><input type='checkbox' id='hasmanager'></td>
+					<td class="field_text" tip="en,users,12">CTI</td>
+
+					<td align=right>
+						<input type='checkbox' id='hasagent' dfalt='1'>
+						<input type='hidden' dfalt='dynamic' id='host'>
+					</td>
+					<td class="field_text" tip="en,users,15">Is&nbsp;Agent</td>
+				</tr>
+				<tr>
+					<td align=right><input type='checkbox' id='callwaiting'></td>
+					<td class="field_text" tip="en,users,13">Call&nbsp;Waiting</td>
+
+					<td align=right><input type='checkbox' id='threewaycalling'></td>
+					<td class="field_text" tip="en,users,14">3-Way&nbsp;Calling</td>
+				</tr>
+				<tr>
+					<td align=right><input type='checkbox' id='canreinvite'></td>
+					<td class="field_text" tip="en,users,21">Can Reinvite</td>
+
+					<td align=right><input type='checkbox' id='nat'></td>
+					<td class="field_text" tip="en,users,22">NAT</td>
+				</tr>
+				<tr>
+					<td align=right colspan=3><input id="dtmfmode" size=10 class="input8" dfalt="rfc2833"></td>
+					<td class="field_text" tip="en,users,23">DTMFMode</td>
+				</tr>
+				<tr>
+					<td align=right colspan=3><input id="insecure" size=10 class="input8"></td>
+					<td class="field_text" tip="en,users,26">Insecure</td>
+				</tr>
+				</table>
+				</fieldset>
+			</td>
+			</tr>
+			<tr>
+				<td onclick="CODECSETTINGS.show_codecs(); CODECSETTINGS.disallow_all_refresh();" style="cursor: pointer"  class="field_text">
+					<div tip="en,users,24" style="margin-left: 15px;"><I>Edit Codecs</I>
+						<div style="margin-left: 15px;"><span id="codecs_text"></span></div>
+					</div>
+				</td>
+			</tr>
+			</table>
+			</div>
+		</td></tr>				
+		<tr>	<td align='center'><input type='button' id='new' value='New' class="buttonbold">&nbsp;&nbsp;<input type='button' id='delete' value='Delete' class="buttonbold"></td>
+				<td align='center'><input type='button' id='save' value='Save'  class="buttonbold">&nbsp;&nbsp;<input type='button' id='cancel' value='Cancel' class="buttonbold"></td>
+		</tr>
+</table>
+</div>
+<div style="display:none">
+<form name="buynow_form" id="buynow_form" action="http://www.digium.com/en/ecosystem/partners/partners.php" method="post">
+</form>
+</div>
+<!-- Codecs content DIV -->
+<div id="codecs_content" STYLE="display:none; position: absolute; left: 20; top: 125; width:350; height:245;  background-color:#F4EFE5;   border-width: 1px; border-color: #7E5538; border-style: solid;z-index:5">
+	<table width="100%" cellpadding=0 cellspacing=0 onmousedown="ASTGUI.startDrag(event , 'codecs_content');">
+	<TR bgcolor="#7E5538"  style="background-image:url('images/title_gradient.gif');">
+		<TD Height="20" align="center" style="cursor: move"><font style="color:#FFFFFF; font-size: 12px; font-weight:bold;">Codec Preferences</font></TD>
+		<TD Height="20" align="right" style="cursor: move"><A href="#" onclick="CODECSETTINGS.codecs_hide();"><font style="color:#FFFFFF; font-size: 12px; font-weight:bold;">X</font></A></TD>
+		<TD width=4></TD>
+	</TR>
+	</table>
+	<table align=center>
+		<tr><td><BR></td></tr>
+		<tr><td class="field_text">Allowed</td>
+			<td></td>
+			<td class="field_text">Disallowed</td>
+		</tr>
+		<tr><td><select id="allowed" size=9 class="input8"></select></td>
+			<td>	<input type="button" id="select_codec" value="<" onclick="CODECSETTINGS.enable_selectedcodec()"><BR>
+				<input type="button" id="deselect_codec" value=">" onclick="CODECSETTINGS.disable_selectedcodec()"><BR>
+				<input type="button" value="&#187;&#187;" onclick="CODECSETTINGS.disallow_all_refresh();">
+
+			</td>
+
+			<td><select id="disallowed" size=9 class="input8"></select></td>
+		</tr>
+		<tr><td></td>
+			<td></td>
+			<td class="field_text">
+				<input id='allow' style="display:none">
+				<input id='disallow'  style="display:none">
+			</td>
+		</tr>
+		<tr><td colspan=3 align=Center><input type="button" class="buttonbold" id="setordercodecs" value="Ok" onclick="CODECSETTINGS.codecs_hide()"></td></tr>
+		<tr><td><BR></td></tr>
+	</table>
+</div>
+<!-- Codecs content DIV -->
+<div id="bg_transparent" STYLE="display:none; position: absolute; left: 0; top: 24; width:100%; height:100%;  background-color:#EFEFEF; -moz-opacity:.50;opacity:.50; border-width: 1px; border-color: #EFEFEF; border-style: solid; z-index:4">
+</div>
+</body>

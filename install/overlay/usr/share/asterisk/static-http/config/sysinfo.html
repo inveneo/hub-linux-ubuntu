@@ -1,0 +1,164 @@
+<!--
+ * Asterisk-GUI	-	an Asterisk configuration interface
+ *
+ * Shows some key system Information
+ *
+ * Copyright (C) 2006-2007, Digium, Inc.
+ *
+ * Mark Spencer <markster@digium.com>
+ * Pari Nannapaneni <pari@digium.com>
+ *
+ * See http://www.asterisk.org for more information about
+ * the Asterisk project. Please do not directly contact
+ * any of the maintainers of this project for assistance;
+ * the project provides a web site, mailing lists and IRC
+ * channels for your use.
+ *
+ * This program is free software, distributed under the terms of
+ * the GNU General Public License Version 2. See the LICENSE file
+ * at the top of the source tree.
+ *
+-->
+<script src="scripts/prototype.js"></script>
+<script src="scripts/astman.js"></script>
+<script src="scripts/tooltip.js"></script>
+<link href="stylesheets/schwing.css" media="all" rel="Stylesheet" type="text/css" />
+<script>
+var sysinfocallbacks = new Object;
+var tabs = new Array('tab1', 'tab2', 'tab3');
+var divs_tohide = new Array('osversion_div', 'uptime_div', 'asterisk_div', 'today_div','hostname_div','ifconfig_div','df_div','memory_div');
+
+function show_window(x){
+	for(i=0; i < tabs.length ; i++){
+		document.getElementById(tabs[i]).className = "tab";
+	}
+	document.getElementById(tabs[x-1]).className = "tabselected";
+	document.getElementById(tabs[x-1]).blur();
+
+	switch(x){
+		case 1:
+		var divs_toshow = new Array('osversion_div', 'uptime_div', 'asterisk_div', 'today_div','hostname_div');
+		break;
+		case 2:
+		var divs_toshow = new Array('ifconfig_div');
+		break;
+		case 3:
+		var divs_toshow = new Array('df_div','memory_div');
+		break;
+	}
+	
+	for(var i=0; i < divs_tohide.length; i++ )
+			_$(divs_tohide[i]).style.display = "none";
+	for(var i=0; i < divs_toshow.length; i++ ){
+		_$(divs_toshow[i]).style.display = "";
+		//$(divs_toshow[i]).focus();
+	}
+	return false;
+}
+
+function update_sysinfo(){
+	parent.astmanEngine.run_tool(asterisk_guiSysInfo , onSuccess = function() {
+			_$('status_message').style.display='none';
+			getsysinfohtml();
+		}
+	);
+	return;
+}
+
+function getsysinfohtml(){
+	var opt = {
+		method: 'get',
+		asynchronous: true,
+		onComplete: function(originalRequest){
+			_$('sysinfohtml').innerHTML = originalRequest.responseText;
+			_$('osversion').innerHTML = _$('si_uname').innerHTML;
+			_$('uptime').innerHTML = _$('si_uptime').innerHTML.replace(/load average/, "<BR>Load Average");
+			_$('asterisk').innerHTML =_$('si_astver').innerHTML + "<BR>" + "Asterisk GUI-version " + asterisk_guiversion.substr(1) ;
+			_$('today').innerHTML = _$('si_date').innerHTML;
+			_$('hostname').innerHTML =_$('si_hostname').innerHTML;
+			_$('ifconfig').innerHTML =_$('si_ifconfig').innerHTML;
+			_$('diskusage').innerHTML = _$('si_du').innerHTML;
+			_$('memoryusage').innerHTML =_$('si_free').innerHTML;
+
+			var divs_toshow = new Array('osversion_div', 'uptime_div', 'asterisk_div', 'today_div','hostname_div');
+			for(var i=0; i < divs_toshow.length; i++ ){ _$(divs_toshow[i]).style.display = ""; }
+
+			document.getElementById(tabs[0]).className = "tabselected";
+		},
+		onFailure: function(t) {
+			_$('status_message').style.display='none';
+			gui_alert("Config Error: " + t.status + ": " + t.statusText);
+		}
+	};
+	opt.parameters="";
+	var tmp = new Ajax.Request(asterisk_guiSysInfo_output , opt);
+	return true;
+}
+
+
+function localajaxinit(){
+	ASTGUI.events.add(document, 'mouseover', show_tooltip);
+	setWindowTitle("System Info");
+	// call the tool (sysinfo)
+	showdiv_statusmessage();
+	_$('status_message').style.display="block";
+	_$('message_text').innerHTML = "Loading system Information ...";
+	parent.loadscreen(this);
+	update_sysinfo();
+}
+
+function free_mem(){
+	if( navigator.userAgent.indexOf("MSIE") == -1 ){ return true; }
+	try{
+		purge( document.body );
+	} catch(e){ }
+}
+
+</script>
+<body id="foo" onload="localajaxinit()" bgcolor="EFEFEF"  onunload="free_mem()">
+<div class="mainscreenTitleBar">
+	<span style="margin-left: 4px;font-weight:bold;">System Information</span>
+	<span style="cursor: pointer; cursor: hand;" onclick="window.location.href=window.location.href;" >&nbsp;<img src="images/refresh.png" title=" Refresh " border=0 >&nbsp;</span>
+</div>
+<div class="mainscreenContentBox" id="userscontent">
+<table class="mainscreenTable" align="center">
+	<tr valign="top" height="18">	
+	<td align="left">
+		<a href="#" class="tab" onclick="return show_window(1);" id="tab1" tip="en,sysinfo,0">General</a>&nbsp;&nbsp;
+		<a href="#" class="tab" onclick="return show_window(2);" id="tab2" tip="en,sysinfo,1">ifconfig</a>&nbsp;&nbsp;
+		<a href="#" class="tab" onclick="return show_window(3);" id="tab3" tip="en,sysinfo,2">Resources</a>&nbsp;&nbsp;
+		<div id="sysinfohtml" style="display:none"></div>
+
+		<div id="information" style=" border: solid 0px black; background: transparent; padding: 4px; width:95%;">
+			<BR>
+			<div id="osversion_div" style="display:none">
+					OS Version: <div id="osversion" style="font-family:courier; font-size:10pt;"></div><BR>
+			</div>
+			<div id="uptime_div" style="display:none">
+					Uptime: <div id="uptime" style="font-family:courier; font-size:10pt;"></div><BR>
+			</div>
+			<div id="asterisk_div" style="display:none">
+					Asterisk Build: <div id="asterisk" style="font-family:courier; font-size:10pt;"></div><BR>
+			</div>
+			<div id="today_div" style="display:none">
+					Server Date & TimeZone: <div id="today" style="font-family:courier; font-size:10pt;"></div><BR>
+			</div>
+			<div id="hostname_div" style="display:none">
+					Hostname: <div id="hostname" style="font-family:courier; font-size:10pt;"></div><BR>
+			</div>
+			<div id="ifconfig_div" style="display:none;">
+					ifconfig:<PRE><div id="ifconfig" style="font-family:courier; font-size:8.5pt;overflow :auto;"></div></PRE>
+			</div>
+			<div id="df_div" style="display:none;">
+					Disk Usage:<PRE><div id="diskusage" style="font-family:courier; font-size:10pt;"></div></PRE>
+			</div>
+			<div id="memory_div" style="display:none;">
+					Memory Usage:<PRE><div id="memoryusage" style="font-family:courier; font-size:8.5pt;"></div></PRE>
+			</div>
+		</div>
+	</td>
+	</tr>
+	<tr><td></td></tr>
+</table>
+</div>
+</body>
