@@ -338,7 +338,7 @@ function generate_applyMisdn(){
 
 	makerequest('u', "applymisdn.conf", uri, function(t) {
 		// call the script that would generate /etc/misdn-init.conf from /etc/asterisk/applymisdn.conf
-		parent.astmanEngine.run_tool("sh /var/lib/asterisk/scripts/editmisdn.sh applysettings", function(t) {
+		parent.astmanEngine.run_tool("sh /usr/share/asterisk/scripts/editmisdn.sh applysettings", function(t) {
 			alert("You need to restart your machine for these settings to take effect");
 			window.location.href= "misdn.html";
 			return true; 

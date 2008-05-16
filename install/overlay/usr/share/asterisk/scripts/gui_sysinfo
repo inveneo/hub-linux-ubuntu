@@ -1,7 +1,7 @@
 #!/bin/sh
-SYSINFO_OUTPUT="/var/lib/asterisk/static-http/config/sysinfo_output.html"
+SYSINFO_OUTPUT="/usr/share/asterisk/static-http/config/sysinfo_output.html"
 
-#SYSINFO_OUTPUT="/var/lib/asterisk/static-http/config/sysinfo_output.html"
+#SYSINFO_OUTPUT="/usr/share/asterisk/static-http/config/sysinfo_output.html"
 
 UNAME="`uname -a`"
 /bin/echo "<div id=si_uname>$UNAME</div>" > $SYSINFO_OUTPUT
@@ -31,21 +31,21 @@ MEMORYUSAGE=`free`
 THISMONTH=`/bin/date +%b`
 THISDAY=`/bin/date +%d`
 THIS_DAY=`/bin/date +%_d`
-/bin/grep /var/log/asterisk/messages -e "$THISMONTH\( $THISDAY\| $THIS_DAY\)" > /var/lib/asterisk/static-http/config/today_log.html
+/bin/grep /var/log/asterisk/messages -e "$THISMONTH\( $THISDAY\| $THIS_DAY\)" > /usr/share/asterisk/static-http/config/today_log.html
 
 #/bin/echo "<div id=bkp_files>" >> $SYSINFO_OUTPUT 
-#/bin/mkdir -p /var/lib/asterisk/gui_configbackups
-#/bin/ls /var/lib/asterisk/gui_configbackups/ >> $SYSINFO_OUTPUT
+#/bin/mkdir -p /usr/share/asterisk/gui_configbackups
+#/bin/ls /usr/share/asterisk/gui_configbackups/ >> $SYSINFO_OUTPUT
 #/bin/echo "</div>" >> $SYSINFO_OUTPUT 
 
 #/bin/echo "<div id=rec_files>" >> $SYSINFO_OUTPUT 
-#/bin/mkdir -p /var/lib/asterisk/sounds/record
-#/bin/ls /var/lib/asterisk/sounds/record/ >> $SYSINFO_OUTPUT
+#/bin/mkdir -p /usr/share/asterisk/sounds/record
+#/bin/ls /usr/share/asterisk/sounds/record/ >> $SYSINFO_OUTPUT
 #/bin/echo "</div>" >> $SYSINFO_OUTPUT 
 
 #/bin/echo "<div id=sound_files>" >> $SYSINFO_OUTPUT 
-#/bin/mkdir -p /var/lib/asterisk/sounds
-#/bin/ls /var/lib/asterisk/sounds/ >> $SYSINFO_OUTPUT
+#/bin/mkdir -p /usr/share/asterisk/sounds
+#/bin/ls /usr/share/asterisk/sounds/ >> $SYSINFO_OUTPUT
 #/bin/echo "</div>" >> $SYSINFO_OUTPUT 
 
 
