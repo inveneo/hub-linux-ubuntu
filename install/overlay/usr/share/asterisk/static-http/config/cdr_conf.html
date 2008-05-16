@@ -26,14 +26,14 @@
  * //       if [csv] is not found, add [csv] 
  * //        Reload asterisk
  * //
- * // ln -s /var/log/asterisk/cdr-csv/Master.csv /var/lib/asterisk/static-http/Master.csv
+ * // ln -s /var/log/asterisk/cdr-csv/Master.csv /usr/share/asterisk/static-http/Master.csv
  * // redirect to the cdr.html 
  -->
 <script type="text/javascript" src="scripts/prototype.js"></script>
 <script type="text/javascript" src="scripts/astman.js"></script>
 <link href="stylesheets/schwing.css" media="all" rel="Stylesheet" type="text/css" />
 <script type="text/javascript">
-var symlink_csv = 'touch /var/log/asterisk/cdr-csv/Master.csv && ln -s /var/log/asterisk/cdr-csv/Master.csv /var/lib/asterisk/static-http/Master.csv';
+var symlink_csv = 'touch /var/log/asterisk/cdr-csv/Master.csv && ln -s /var/log/asterisk/cdr-csv/Master.csv /usr/share/asterisk/static-http/Master.csv';
 
 var redirect_ToCdr = function(){
 	parent.astmanEngine.run_tool(symlink_csv, function(t) {

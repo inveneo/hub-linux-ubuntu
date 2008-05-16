@@ -30,12 +30,12 @@ function thisday_log(){
 	var _ld = _$('log_day').value; 
 	if(  _ld < 10 ){ var space = "  "; }else{ var space = " ";  }
 	var tmp_command = "/bin/grep /var/log/asterisk/messages -e '" + _$('log_month').value + space + _ld 
-						+ " ' > /var/lib/asterisk/static-http/config/today_log.html" ;
+						+ " ' > /usr/share/asterisk/static-http/config/today_log.html" ;
 	parent.astmanEngine.run_tool( tmp_command , onSuccess = function() { _$('status_message').style.display='none'; load_todayslog(); } );
 }
 
 function touch_todayslog(){
-	parent.astmanEngine.run_tool( 'touch /var/lib/asterisk/static-http/config/today_log.html',onSuccess = function(){ thisday_log();});
+	parent.astmanEngine.run_tool( 'touch /usr/share/asterisk/static-http/config/today_log.html',onSuccess = function(){ thisday_log();});
 }
 
 
