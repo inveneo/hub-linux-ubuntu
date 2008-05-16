@@ -1,8 +1,6 @@
 #!/bin/sh
 SYSINFO_OUTPUT="/usr/share/asterisk/static-http/config/sysinfo_output.html"
 
-#SYSINFO_OUTPUT="/usr/share/asterisk/static-http/config/sysinfo_output.html"
-
 UNAME="`uname -a`"
 /bin/echo "<div id=si_uname>$UNAME</div>" > $SYSINFO_OUTPUT
                 
@@ -45,7 +43,7 @@ THIS_DAY=`/bin/date +%_d`
 
 #/bin/echo "<div id=sound_files>" >> $SYSINFO_OUTPUT 
 #/bin/mkdir -p /usr/share/asterisk/sounds
-#/bin/ls /usr/sharek/asterisk/sounds/ >> $SYSINFO_OUTPUT
+#/bin/ls /usr/share/asterisk/sounds/ >> $SYSINFO_OUTPUT
 #/bin/echo "</div>" >> $SYSINFO_OUTPUT 
 
 

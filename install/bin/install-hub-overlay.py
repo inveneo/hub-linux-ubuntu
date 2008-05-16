@@ -68,8 +68,12 @@ def fix_owners(opt_root):
     # fix asterisk ownership
     uinfo=pwd.getpwnam('asterisk')
     path.walk(path.join(overlay,'etc','asterisk'), \
-         folder_visitor, \
-         lambda f: os.chown(f, uinfo[2],uinfo[3]))
+              folder_visitor, \
+              lambda f: os.chown(f, uinfo[2],uinfo[3]))
+
+    path.walk(path.join(overlay,'usr','share','asterisk'), \
+              folder_visitor, \
+              lambda f: os.chown(f, uinfo[2],uinfo[3]))
 
     # fix inveneo home ownership
     uinfo=pwd.getpwnam('inveneo')
@@ -146,6 +150,9 @@ def post_overlay_transfer(overlay_root, dest):
     fileutils.replace_in_file(token, dt, os.path.join(dest,'etc','fstab'))
     stdout.write("Writing disk type to 'menu.lst'\n")
     fileutils.replace_in_file(token, dt, os.path.join(dest,'boot','grub','menu.lst'))
+    stdout.write("Writing disk type to 'initramfs hook: inv-check-raid'\n")
+    fileutils.replace_in_file(token, dt, os.path.join(dest,'usr','share','initramfs-tools','scripts','local-top','inv_check_raid'))
+
 
     # update certs
     stdout.write("Updating Root Certificate Authorities...\n")

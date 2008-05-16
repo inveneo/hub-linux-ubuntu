@@ -28,8 +28,9 @@ def main():
     # remove any lock files that might block rule regeneration
     fileutils.safe_delete_node('/dev/.udev/.lock-70-persistent-net.rules')
 
-    stdout.write("\nUpdating APT and clearing APT cache...\n")
-    sp.call(['apt-get','update'])
+    stdout.write("\nClearing APT cache...\n")
+    sp.call(['apt-get','autoremove'])
+    sp.call(['apt-get','autoclean'])
     sp.call(['apt-get','clean'])
         
     return 0
