@@ -128,6 +128,10 @@ def send_email_notice(config, subject='', message=''):
     # take care of defaults
     if subject == '':
         subject=config.get_as_str('MONITOR_SMTP_DEFAULT_SUBJECT')
+  
+    # Add 'Subject' to subject string 'cause SMTP wants it
+    subject='Subject: '+subject
+
 
     failed_drives=get_missing_drives_for_array(config)
 
