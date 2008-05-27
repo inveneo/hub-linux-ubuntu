@@ -129,6 +129,9 @@ def send_email_notice(config, subject='', message=''):
     if subject == '':
         subject=config.get_as_str('MONITOR_SMTP_DEFAULT_SUBJECT')
 
+    # Add SMTP required 'Subject: ' prefix
+    subject='Subject: '+subject
+
     failed_drives=get_missing_drives_for_array(config)
 
     # TO DO: Make this a configurable message
