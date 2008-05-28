@@ -138,7 +138,7 @@ def send_email_notice(config, subject='', message=''):
     if message == '':
         message="Host: '%s' has a failed hard-drive which must be replaced.\n" % socket.gethostname()
         if len(failed_drives) > 0:
-            message+="\nFailed Drive: 'Disk %d' with serial number '%s'\n\n" % failed_drives[0]
+            message+="\nFailed Drive: 'Drive %d' with serial number '%s'\n\n" % failed_drives[0]
         else:
             message+="\nFailed drive could not be identified. Technician must test drives manually.\n\n"
     
