@@ -12,7 +12,7 @@ from os.path import abspath, dirname, join
 import cgi
 import cgitb; cgitb.enable()  # XXX remove this for production systems
 from IPy import IP
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, call
 from inveneo import configfiles
 
 ERR_PREFIX = 'err_'
@@ -23,6 +23,8 @@ LAN_ADDRESS_CHANGED = 'lan_address_changed'
 DHCP_CHANGED        = 'dhcp_changed'
 
 RESTARTER = 'restarter.py'
+
+CHKCONFIG = '/usr/sbin/sysv-rc-conf'
 
 # CGI validation helpers
 def required_single_word(name, default=None):
@@ -333,6 +335,7 @@ def rewrite_config_files(flags):
 
 def restart_services(flags):
     """Act on config file changes, guided by flags."""
+    global bool_lan_dhcp_on
 
     tasks = []
 
@@ -350,6 +353,9 @@ def restart_services(flags):
     if trigger([DNS_CHANGED]):
         tasks.append('bind')
     '''
+
+    # configure DHCP to start at boot or not
+    call([CHKCONFIG, 'dhcp3-server', ['off', 'on'][bool_lan_dhcp_on]])
 
     # maybe restart the DHCP server
     if trigger([DHCP_CHANGED]):
