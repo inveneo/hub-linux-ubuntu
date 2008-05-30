@@ -232,7 +232,8 @@ sub lan_stuff {
 
     $s .= "<tr><td align='right' width='20%'>&nbsp;</td>\n";
     $s .= "<td width='20%'>" .
-        &ui_checkbox('lan_dhcp_on', 'on', 'DHCP Server On', $in{'lan_dhcp_on'}).
+        &ui_checkbox('lan_dhcp_on', 'on', 'DHCP Server On',
+            $in{'lan_dhcp_on'} eq 'on') .
         "</td>\n";
     $s .= "<td>" . &error_text('lan_dhcp_on') . "</td></tr>\n";
 
