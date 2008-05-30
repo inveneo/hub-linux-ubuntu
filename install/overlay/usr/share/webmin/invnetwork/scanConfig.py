@@ -9,11 +9,10 @@ Copyright (c) 2007 Inveneo, inc. All rights reserved.
 
 # external modules
 import sys
-sys.path.append('/opt/inveneo/lib/python/inveneo')
 import os, traceback
 from subprocess import Popen, PIPE
 from IPy import IP
-import configfiles
+from inveneo import configfiles
 
 # executables
 CHKCONFIG = '/usr/sbin/sysv-rc-conf'

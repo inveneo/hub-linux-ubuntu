@@ -91,7 +91,7 @@ sub draw_form {
     print &wan_stuff;
     print "<br>\n";
     print &lan_stuff;
-    print &ui_submit('Submit');
+    print &ui_submit('Apply Changes');
     print &ui_form_end();
 }
 

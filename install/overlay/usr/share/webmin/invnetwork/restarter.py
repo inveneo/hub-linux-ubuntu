@@ -11,8 +11,7 @@ Copyright (c) 2008 Inveneo, inc. All rights reserved.
 
 import sys
 from subprocess import Popen, PIPE
-sys.path.append('/opt/inveneo/lib/python/inveneo')
-import processes
+from inveneo import processes
 
 def execute(cmdlist):
     """Executes the given command line, returning stdout and stderr strings."""

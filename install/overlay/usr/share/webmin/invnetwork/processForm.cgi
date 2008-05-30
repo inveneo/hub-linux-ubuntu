@@ -13,9 +13,7 @@ import cgi
 import cgitb; cgitb.enable()  # XXX remove this for production systems
 from IPy import IP
 from subprocess import Popen, PIPE
-
-sys.path.append('/opt/inveneo/lib/python/inveneo')
-import configfiles
+from inveneo import configfiles
 
 ERR_PREFIX = 'err_'
 
