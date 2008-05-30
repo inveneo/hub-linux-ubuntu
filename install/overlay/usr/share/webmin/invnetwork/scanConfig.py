@@ -12,7 +12,7 @@ import sys
 import os, traceback
 from subprocess import Popen, PIPE
 from IPy import IP
-from inveneo import configfiles
+from inveneo import configfiles, processes
 
 # executables
 CHKCONFIG = '/usr/sbin/sysv-rc-conf'
@@ -77,13 +77,9 @@ for subnet, sobj in o.subnets.iteritems():
 o = configfiles.EtcHostname()
 formvals['hostname'] = o.hostname
 
-# scan the running daemons for DHCP
-# XXX shouldn't this actually look for an existing startup script instead?
-command = [CHKCONFIG, '--list', DHCPD]
-output = Popen(command, stdout=PIPE).communicate()[0]
-tokens = output.split()
-level2 = tokens[2]
-formvals['lan_dhcp_on'] = level2.split(':')[1]
+# get list of currently executing processes
+procs = processes.ProcSnap()
+formvals['lan_dhcp_on'] = ['off', 'on'][procs.is_running('/usr/sbin/dhcpd3')]
 
 # report the findings
 #sys.stdout.write(urlencode(formvals))
