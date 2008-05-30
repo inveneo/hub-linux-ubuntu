@@ -14,10 +14,6 @@ from subprocess import Popen, PIPE
 from IPy import IP
 from inveneo import configfiles, processes
 
-# executables
-CHKCONFIG = '/usr/sbin/sysv-rc-conf'
-DHCPD = 'dhcp3-server'
-
 # values for potential display on the webpage form
 formvals = {}
 
