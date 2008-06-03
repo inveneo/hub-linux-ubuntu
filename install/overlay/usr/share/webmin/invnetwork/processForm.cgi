@@ -356,10 +356,11 @@ def restart_services(flags):
 
     # configure DHCP to start at boot or not
     call([CHKCONFIG, 'dhcp3-server', ['off', 'on'][bool_lan_dhcp_on]])
+    tasks.append(['dhcp_stop', 'dhcp_start'][bool_lan_dhcp_on])
 
     # maybe restart the DHCP server
     if trigger([DHCP_CHANGED]):
-        tasks.append('dhcp')
+        tasks.append('dhcp_restart')
 
     # maybe restart Samba
     if trigger([HOSTNAME_CHANGED, LAN_ADDRESS_CHANGED]):

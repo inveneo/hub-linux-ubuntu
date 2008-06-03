@@ -39,7 +39,10 @@ if wan:
 if lan:
     if lan.address: formvals['lan_address'] = lan.address.strNormal()
     if lan.netmask: formvals['lan_netmask'] = lan.netmask.strNormal()
-    if lan.gateway: formvals['lan_gateway'] = lan.gateway.strNormal()
+    if lan.gateway:
+        formvals['lan_gateway'] = lan.gateway.strNormal()
+    else:
+        formvals['lan_gateway'] = formvals['lan_address']
 
 # collect the DNS servers
 o = configfiles.EtcResolvConf()

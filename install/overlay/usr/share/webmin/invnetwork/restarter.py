@@ -10,7 +10,7 @@ Copyright (c) 2008 Inveneo, inc. All rights reserved.
 """
 
 import sys
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, call
 from inveneo import processes
 
 def execute(cmdlist):
@@ -26,7 +26,8 @@ def stop_start(script):
     (sout, serr) = execute([script, 'start'])
 
 # arguments are names of tasks (including services to restart)
-taskset = set(['hostname', 'networking', 'bind', 'dhcp', 'samba', 'apache'])
+taskset = set(['hostname', 'networking', 'bind', 'dhcp_stop', 'dhcp_start',
+    'dhcp_restart', 'samba', 'apache'])
 tasks = sys.argv[1:]
 for task in tasks:
     if not task in taskset:
@@ -49,10 +50,15 @@ if 'networking' in tasks:
 if 'bind' in tasks:
     stop_start('/etc/init.d/bind9')
 
-# maybe restart the DHCP server
-if 'dhcp' in tasks:
-    if procs.is_running('/usr/sbin/dhcpd3'):
-        stop_start('/etc/init.d/dhcp3-server')
+# maybe stop/start/restart the DHCP server
+if procs.is_running('/usr/sbin/dhcpd3'):
+    if 'dhcp_stop' in tasks:
+        call(['/etc/init.d/dhcp3-server', 'stop'])
+    elif 'dhcp_restart' in tasks:
+        call(['/etc/init.d/dhcp3-server', 'restart'])
+else:
+    if 'dhcp_start' in tasks:
+        call(['/etc/init.d/dhcp3-server', 'start'])
 
 # maybe restart Samba
 if 'samba' in tasks:
