@@ -318,6 +318,7 @@ def rewrite_config_files(flags):
     if lan_network in o.subnets:
         dhcp = o.subnets[lan_network]
     else:
+        flags.add(DHCP_CHANGED)
         dhcp = o.add_subnet(lan_network, lan_netmask)
         if trigger([LAN_ADDRESS_CHANGED]):
             # things are moving around...
@@ -326,9 +327,22 @@ def rewrite_config_files(flags):
             o.subnets.pop(old_lan_network, None)
     dhcp.subnet   = ip_lan_network
     dhcp.netmask  = ip_lan_netmask
-    dhcp.start_ip = ip_lan_network_range[int_lan_dhcp_range_start]
-    dhcp.end_ip   = ip_lan_network_range[int_lan_dhcp_range_end]
-    dhcp.options['routers'] = ip_lan_gateway.strNormal()
+
+    new_start = ip_lan_network_range[int_lan_dhcp_range_start]
+    if dhcp.start_ip != new_start:
+        flags.add(DHCP_CHANGED)
+        dhcp.start_ip = new_start
+
+    new_end = ip_lan_network_range[int_lan_dhcp_range_end]
+    if dhcp.end_ip != new_end:
+        flags.add(DHCP_CHANGED)
+        dhcp.end_ip = new_end
+
+    new_router = ip_lan_gateway.strNormal()
+    if dhcp.options['routers'] != new_router:
+        flags.add(DHCP_CHANGED)
+        dhcp.options['routers'] = new_router
+
     dhcp.options['domain-name'] = '"local"'
     dhcp.options['domain-name-servers'] = ip_lan_address.strNormal()
     o.write()

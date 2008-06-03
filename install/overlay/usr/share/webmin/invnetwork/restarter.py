@@ -9,21 +9,31 @@ be nohup'd so it runs to completion despite lost web connection.
 Copyright (c) 2008 Inveneo, inc. All rights reserved.
 """
 
-import sys
-from subprocess import Popen, PIPE, call
+import sys, os, time
+from subprocess import Popen, PIPE
 from inveneo import processes
+
+LOGDIR = '/var/log/webmin'
 
 def execute(cmdlist):
     """Executes the given command line, returning stdout and stderr strings."""
-    print cmdlist
+    fout.write('=== Command = %s\n' % str(cmdlist))
     (sout, serr) = Popen(cmdlist, stdout=PIPE, stderr=PIPE).communicate() 
-    print (sout, serr)
+    fout.write('--- stdout: ---\n%s\n' % sout)
+    fout.write('--- stderr: ---\n%s\n' % serr)
     return (sout, serr)
 
 def stop_start(script):
     """Stops service via given init script: if no errors, starts again."""
     (sout, serr) = execute([script, 'stop'])
     (sout, serr) = execute([script, 'start'])
+
+# do some logging
+if not os.path.isdir(LOGDIR):
+    os.mkdir(LOGDIR)
+logfile = os.path.splitext(os.path.basename(sys.argv[0]))[0] + '.log'
+fout = open(os.path.join(LOGDIR, logfile), 'w')
+fout.write(time.asctime() + '\n')
 
 # arguments are names of tasks (including services to restart)
 taskset = set(['hostname', 'networking', 'bind', 'dhcp_stop', 'dhcp_start',
@@ -53,12 +63,12 @@ if 'bind' in tasks:
 # maybe stop/start/restart the DHCP server
 if procs.is_running('/usr/sbin/dhcpd3'):
     if 'dhcp_stop' in tasks:
-        call(['/etc/init.d/dhcp3-server', 'stop'])
+        execute(['/etc/init.d/dhcp3-server', 'stop'])
     elif 'dhcp_restart' in tasks:
-        call(['/etc/init.d/dhcp3-server', 'restart'])
+        execute(['/etc/init.d/dhcp3-server', 'restart'])
 else:
     if 'dhcp_start' in tasks:
-        call(['/etc/init.d/dhcp3-server', 'start'])
+        execute(['/etc/init.d/dhcp3-server', 'start'])
 
 # maybe restart Samba
 if 'samba' in tasks:
@@ -70,3 +80,5 @@ if 'apache' in tasks:
     if procs.is_running('/usr/sbin/apache2'):
         stop_start('/etc/init.d/apache2')
 
+# close logfile
+fout.close()
