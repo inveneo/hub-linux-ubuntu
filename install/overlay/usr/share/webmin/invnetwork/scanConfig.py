@@ -57,6 +57,8 @@ for key, value in o.metadata.iteritems():
     formvals['ppp_%s' % key.replace(' ', '_')] = value
 
 # scan the DHCP daemon config
+formvals['lan_dhcp_range_start'] = '100'
+formvals['lan_dhcp_range_end']   = '200'
 o = configfiles.EtcDhcp3DhcpConf()
 for subnet, sobj in o.subnets.iteritems():
     ipnm = IP('%s/%s' % (subnet, sobj.netmask.strNormal()))
