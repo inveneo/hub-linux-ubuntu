@@ -214,6 +214,7 @@ sub lan_stuff {
     local $s = "<h2>LAN</h2>\n";
 
     $s .= &ui_hidden('lan_netmask', $in{'lan_netmask'});
+    $s .= &ui_hidden('lan_dhcp_was_on', $in{'lan_dhcp_on'});
     $s .= &error_text('lan_netmask');
     $s .= &error_text('lan_network');
     $s .= &error_text('lan_network_range');

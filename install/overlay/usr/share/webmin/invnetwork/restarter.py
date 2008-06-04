@@ -15,20 +15,86 @@ from inveneo import processes
 
 LOGDIR = '/var/log/webmin'
 
+APACHE_BIN   = '/usr/sbin/apache2'
+APACHE_CTL   = '/etc/init.d/apache2'
+SAMBA_BIN    = '/usr/sbin/smbd'
+SAMBA_CTL    = '/etc/init.d/samba'
+DHCP_BIN     = '/usr/sbin/dhcpd3'
+DHCP_CTL     = '/etc/init.d/dhcp3-server'
+DNS_BIN      = '/usr/sbin/named'
+DNS_CTL      = '/etc/init.d/bind9'
+NETWORK_CTL  = '/etc/init.d/networking'
+HOSTNAME_BIN = '/bin/hostname'
+
 def execute(cmdlist):
-    """Executes the given command line, returning stdout and stderr strings."""
+    """Executes the given command line.
+    Logs output.
+    Returns stdout and stderr strings."""
+    global fout
+
     fout.write('=== Command = %s\n' % str(cmdlist))
     (sout, serr) = Popen(cmdlist, stdout=PIPE, stderr=PIPE).communicate() 
     fout.write('--- stdout: ---\n%s\n' % sout)
     fout.write('--- stderr: ---\n%s\n' % serr)
     return (sout, serr)
 
-def stop_start(script):
-    """Stops service via given init script: if no errors, starts again."""
-    (sout, serr) = execute([script, 'stop'])
-    (sout, serr) = execute([script, 'start'])
+def main(tasks):
+    """Shut down services in order; restart them in reverse order."""
 
-# do some logging
+    # some tasks may cause execution of others
+    if 'hostname' in tasks:
+        tasks.append('networking')
+    if 'networking' in tasks:
+        tasks.append('dns')
+        tasks.append('dhcp')
+        tasks.append('samba')
+        tasks.append('apache')
+
+    # get snapshot of pre-shutdown processes
+    procSnap = processes.ProcSnap()
+
+    # shut off services in order
+    if ('apache' in tasks) and procSnap.is_running(APACHE_BIN):
+        execute([APACHE_CTL, 'stop'])
+
+    if ('samba' in tasks) and procSnap.is_running(SAMBA_BIN):
+        execute([SAMBA_CTL, 'stop'])
+
+    if (('dhcp' in tasks) or \
+        ('dhcp_stop' in tasks) or \
+        ('dhcp_restart' in tasks)) and \
+        procSnap.is_running(DHCP_BIN):
+        execute([DHCP_CTL, 'stop'])
+
+    if ('dns' in tasks) and procSnap.is_running(DNS_BIN):
+        execute([DNS_CTL, 'stop'])
+
+    if 'networking' in tasks:
+        execute([NETWORK_CTL, 'stop'])
+
+    # hostname only changes when all is quiet
+    if 'hostname' in tasks:
+        execute([HOSTNAME_BIN, '-F', '/etc/hostname'])
+
+    # start up services in order
+    if 'networking' in tasks:
+        execute([NETWORK_CTL, 'start'])
+
+    if ('dns' in tasks) and procSnap.is_running(DNS_BIN):
+        execute([DNS_CTL, 'start'])
+
+    if ('dhcp' in tasks) or \
+       ('dhcp_start' in tasks) or \
+       ('dhcp_restart' in tasks):
+        execute([DHCP_CTL, 'start'])
+
+    if ('samba' in tasks) and procSnap.is_running(SAMBA_BIN):
+        execute([SAMBA_CTL, 'start'])
+
+    if ('apache' in tasks) and procSnap.is_running(APACHE_BIN):
+        execute([APACHE_CTL, 'start'])
+
+# use a special, short logfile (no need to rotate)
 if not os.path.isdir(LOGDIR):
     os.mkdir(LOGDIR)
 logfile = os.path.splitext(os.path.basename(sys.argv[0]))[0] + '.log'
@@ -36,49 +102,14 @@ fout = open(os.path.join(LOGDIR, logfile), 'w')
 fout.write(time.asctime() + '\n')
 
 # arguments are names of tasks (including services to restart)
-taskset = set(['hostname', 'networking', 'bind', 'dhcp_stop', 'dhcp_start',
-    'dhcp_restart', 'samba', 'apache'])
 tasks = sys.argv[1:]
-for task in tasks:
-    if not task in taskset:
-        print 'Usage: %s %s' % (sys.argv[0], str(list(taskset)))
+fout.write('Tasks: %s\n' % str(tasks))
 
-# get list of currently executing processes
-procs = processes.ProcSnap()
-
-# maybe reload the hostname
-if 'hostname' in tasks:
-    cmdlist = ['/bin/hostname', '-F', '/etc/hostname']
-    (sout, serr) = execute(cmdlist)
-
-# maybe restart networking
-# this also does avahi
-if 'networking' in tasks:
-    stop_start('/etc/init.d/networking')
-
-# maybe restart the nameserver
-if 'bind' in tasks:
-    stop_start('/etc/init.d/bind9')
-
-# maybe stop/start/restart the DHCP server
-if procs.is_running('/usr/sbin/dhcpd3'):
-    if 'dhcp_stop' in tasks:
-        execute(['/etc/init.d/dhcp3-server', 'stop'])
-    elif 'dhcp_restart' in tasks:
-        execute(['/etc/init.d/dhcp3-server', 'restart'])
-else:
-    if 'dhcp_start' in tasks:
-        execute(['/etc/init.d/dhcp3-server', 'start'])
-
-# maybe restart Samba
-if 'samba' in tasks:
-    if procs.is_running('/usr/sbin/smbd'):
-        stop_start('/etc/init.d/samba')
-
-# maybe restart Apache
-if 'apache' in tasks:
-    if procs.is_running('/usr/sbin/apache2'):
-        stop_start('/etc/init.d/apache2')
+try:
+    main(tasks)
+except:
+    traceback.print_exc(file = fout)
 
 # close logfile
 fout.close()
+

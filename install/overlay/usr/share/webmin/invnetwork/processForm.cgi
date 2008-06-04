@@ -129,7 +129,8 @@ def validate_inputs():
     global int_ppp_baud, int_ppp_idle_seconds, ppp_init1, ppp_init2
     global ip_lan_address, ip_lan_netmask, ip_lan_gateway
     global ip_lan_network, ip_lan_network_range
-    global bool_lan_dhcp_on, int_lan_dhcp_range_start, int_lan_dhcp_range_end
+    global bool_lan_dhcp_on, bool_lan_dhcp_was_on
+    global int_lan_dhcp_range_start, int_lan_dhcp_range_end
 
     hostname = required_single_word('hostname')
     ip_dns_0 = required_ip('dns_0')
@@ -160,6 +161,8 @@ def validate_inputs():
     ip_lan_netmask = required_ip('lan_netmask')
     ip_lan_gateway = required_ip('lan_gateway')
     bool_lan_dhcp_on = form.getfirst("lan_dhcp_on", "off").lower() == "on"
+    bool_lan_dhcp_was_on = \
+            form.getfirst("lan_dhcp_was_on", "off").lower() == "on"
     int_lan_dhcp_range_start = optional_integer('lan_dhcp_range_start', '100')
     int_lan_dhcp_range_end = optional_integer('lan_dhcp_range_end', '200')
 
@@ -169,7 +172,8 @@ def business_logic():
     global errors
     global ip_lan_address, ip_lan_netmask, ip_lan_gateway
     global ip_lan_network, ip_lan_network_range
-    global bool_lan_dhcp_on, int_lan_dhcp_range_start, int_lan_dhcp_range_end
+    global bool_lan_dhcp_on, bool_lan_dhcp_was_on
+    global int_lan_dhcp_range_start, int_lan_dhcp_range_end
 
     ip_lan_network = get_network(ip_lan_address, ip_lan_netmask)
     if not ip_lan_network:
@@ -179,6 +183,7 @@ def business_logic():
         ip_lan_network_range = IP('%s/%s' % (ip_lan_network, ip_lan_netmask))
     except:
         errors['lan_network_range'] = 'Invalid LAN network range'
+        ip_lan_network_range = None
 
     if int_lan_dhcp_range_start:
         if (int_lan_dhcp_range_start < 1) or (254 < int_lan_dhcp_range_start):
@@ -201,7 +206,8 @@ def rewrite_config_files(flags):
     global int_ppp_baud, int_ppp_idle_seconds, ppp_init1, ppp_init2
     global ip_lan_address, ip_lan_netmask, ip_lan_gateway
     global ip_lan_network, ip_lan_network_range
-    global bool_lan_dhcp_on, int_lan_dhcp_range_start, int_lan_dhcp_range_end
+    global bool_lan_dhcp_on, bool_lan_dhcp_was_on
+    global int_lan_dhcp_range_start, int_lan_dhcp_range_end
 
     # /etc/hostname
     o = configfiles.EtcHostname()
@@ -328,18 +334,21 @@ def rewrite_config_files(flags):
     dhcp.subnet   = ip_lan_network
     dhcp.netmask  = ip_lan_netmask
 
-    new_start = ip_lan_network_range[int_lan_dhcp_range_start]
-    if dhcp.start_ip != new_start:
-        flags.add(DHCP_CHANGED)
-        dhcp.start_ip = new_start
-
-    new_end = ip_lan_network_range[int_lan_dhcp_range_end]
-    if dhcp.end_ip != new_end:
-        flags.add(DHCP_CHANGED)
-        dhcp.end_ip = new_end
+    if ip_lan_network_range:
+        new_start = ip_lan_network_range[int_lan_dhcp_range_start]
+        if not dhcp.start_ip or \
+                (dhcp.start_ip.strNormal() != new_start.strNormal()):
+            flags.add(DHCP_CHANGED)
+            dhcp.start_ip = new_start
+        new_end = ip_lan_network_range[int_lan_dhcp_range_end]
+        if not dhcp.end_ip or \
+                (dhcp.end_ip.strNormal() != new_end.strNormal()):
+            flags.add(DHCP_CHANGED)
+            dhcp.end_ip = new_end
 
     new_router = ip_lan_gateway.strNormal()
-    if dhcp.options['routers'] != new_router:
+    old_router = dhcp.options.get('routers', '')
+    if old_router != new_router:
         flags.add(DHCP_CHANGED)
         dhcp.options['routers'] = new_router
 
@@ -349,41 +358,25 @@ def rewrite_config_files(flags):
 
 def restart_services(flags):
     """Act on config file changes, guided by flags."""
-    global bool_lan_dhcp_on
+    global bool_lan_dhcp_on, bool_lan_dhcp_was_on
 
     tasks = []
 
-    # maybe reload the hostname
-    if trigger([HOSTNAME_CHANGED]):
-        tasks.append('hostname')
+    if trigger([HOSTNAME_CHANGED]):    tasks.append('hostname')
+    if trigger([LAN_ADDRESS_CHANGED]): tasks.append('networking')
+    #if trigger([DNS_CHANGED]):         tasks.append('dns')
 
-    # maybe restart networking
-    # this also does avahi
-    if trigger([HOSTNAME_CHANGED, LAN_ADDRESS_CHANGED]):
-        tasks.append('networking')
-
-    '''
-    # maybe restart the nameserver
-    if trigger([DNS_CHANGED]):
-        tasks.append('bind')
-    '''
+    if not bool_lan_dhcp_was_on and bool_lan_dhcp_on:
+        tasks.append('dhcp_start')
+    elif bool_lan_dhcp_was_on and not bool_lan_dhcp_on:
+        tasks.append('dhcp_stop')
+    elif trigger([DHCP_CHANGED]):
+        tasks.append('dhcp_restart')
 
     # configure DHCP to start at boot or not
     call([CHKCONFIG, 'dhcp3-server', ['off', 'on'][bool_lan_dhcp_on]])
-    tasks.append(['dhcp_stop', 'dhcp_start'][bool_lan_dhcp_on])
 
-    # maybe restart the DHCP server
-    if trigger([DHCP_CHANGED]):
-        tasks.append('dhcp_restart')
-
-    # maybe restart Samba
-    if trigger([HOSTNAME_CHANGED, LAN_ADDRESS_CHANGED]):
-        tasks.append('samba')
-
-    # maybe restart Apache
-    if trigger([LAN_ADDRESS_CHANGED]):
-        tasks.append('apache')
-
+    # run the restarter as NOHUP so it will run to completion
     path = abspath(dirname(sys.argv[0]))
     return Popen(['nohup', join(path, RESTARTER)] + tasks + ['&']).pid
 
