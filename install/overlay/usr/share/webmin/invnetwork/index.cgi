@@ -151,7 +151,7 @@ sub host_stuff {
     return '
 <table class="wide">
 <tr>
-  <td class="label">Hostname:</td>
+  <td class="label">Hub Hostname:</td>
   <td class="entry">
     <input name="hostname" value="' . $in{'hostname'} . '" size="20">
   </td>
@@ -173,7 +173,7 @@ sub wan_stuff {
     <input type="radio" name="wan_interface" value="eth0"
       checked="checked"
       onClick="hideAll(); changeDisplay(\'eth0_stuff\', \'block\');">
-      Connected to Internet via WAN Port
+      WAN Port connects Hub to Internet
     <div id="eth0_stuff" style="margin-left:30px;display:block">' .
       &eth0_stuff . '
     </div>
@@ -183,7 +183,7 @@ sub wan_stuff {
   <td>
     <input type="radio" name="wan_interface" value="modem"
       onClick="hideAll(); changeDisplay(\'modem_stuff\', \'block\');">
-      Connected to Internet via Modem
+      Modem connects Hub to Internet
     <div id="modem_stuff" style="margin-left:30px;display:block">' .
         &modem_stuff . '
     </div>
@@ -193,7 +193,7 @@ sub wan_stuff {
   <td>
     <input type="radio" name="wan_interface" value="eth1"
       onClick="hideAll(); changeDisplay(\'eth1_stuff\', \'block\');">
-      Connected to Internet via Local Network
+      Local Area Network connects Hub to Internet
     <div id="eth1_stuff" style="margin-left:30px;display:block">
       <table class="wide">
         <tr>
@@ -211,7 +211,7 @@ sub wan_stuff {
 
 <table class="wide">
 <tr>
-  <td class="label">DNS Server(s):<br/>
+  <td class="label">External DNS Server(s):<br/>
     <i>optional, separated by spaces</i></td>
   <td class="entry">
     <input name="dns_servers" value="' . $in{'dns_servers'} . '" size="40">
@@ -307,10 +307,10 @@ sub modem_stuff {
 
 sub lan_stuff {
     return '
-<h2>Connection to Local Network</h2>
+<h2>Connection to Local Area Network</h2>
 <table class="wide">
 <tr>
-  <td class="label">Hub&apos;s fixed IP address:</td>
+  <td class="label">Hub&apos;s fixed IP address on LAN:</td>
   <td>' . &ui_textbox('lan_address', $in{'lan_address'}, 20) . '</td>
   <td>' . &error_text('lan_address') . '</td>
 </tr>
