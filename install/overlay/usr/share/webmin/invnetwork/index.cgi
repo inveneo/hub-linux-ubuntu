@@ -166,17 +166,6 @@ sub wan_stuff {
 <h2>Connection to the Internet</h2>
 <table class="wide">
 <tr>
-  <td class="label">DNS Server(s):<br/>
-    <i>separated by spaces</i></td>
-  <td class="entry">
-    <input name="dns_servers" value="' . $in{'dns_servers'} . '" size="40">
-  </td>
-  <td align="left">' . &error_text('dns_servers') . '</td>
-</tr>
-</table>
-
-<table class="wide">
-<tr>
   <td colspan="3">' . &error_text('wan_interface') . '</td>
 </tr>
 <tr>
@@ -184,7 +173,7 @@ sub wan_stuff {
     <input type="radio" name="wan_interface" value="eth0"
       checked="checked"
       onClick="hideAll(); changeDisplay(\'eth0_stuff\', \'block\');">
-      via WAN Port
+      Connected to Internet via WAN Port
     <div id="eth0_stuff" style="margin-left:30px;display:block">' .
       &eth0_stuff . '
     </div>
@@ -194,7 +183,7 @@ sub wan_stuff {
   <td>
     <input type="radio" name="wan_interface" value="modem"
       onClick="hideAll(); changeDisplay(\'modem_stuff\', \'block\');">
-      via Modem
+      Connected to Internet via Modem
     <div id="modem_stuff" style="margin-left:30px;display:block">' .
         &modem_stuff . '
     </div>
@@ -204,7 +193,7 @@ sub wan_stuff {
   <td>
     <input type="radio" name="wan_interface" value="eth1"
       onClick="hideAll(); changeDisplay(\'eth1_stuff\', \'block\');">
-      via Local Network
+      Connected to Internet via Local Network
     <div id="eth1_stuff" style="margin-left:30px;display:block">
       <table class="wide">
         <tr>
@@ -217,6 +206,17 @@ sub wan_stuff {
       </table>
     </div>
   </td>
+</tr>
+</table>
+
+<table class="wide">
+<tr>
+  <td class="label">DNS Server(s):<br/>
+    <i>optional, separated by spaces</i></td>
+  <td class="entry">
+    <input name="dns_servers" value="' . $in{'dns_servers'} . '" size="40">
+  </td>
+  <td align="left">' . &error_text('dns_servers') . '</td>
 </tr>
 </table>
 ';
@@ -262,7 +262,7 @@ sub modem_stuff {
     return '
 <table class="wide">
 <tr>
-  <td class="label">Device:</td>
+  <td class="label">Modem Device:</td>
   <td>' . &ui_textbox('ppp_modem', $in{'ppp_modem'}, 20) . '</td>
   <td>' . &error_text('ppp_modem') . '</td>
 </tr>
@@ -310,7 +310,7 @@ sub lan_stuff {
 <h2>Connection to Local Network</h2>
 <table class="wide">
 <tr>
-  <td>Server&apos;s fixed IP Address/24:</td>
+  <td class="label">Hub&apos;s fixed IP address:</td>
   <td>' . &ui_textbox('lan_address', $in{'lan_address'}, 20) . '</td>
   <td>' . &error_text('lan_address') . '</td>
 </tr>
@@ -324,9 +324,9 @@ sub lan_stuff {
       <table class="wide">
         <tr>
           <td colspan="2">
-            IP addresses given from X.X.X.' .
+            Address range: ' .
             &ui_textbox('lan_dhcp_range_start', $in{'lan_dhcp_range_start'}, 3).
-            ' to X.X.X.' .
+            ' to ' .
             &ui_textbox('lan_dhcp_range_end', $in{'lan_dhcp_range_end'}, 3) . '
           </td>
           <td>' .
