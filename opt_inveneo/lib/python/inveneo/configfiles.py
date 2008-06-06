@@ -374,8 +374,58 @@ class EtcPppPeersDod(ConfigFileBase):
         self.lines = self._update_lines()
         ConfigFileBase.write(self, makeBackup)
 
+class EtcDhcp3DhclientConf(ConfigFileBase):
+    """DHCP Client configuration."""
+
+    def __init__(self):
+        """Initialize self from config file, parsing out interesting content."""
+        ConfigFileBase.__init__(self, '/etc/dhcp3/dhclient.conf')
+        self.nameservers = []
+        for line in self.lines:
+            namelist = self._parse_line(line)
+            if len(namelist):
+                self.nameservers += namelist
+
+    def _parse_line(self, line):
+        """Parse out the interesting bits of one line.
+        
+        Returns list of nameservers, or empty list if wrong line."""
+        line = line.strip().strip(';')
+        fields = line.split(' ', 2)
+        if ((len(fields) == 3) and \
+            (fields[0].lower() == 'append') and \
+            (fields[1].lower() == 'domain-name-servers')):
+                names = fields[2].split(',')
+                result = []
+                for name in names:
+                    result.append(name.strip())
+                return result
+        return []
+
+    def _update_lines(self):
+        """Return original list of lines updated by current metadata."""
+        newlines = []
+        for line in self.lines:
+            namelist = self._parse_line(line)
+            if len(namelist):
+                namestr = namelist[0]
+                for name in namelist[1:]:
+                    namestr += ', ' + name
+                line = 'append domain-name-servers %s;' % namestr
+            newlines.append(line)
+        return newlines
+
+    def __str__(self):
+        """Return entire config file as string, modified by current metadata."""
+        return string.join(self._update_lines(), '')
+
+    def write(self, makeBackup = True):
+        """Rewrite the config file, perhaps making a backup of the old one."""
+        self.lines = self._update_lines()
+        ConfigFileBase.write(self, makeBackup)
+
 class EtcDhcp3DhcpConf(ConfigFileBase):
-    """DHCP configuration.
+    """DHCP Server configuration.
     
     The metadata is a dictionary of subnet objects."""
 
@@ -723,6 +773,13 @@ if __name__ == '__main__':
     print "==================================================="
     o = EtcPppPeersDod()
     print "* Metadata =", o.metadata
+    print "* File contents:\n----------------\n%s" % str(o)
+
+    print "==================================================="
+    print "Parsing /etc/dhcp3/dhclient.conf"
+    print "==================================================="
+    o = EtcDhcp3DhclientConf()
+    print "* Nameservers =", o.nameservers
     print "* File contents:\n----------------\n%s" % str(o)
 
     print "==================================================="
