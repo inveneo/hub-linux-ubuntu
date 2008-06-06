@@ -12,6 +12,7 @@ from os.path import abspath, dirname, join
 import cgi
 import cgitb; cgitb.enable()  # XXX remove this for production systems
 from IPy import IP
+from urllib import quote
 from subprocess import Popen, PIPE, call
 from inveneo import configfiles
 
@@ -25,6 +26,11 @@ DHCP_CHANGED        = 'dhcp_changed'
 RESTARTER = 'restarter.py'
 
 CHKCONFIG = '/usr/sbin/sysv-rc-conf'
+
+def appendQueryString(qs, key, value):
+    """Helper for building up properly quoted query string."""
+    sep = ['','&'][len(qs) > 0]
+    return qs + '%s%s=%s' % (sep, quote(key), quote(value))
 
 # CGI validation helpers
 def required_single_word(name, default=None):
@@ -402,17 +408,16 @@ if len(errors) < 1:
 # return all form values, plus error/info messages
 qs = ''
 for key in form.keys():
-    qs = configfiles.appendQueryString(qs, key, form[key].value)
+    qs = appendQueryString(qs, key, form[key].value)
 
 if len(errors) == 0:
-    qs = configfiles.appendQueryString(qs, 'good_news', \
-            'Your settings have been saved.')
+    qs = appendQueryString(qs, 'good_news', 'Your settings have been saved.')
 else:
     # errors go back as key/val where key is the special prefix followed by
     # the control name, and val is the error message
     for key, value in errors.iteritems():
-        qs = configfiles.appendQueryString(qs, ERR_PREFIX + key, value)
-    qs = configfiles.appendQueryString(qs, 'bad_news', 'There were errors...')
+        qs = appendQueryString(qs, ERR_PREFIX + key, value)
+    qs = appendQueryString(qs, 'bad_news', 'There were errors...')
 
 # redirect to (possibly moved) webmin page
 if trigger([LAN_ADDRESS_CHANGED]):

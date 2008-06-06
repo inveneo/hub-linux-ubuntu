@@ -9,7 +9,13 @@ Copyright (c) 2007 Inveneo, inc. All rights reserved.
 # external modules
 import sys, os, traceback
 from IPy import IP
+from urllib import quote
 from inveneo import configfiles, processes
+
+def appendQueryString(qs, key, value):
+    """Helper for building up properly quoted query string."""
+    sep = ['','&'][len(qs) > 0]
+    return qs + '%s%s=%s' % (sep, quote(key), quote(value))
 
 # values for potential display on the webpage form
 formvals = {}
@@ -84,6 +90,6 @@ formvals['lan_dhcp_on'] = ['off', 'on'][procs.is_running('/usr/sbin/dhcpd3')]
 qs = ''
 for key, value in formvals.iteritems():
     if value:
-        qs = configfiles.appendQueryString(qs, key, value)
+        qs = appendQueryString(qs, key, value)
 print qs
 
