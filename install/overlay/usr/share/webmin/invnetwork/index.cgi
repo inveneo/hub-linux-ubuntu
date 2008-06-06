@@ -199,7 +199,8 @@ sub wan_stuff {
         <tr>
           <td class="label">Gateway:<br/><i>optional</i></td>
           <td class="entry">
-            <input name="lan_gw" size="20" value="' . $in{'lan_gw'} . '">
+            <input name="lan_gateway" size="20" value="' . $in{'lan_gateway'} .
+            '">
           </td>
           <td align="left">' . &error_text('hostname') . '</td>
         </tr>
