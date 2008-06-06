@@ -134,16 +134,15 @@ def validate_inputs():
     global ppp_modem, ppp_phone, ppp_username, ppp_password
     global int_ppp_baud, int_ppp_idle_seconds, ppp_init1, ppp_init2
     global ip_lan_address, ip_lan_netmask, ip_lan_gateway
-    global ip_lan_network, ip_lan_network_range
     global bool_lan_dhcp_on, bool_lan_dhcp_was_on
     global int_lan_dhcp_range_start, int_lan_dhcp_range_end
 
     hostname = required_single_word('hostname')
-    ip_dns_0 = required_ip('dns_0')
+    ip_dns_0 = optional_ip('dns_0')
     ip_dns_1 = optional_ip('dns_1')
 
     wan_interface = choose_from_list('wan_interface', \
-            ['off', 'ethernet', 'modem'])
+            ['eth0', 'modem', 'eth1'])
     wan_method = choose_from_list('wan_method', ['dhcp', 'static'])
     if wan_method == 'static':
         ip_wan_address = required_ip('wan_address')
@@ -165,7 +164,7 @@ def validate_inputs():
 
     ip_lan_address = required_ip('lan_address')
     ip_lan_netmask = required_ip('lan_netmask')
-    ip_lan_gateway = required_ip('lan_gateway')
+    ip_lan_gateway = optional_ip('lan_gateway')
     bool_lan_dhcp_on = form.getfirst("lan_dhcp_on", "off").lower() == "on"
     bool_lan_dhcp_was_on = \
             form.getfirst("lan_dhcp_was_on", "off").lower() == "on"
