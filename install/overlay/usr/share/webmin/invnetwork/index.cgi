@@ -21,17 +21,53 @@ function getStyleObject(objectId) {
     return false;
 }
 
-function changeDisplay(the_div,the_change) {
-    var the_style = getStyleObject(the_div);
-    if (the_style != false) {
-        the_style.display = the_change;
+function wan_interface_eth0(setting) {
+    var arr = document.getElementsByClassName("wan_interface_eth0");
+    for (i = 0; i < arr.length; i++) {
+        arr[i].disabled = setting;
     }
+    wan_interface_modem(false);
+    wan_interface_eth1(false);
 }
 
-function hideAll() {
-    changeDisplay("eth0_stuff","none");
-    changeDisplay("modem_stuff","none");
-    changeDisplay("eth1_stuff","none");
+function wan_interface_modem(setting) {
+    var arr = document.getElementsByClassName("wan_interface_modem");
+    for (i = 0; i < arr.length; i++) {
+        arr[i].disabled = setting;
+    }
+    wan_interface_eth0(false);
+    wan_interface_eth1(false);
+}
+
+function wan_interface_eth1(setting) {
+    var arr = document.getElementsByClassName("wan_interface_eth1");
+    for (i = 0; i < arr.length; i++) {
+        arr[i].disabled = setting;
+    }
+    wan_interface_eth0(false);
+    wan_interface_modem(false);
+}
+
+function wan_method_dhcp(setting) {
+    var arr = document.getElementsByClassName("wan_method_dhcp");
+    for (i = 0; i < arr.length; i++) {
+        arr[i].disabled = setting;
+    }
+    wan_method_static(false);
+}
+
+function wan_method_static(setting) {
+    var arr = document.getElementsByClassName("wan_method_static");
+    for (i = 0; i < arr.length; i++) {
+        arr[i].disabled = setting;
+    }
+    wan_method_dhcp(false);
+}
+
+function lan_dhcp_on_on(setting) {
+}
+
+function lan_dhcp_on_off(setting) {
 }
 </script>
 
@@ -53,6 +89,7 @@ table.wide {
     border-style: solid;
     width: 100%;
 }
+
 td.label {
     text-align: right;
     width: 20%;
@@ -60,6 +97,14 @@ td.label {
 td.entry {
     width: 20%;
     background-color: #FFFFEE;
+    text-align: left;
+}
+td.error {
+    text-align: left;
+}
+
+td.indent {
+    width: 10%;
 }
 </style>';
 
@@ -144,6 +189,7 @@ sub draw_form {
     print &lan_stuff;
     print "<br>\n";
     print &ui_submit('Apply Changes');
+    print &hidden_values;
     print &ui_form_end();
 }
 
@@ -155,10 +201,17 @@ sub host_stuff {
   <td class="entry">
     <input name="hostname" value="' . $in{'hostname'} . '" size="20">
   </td>
-  <td align="left">' . &error_text('hostname') . '</td>
+  <td class="error">' . &error_text('hostname') . '</td>
 </tr>
 </table>
 ';
+}
+
+sub my_radio {
+    local ($ctl, $val) = @_;
+    $checked = ($in{$ctl} eq $val) ? ' checked ' : ' ';
+    return '<input type="radio" name="' . $ctl . '" value="' . $val . '"' .
+        $checked . 'onClick="' . $ctl.'_'.$val . '(true)">';
 }
 
 sub wan_stuff {
@@ -166,58 +219,47 @@ sub wan_stuff {
 <h2>Connection to the Internet</h2>
 <table class="wide">
 <tr>
-  <td colspan="3">' . &error_text('wan_interface') . '</td>
+  <td colspan="2">' . &error_text('wan_interface') . '</td>
 </tr>
 <tr>
-  <td>
-    <input type="radio" name="wan_interface" value="eth0"
-      checked="checked"
-      onClick="hideAll(); changeDisplay(\'eth0_stuff\', \'block\');">
-      WAN Port connects Hub to Internet
-    <div id="eth0_stuff" style="margin-left:30px;display:block">' .
-      &eth0_stuff . '
-    </div>
+  <td colspan="2">' . &my_radio('wan_interface', 'eth0') .
+    'WAN Port connection to Internet</td>
+</tr>
+<tr>
+  <td class="indent"></td>
+  <td>' . &eth0_stuff . '
   </td>
 </tr>
 <tr>
-  <td>
-    <input type="radio" name="wan_interface" value="modem"
-      onClick="hideAll(); changeDisplay(\'modem_stuff\', \'block\');">
-      Modem connects Hub to Internet
-    <div id="modem_stuff" style="margin-left:30px;display:block">' .
-        &modem_stuff . '
-    </div>
+  <td colspan="2">' . &my_radio('wan_interface', 'modem') .
+    'Modem connection to Internet</td>
+</tr>
+<tr>
+  <td class="indent"></td>
+  <td>' . &modem_stuff . '
   </td>
 </tr>
 <tr>
-  <td>
-    <input type="radio" name="wan_interface" value="eth1"
-      onClick="hideAll(); changeDisplay(\'eth1_stuff\', \'block\');">
-      Local Area Network connects Hub to Internet
-    <div id="eth1_stuff" style="margin-left:30px;display:block">
-      <table class="wide">
-        <tr>
-          <td class="label">Gateway:<br/><i>optional</i></td>
-          <td class="entry">
-            <input name="lan_gateway" size="20" value="' . $in{'lan_gateway'} .
-            '">
-          </td>
-          <td align="left">' . &error_text('hostname') . '</td>
-        </tr>
-      </table>
-    </div>
+  <td colspan="2">' . &my_radio('wan_interface', 'eth1') .
+    'LAN Port connection to Internet</td>
+</tr>
+<tr>
+  <td class="indent"></td>
+  <td>' . &eth1_stuff . '
   </td>
 </tr>
 </table>
 
 <table class="wide">
 <tr>
-  <td class="label">External DNS Server(s):<br/>
-    <i>optional, separated by spaces</i></td>
+  <td class="label">External DNS Server(s):<br/></td>
   <td class="entry">
-    <input name="dns_servers" value="' . $in{'dns_servers'} . '" size="40">
+    <input name="dns_0" value="' . $in{'dns_0'} . '" size="20"><br/>
+    <input name="dns_1" value="' . $in{'dns_1'} . '" size="20">
   </td>
-  <td align="left">' . &error_text('dns_servers') . '</td>
+  <td align="left">' . &error_text('dns_0') . '<br/>' .
+    &error_text('dns_1') . '</td>
+  </td>
 </tr>
 </table>
 ';
@@ -226,11 +268,20 @@ sub wan_stuff {
 sub eth0_stuff {
     return '
 <table class="wide">
-<tr><td>' . &error_text('wan_method') . '</td></tr>
 <tr>
-  <td>' . &ui_radio_table('wan_method', $in{'wan_method'},
-        [ ['dhcp',   'DHCP Client', '&nbsp'],
-          ['static', 'Static', &eth0_static_stuff] ]) . '
+  <td colspan="2">' . &error_text('wan_method') . '</td>
+</tr>
+<tr>
+  <td colspan="2">' . &my_radio('wan_method', 'dhcp') .
+    'DHCP provides setup</td>
+</tr>
+<tr>
+  <td colspan="2">' . &my_radio('wan_method', 'static') .
+    'Static setup</td>
+</tr>
+<tr>
+  <td class="indent"></td>
+  <td>' . &eth0_static_stuff . '
   </td>
 </tr>
 </table>
@@ -306,48 +357,69 @@ sub modem_stuff {
 ';
 }
 
+sub eth1_stuff {
+    return '
+<table class="wide">
+  <tr>
+    <td class="label">Gateway:</td>
+    <td class="entry">
+      <input name="lan_gateway" size="20" class="wan_interface_eth1"
+                value="' . $in{'lan_gateway'} . '">
+    </td>
+    <td align="left">' . &error_text('hostname') . '</td>
+  </tr>
+</table>
+';
+}
+
 sub lan_stuff {
     return '
 <h2>Connection to Local Area Network</h2>
+
 <table class="wide">
 <tr>
-  <td class="label">Hub&apos;s fixed IP address on LAN:</td>
+  <td class="label">Hub&apos;s address on LAN:</td>
   <td>' . &ui_textbox('lan_address', $in{'lan_address'}, 20) . '</td>
   <td>' . &error_text('lan_address') . '</td>
 </tr>
 </table>
+
 <table class="wide">
 <tr>
-  <td>
-    <input type="radio" name="lan_dhcp_on" value="on" checked="checked">
-      Hub is a DHCP server
-    <div id="dhcp_on" style="margin-left:30px;display:block">
-      <table class="wide">
-        <tr>
-          <td colspan="2">
-            Address range: ' .
-            &ui_textbox('lan_dhcp_range_start', $in{'lan_dhcp_range_start'}, 3).
-            ' to ' .
-            &ui_textbox('lan_dhcp_range_end', $in{'lan_dhcp_range_end'}, 3) . '
-          </td>
-          <td>' .
-          &error_text('lan_dhcp_range_start') .
-          &error_text('lan_dhcp_range_end') . '
-          </td>
-        </tr>
-      </table>
-    </div>
-  </td>
+  <td colspan="2">' . &my_radio('lan_dhcp_on', 'on') .
+    'Hub is a DHCP server</td>
 </tr>
 <tr>
-  <td>
-    <input type="radio" name="lan_dhcp_on" value="off">
-      Hub is not serving DHCP
-    <div id="dhcp_off" style="margin-left:30px;display:block">
-    </div>
+  <td class="indent"></td>
+  <td>' . &lan_dhcp_stuff . '</td>
+</tr>
+<tr>
+  <td colspan="2">' . &my_radio('lan_dhcp_on', 'off') .
+    'Hub is not serving DHCP</td>
+</tr>
+</table>
+';
+}
+
+sub lan_dhcp_stuff {
+    return '
+<table class="wide">
+<tr>
+  <td>Address range:' .
+    &ui_textbox('lan_dhcp_range_start', $in{'lan_dhcp_range_start'}, 3) .
+    ' to ' .
+    &ui_textbox('lan_dhcp_range_end', $in{'lan_dhcp_range_end'}, 3) .
+  '</td>
+  <td>' . &error_text('lan_dhcp_range_start') .
+    '<br/>' . &error_text('lan_dhcp_range_end') . '
   </td>
 </tr>
 </table>
+';
+}
+
+sub hidden_values {
+    return '
 <input type="hidden" name="lan_dhcp_was_on" value="' . $in{'lan_dhcp_on'} . '">
 ';
 }
