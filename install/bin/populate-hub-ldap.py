@@ -26,6 +26,10 @@ def main():
     stdout.write('Populating default Samba values in LDAP server..\n')
     pexpect.run('smbldap-populate -u 10000 -g 10000',events={'ew password:':'1nvene0\n','type new password:':'1nvene0\n'})
     
+    # add inveneo_users group to ldap
+    stdout.write("Adding 'inveneo_users' group")
+    sp.check_call(['smbldap-groupadd','-a','-g','999','inveneo_users'])
+
     # adding permissions groups to ldap 
     stdout.write("\nAdding 'permissions' groups to ldap...\n")
     sp.check_call(['smbldap-migrate-unix-groups','-G',path.join(INSTALL_DIR,'permission-groups')])
