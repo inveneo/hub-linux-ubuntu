@@ -25,18 +25,21 @@ function wan_interface_eth0() {
     disable_div(document.getElementById("eth0_stuff"), false);
     disable_div(document.getElementById("modem_stuff"), true);
     disable_div(document.getElementById("eth1_stuff"), true);
+    disable_div(document.getElementById("eth1_dhcp_stuff"), false);
 }
 
 function wan_interface_modem() {
     disable_div(document.getElementById("eth0_stuff"), true);
     disable_div(document.getElementById("modem_stuff"), false);
     disable_div(document.getElementById("eth1_stuff"), true);
+    disable_div(document.getElementById("eth1_dhcp_stuff"), false);
 }
 
 function wan_interface_eth1() {
     disable_div(document.getElementById("eth0_stuff"), true);
     disable_div(document.getElementById("modem_stuff"), true);
     disable_div(document.getElementById("eth1_stuff"), false);
+    disable_div(document.getElementById("eth1_dhcp_stuff"), true);
 }
 
 function wan_method_dhcp() {
