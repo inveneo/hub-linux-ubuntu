@@ -383,36 +383,36 @@ class EtcDhcp3DhclientConf(ConfigFileBase):
         self.nameservers = []
         for line in self.lines:
             namelist = self._parse_line(line)
-            if len(namelist):
+            if namelist and len(namelist) > 0:
                 self.nameservers += namelist
 
     def _parse_line(self, line):
         """Parse out the interesting bits of one line.
         
-        Returns list of nameservers, or empty list if wrong line."""
+        Returns list of nameservers, or None if wrong line."""
         line = line.strip().strip(';')
         fields = line.split(' ', 2)
-        if ((len(fields) == 3) and \
-            (fields[0].lower() == 'append') and \
-            (fields[1].lower() == 'domain-name-servers')):
-                names = fields[2].split(',')
-                result = []
-                for name in names:
-                    result.append(name.strip())
-                return result
-        return []
+        if (len(fields) < 2) or \
+           (fields[0].lower() != 'append') or \
+           (fields[1].lower() != 'domain-name-servers'):
+               return None
+        result = []
+        if len(fields) > 2:
+            for address in fields[2].split(','):
+                result.append(address.strip())
+        return result
 
     def _update_lines(self):
         """Return original list of lines updated by current metadata."""
         newlines = []
         for line in self.lines:
             namelist = self._parse_line(line)
-            if len(namelist):
-                namestr = namelist[0]
-                for name in namelist[1:]:
-                    namestr += ', ' + name
-                line = 'append domain-name-servers %s;\n' % namestr
-            newlines.append(line)
+            if namelist == None:
+                newlines.append(line)
+            elif self.nameservers:
+                line = 'append domain-name-servers %s;\n' % \
+                        string.join(self.nameservers, ',')
+                newlines.append(line)
         return newlines
 
     def __str__(self):
