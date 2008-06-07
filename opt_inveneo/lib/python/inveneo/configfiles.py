@@ -411,7 +411,7 @@ class EtcDhcp3DhclientConf(ConfigFileBase):
                 namestr = namelist[0]
                 for name in namelist[1:]:
                     namestr += ', ' + name
-                line = 'append domain-name-servers %s;' % namestr
+                line = 'append domain-name-servers %s;\n' % namestr
             newlines.append(line)
         return newlines
 
