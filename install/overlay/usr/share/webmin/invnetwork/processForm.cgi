@@ -190,14 +190,16 @@ def business_logic():
         errors['lan_network_range'] = 'Invalid LAN network range'
         ip_lan_network_range = None
 
+    # this is true because we assume 24 bit netmask
     if int_lan_dhcp_range_start:
         if (int_lan_dhcp_range_start < 1) or (254 < int_lan_dhcp_range_start):
             errors['lan_dhcp_range_start'] = 'Must be between 1 and 254'
     if int_lan_dhcp_range_end:
         if (int_lan_dhcp_range_end < 1) or (254 < int_lan_dhcp_range_end):
             errors['lan_dhcp_range_end'] = 'Must be between 1 and 254'
+
     if int_lan_dhcp_range_start and int_lan_dhcp_range_end:
-        if (int_lan_dhcp_range_end <= int_lan_dhcp_range_start):
+        if (int_lan_dhcp_range_end < int_lan_dhcp_range_start):
             errors['lan_dhcp_range_start'] = 'Must start before end'
             errors['lan_dhcp_range_end']   = 'Must end after start'
 
@@ -224,24 +226,18 @@ def rewrite_config_files(flags):
     else:
         flags.discard(HOSTNAME_CHANGED)
 
-    # /etc/resolv.conf
-    o = configfiles.EtcResolvConf()
-    previous_nameservers = set(o.nameservers)
-    current_nameservers = set()
-    dns_0 = ip_dns_0.strNormal()
-    current_nameservers.add(dns_0)
-    if len(o.nameservers) > 0:
-        o.nameservers[0] = dns_0
+    # /etc/dhcp3/dhclient.conf OR /etc/resolv.conf
+    if wan_interface == 'eth0' and wan_method == 'dhcp':
+        o = configfiles.EtcDhcp3DhclientConf()
     else:
-        o.nameservers.append(dns_0)
+        o = configfiles.EtcResolvConf()
+    old_nameservers = o.nameservers
+    o.nameservers = []
+    if ip_dns_0:
+        o.nameservers.append(ip_dns_0.strNormal())
     if ip_dns_1:
-        dns_1 = ip_dns_1.strNormal()
-        current_nameservers.add(dns_1)
-        if len(o.nameservers) > 1:
-            o.nameservers[1] = dns_1
-        else:
-            o.nameservers.append(dns_1)
-    if current_nameservers != previous_nameservers:
+        o.nameservers.append(ip_dns_1.strNormal())
+    if set(old_nameservers) != set(o.nameservers):
         flags.add(DNS_CHANGED)
     else:
         flags.discard(DNS_CHANGED)
@@ -282,8 +278,8 @@ def rewrite_config_files(flags):
         wan = o.ifaces['eth0']
     else:
         wan = o.add_iface('eth0', wan_method)
-        wan.extras = [ \
-                '  pre-up /opt/inveneo/sbin/wan-firewall.sh eth0 up', \
+        wan.extras = [
+                '  pre-up /opt/inveneo/sbin/wan-firewall.sh eth0 up',
                 '  post-down /opt/inveneo/sbin/wan-firewall.sh eth0 down']
     wan.iface = 'eth0'
     wan.method = wan_method
@@ -304,21 +300,26 @@ def rewrite_config_files(flags):
     lan.method = 'static'
     lan.address = ip_lan_address
     lan.netmask = ip_lan_netmask
-    lan.gateway = ip_lan_gateway
+    if wan_interface == 'eth1':
+        lan.gateway = ip_lan_gateway
 
     if not 'ppp0' in o.ifaces:
         ppp = o.add_iface('ppp0', 'ppp')
-        ppp.extras = [ \
-                '  pre-up /opt/inveneo/sbin/wan-firewall.sh ppp0 up', \
+        ppp.extras = [
+                '  pre-up /opt/inveneo/sbin/wan-firewall.sh ppp0 up',
                 '  post-down /opt/inveneo/sbin/wan-firewall.sh ppp0 down']
 
     o.autoset.discard('eth0')
     o.autoset.discard('ppp0')
-    if wan_interface == 'ethernet':
+    if wan_interface == 'eth0':
         o.autoset.add('eth0')
     elif wan_interface == 'modem':
         o.autoset.add('ppp0')
-    o.autoset.add('eth1')
+    elif wan_interface == 'eth1':
+        o.autoset.add('eth1')
+    else:
+        if not 'wan_interface' in errors:
+            errors['wan_interface'] = "Illegal interface choice"
     o.write()
 
     # /etc/dhcp3/dhcp.conf
@@ -336,8 +337,8 @@ def rewrite_config_files(flags):
             old_lan_network = get_network(old_ip_lan_address,
                         old_ip_lan_netmask).strNormal()
             o.subnets.pop(old_lan_network, None)
-    dhcp.subnet   = ip_lan_network
-    dhcp.netmask  = ip_lan_netmask
+    dhcp.subnet  = ip_lan_network
+    dhcp.netmask = ip_lan_netmask
 
     if ip_lan_network_range:
         new_start = ip_lan_network_range[int_lan_dhcp_range_start]
@@ -351,7 +352,7 @@ def rewrite_config_files(flags):
             flags.add(DHCP_CHANGED)
             dhcp.end_ip = new_end
 
-    new_router = ip_lan_gateway.strNormal()
+    new_router = ip_lan_address.strNormal()
     old_router = dhcp.options.get('routers', '')
     if old_router != new_router:
         flags.add(DHCP_CHANGED)
@@ -395,7 +396,9 @@ flags = set()
 # uncomment this section for some debugging
 #print "Content-Type: text/html"
 #print
-#for key in form.keys():
+#L = form.keys()
+#L.sort()
+#for key in L:
 #    print '%s = "%s"<br>' % (key, form[key].value)
 
 validate_inputs()

@@ -17,7 +17,7 @@ $head_stuff = '
 function disable_div(the_div, value) {
     var arr = the_div.getElementsByTagName("input");
     for (var i = 0; i < arr.length; i++) {
-        arr[i].disabled = value;
+//        arr[i].disabled = value;
     }
 }
 
