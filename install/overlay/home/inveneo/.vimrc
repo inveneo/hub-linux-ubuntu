@@ -1,5 +1,6 @@
 set shiftwidth=4
 set expandtab
+set term=ansi
 syntax on
 filetype indent on
 colorscheme zellner
