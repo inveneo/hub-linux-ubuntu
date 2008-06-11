@@ -410,6 +410,11 @@ sub eth1_static_stuff {
   <td class="entry">' . &my_textbox('lan_address') . '</td>
   <td class="error">' . &error_text('lan_address') . '</td>
 </tr>
+<tr>
+  <td class="label">Netmask:</td>
+  <td class="entry">' . &my_textbox('lan_netmask') . '</td>
+  <td class="error">' . &error_text('lan_netmask') . '</td>
+</tr>
 </table>
 </div>
 ';
@@ -455,7 +460,6 @@ sub eth1_dhcp_range_stuff {
 
 sub hidden_values {
     return '
-<input type="hidden" name="lan_netmask" value="255.255.255.0">
 <input type="hidden" name="lan_dhcp_was_on" value="' . $in{'lan_dhcp_on'} . '">
 ';
 }

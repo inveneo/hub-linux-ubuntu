@@ -45,7 +45,7 @@ def main(tasks):
     if 'hostname' in tasks:
         tasks.append('networking')
     if 'networking' in tasks:
-        tasks.append('dns')
+        # tasks.append('dns')
         tasks.append('dhcp')
         tasks.append('samba')
         tasks.append('apache')
