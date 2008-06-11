@@ -393,7 +393,7 @@ class EtcDhcp3DhclientConf(ConfigFileBase):
         line = line.strip().strip(';')
         fields = line.split(' ', 2)
         if (len(fields) < 2) or \
-           (fields[0].lower() != 'prepend') or \
+           (fields[0].lower() != 'append') or \
            (fields[1].lower() != 'domain-name-servers'):
                return None
         result = []
@@ -404,19 +404,19 @@ class EtcDhcp3DhclientConf(ConfigFileBase):
 
     def _update_lines(self):
         """Return original list of lines updated by current metadata."""
-        did_prepend = False
+        did_append = False
         newlines = []
         for line in self.lines:
             namelist = self._parse_line(line)
             if namelist == None:
                 newlines.append(line)
             elif self.nameservers:
-                line = 'prepend domain-name-servers %s;\n' % \
+                line = 'append domain-name-servers %s;\n' % \
                         string.join(self.nameservers, ',')
                 newlines.append(line)
-                did_prepend = True
-        if self.nameservers and not did_prepend:
-            newlines.append('prepend domain-name-servers %s;\n' % \
+                did_append = True
+        if self.nameservers and not did_append:
+            newlines.append('append domain-name-servers %s;\n' % \
                     string.join(self.nameservers, ','))
         return newlines
 
