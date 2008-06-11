@@ -48,22 +48,11 @@ if lan:
     if lan.gateway: formvals['lan_gateway'] = lan.gateway.strNormal()
 
 # collect the DNS servers
-if formvals['wan_interface'] == 'eth0':
-    if formvals['wan_method'] == 'dhcp':
-        o = configfiles.EtcDhcp3DhclientConf()
-        ns_list = o.nameservers
-    elif formvals['wan_method'] == 'static':
-        o = configfiles.EtcResolvConf()
-        ns_list = o.nameservers
-    else: # bogus wan_method
-        ns_list = []
-elif formvals['wan_interface'] == 'modem':
-    ns_list = []
-elif formvals['wan_interface'] == 'eth1':
-    ns_list = []
-else: # bogus wan_interface
-    ns_list = []
-
+if (formvals['wan_interface'] == 'eth0') and (formvals['wan_method'] == 'dhcp'):
+    o = configfiles.EtcDhcp3DhclientConf()
+else:
+    o = configfiles.EtcResolvConf()
+ns_list = o.nameservers
 if len(ns_list) > 0: formvals['dns_0'] = ns_list[0]
 if len(ns_list) > 1: formvals['dns_1'] = ns_list[1]
 

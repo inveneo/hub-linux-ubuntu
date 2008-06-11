@@ -184,7 +184,7 @@ def business_logic():
     global errors
     global ip_lan_address, ip_lan_netmask, ip_lan_gateway
     global ip_lan_network, ip_lan_network_range
-    global bool_lan_dhcp_on, bool_lan_dhcp_was_on
+    global bool_lan_dhcp_on
     global int_lan_dhcp_range_start, int_lan_dhcp_range_end
 
     ip_lan_network = get_network(ip_lan_address, ip_lan_netmask)
@@ -221,7 +221,7 @@ def rewrite_config_files(flags):
     global int_ppp_baud, int_ppp_idle_seconds, ppp_init1, ppp_init2
     global ip_lan_address, ip_lan_netmask, ip_lan_gateway
     global ip_lan_network, ip_lan_network_range
-    global bool_lan_dhcp_on, bool_lan_dhcp_was_on
+    global bool_lan_dhcp_on
     global int_lan_dhcp_range_start, int_lan_dhcp_range_end
 
     # set up empty change set
@@ -250,18 +250,15 @@ def rewrite_config_files(flags):
     o.write()
 
     # /etc/dhcp3/dhclient.conf OR /etc/resolv.conf
-    if wan_interface == 'eth0' and wan_method == 'dhcp':
+    if (wan_interface == 'eth0') and (wan_method == 'dhcp'):
         o = configfiles.EtcDhcp3DhclientConf()
     else:
         o = configfiles.EtcResolvConf()
     old_nameservers = o.nameservers
     o.nameservers = []
-    if ip_dns_0:
-        o.nameservers.append(ip_dns_0.strNormal())
-    if ip_dns_1:
-        o.nameservers.append(ip_dns_1.strNormal())
-    if set(old_nameservers) != set(o.nameservers):
-        flags.add(DNS_CHANGED)
+    if ip_dns_0: o.nameservers.append(ip_dns_0.strNormal())
+    if ip_dns_1: o.nameservers.append(ip_dns_1.strNormal())
+    if set(old_nameservers) != set(o.nameservers): flags.add(DNS_CHANGED)
     o.write()
 
     # /etc/wvdial.conf
@@ -326,13 +323,14 @@ def rewrite_config_files(flags):
         flags.add(LAN_ADDRESS_CHANGED)
     if not lan.netmask or (lan.netmask != ip_lan_netmask):
         flags.add(LAN_NETMASK_CHANGED)
-    if not lan.gateway or (lan.gateway != ip_lan_gateway):
+    if ip_lan_gateway and \
+            (not lan.gateway or (lan.gateway != ip_lan_gateway)):
         flags.add(LAN_GATEWAY_CHANGED)
     lan.iface = 'eth1'
     lan.method = 'static'
     lan.address = ip_lan_address
     lan.netmask = ip_lan_netmask
-    lan.gateway = ip_lan_gateway
+    if ip_lan_gateway: lan.gateway = ip_lan_gateway
 
     if not 'ppp0' in o.ifaces:
         ppp = o.add_iface('ppp0', 'ppp')
@@ -390,13 +388,10 @@ def restart_services(flags):
 
     tasks = set()
 
-    if HOSTNAME_CHANGED in flags:
-        tasks.add('hostname')
-    # if DNS_CHANGED in flags: tasks.add('dns')
-    if WAN_INTERFACE_CHANGED in flags:
-        tasks.add('networking')
-    if WAN_METHOD_CHANGED in flags:
-        tasks.add('networking')
+    if HOSTNAME_CHANGED in flags:      tasks.add('hostname')
+    if DNS_CHANGED in flags:           tasks.add('dns')
+    if WAN_INTERFACE_CHANGED in flags: tasks.add('networking')
+    if WAN_METHOD_CHANGED in flags:    tasks.add('networking')
     if (wan_method == 'static') and (WAN_STATIC_CHANGED in flags):
         tasks.add('networking')
     if (LAN_ADDRESS_CHANGED in flags) or (LAN_NETMASK_CHANGED in flags):
@@ -430,12 +425,14 @@ errors = {}
 flags = set()
 
 # uncomment this section for some debugging
-#print "Content-Type: text/html"
-#print
-#L = form.keys()
-#L.sort()
-#for key in L:
-#    print '%s = "%s"<br>' % (key, form[key].value)
+'''
+print "Content-Type: text/html"
+print
+L = form.keys()
+L.sort()
+for key in L:
+    print '%s = "%s"<br>' % (key, form[key].value)
+'''
 
 validate_inputs()
 business_logic()
