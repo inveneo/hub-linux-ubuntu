@@ -17,7 +17,7 @@ $head_stuff = '
 function disable_div(the_div, value) {
     var arr = the_div.getElementsByTagName("input");
     for (var i = 0; i < arr.length; i++) {
-//        arr[i].disabled = value;
+        arr[i].disabled = value;
     }
 }
 
@@ -56,6 +56,15 @@ function lan_dhcp_on_on() {
 
 function lan_dhcp_on_off() {
     disable_div(document.getElementById("eth1_dhcp_range_stuff"), true);
+}
+
+function undisable_divs() {
+    disable_div(document.getElementById("eth0_stuff"), false);
+    disable_div(document.getElementById("modem_stuff"), false);
+    disable_div(document.getElementById("eth1_stuff"), false);
+    disable_div(document.getElementById("eth1_dhcp_stuff"), false);
+    disable_div(document.getElementById("eth0_static_stuff"), false);
+    disable_div(document.getElementById("eth1_dhcp_range_stuff"), false);
 }
 </script>
 
@@ -96,6 +105,8 @@ td.indent {
 }
 </style>';
 
+@myLoaders = ();
+
 # draw the page... this comment from web-lib-funcs.pl may be helpful:
 # header(title, image, [help], [config], [nomodule], [nowebmin], [rightside],
 # #        [head-stuff], [body-stuff], [below])
@@ -105,7 +116,7 @@ td.indent {
 # # module menu if there is no config link
 #
 &ui_print_header(undef, $module_info{'desc'}, undef, undef, undef, undef,
-    undef, undef, $head_stuff, undef, undef); 
+    undef, undef, $head_stuff, 'onLoad="myLoader();"', undef); 
 
 $error_string = &get_cgi;
 if ($error_string eq "") {
@@ -170,9 +181,15 @@ sub get_cgi {
 
 sub my_radio {
     local ($ctl, $val) = @_;
-    $checked = ($in{$ctl} eq $val) ? ' checked ' : ' ';
+    $js = $ctl.'_'.$val;
+    if ($in{$ctl} eq $val) {
+        $checked = ' checked ';
+        push(@myLoaders, $js);
+    } else {
+        $checked = ' ';
+    }
     return '<input type="radio" name="' . $ctl . '" value="' . $val . '"' .
-        $checked . 'onClick="' . $ctl.'_'.$val . '();">';
+        $checked . 'onClick="' . $js . '();">';
 }
 
 sub my_textbox {
@@ -202,8 +219,10 @@ sub draw_form {
     print &lan_stuff;
     print &hidden_values;
     print "<br>\n";
-    print "<input type='submit' value='Apply Changes'>\n";
+    print "<input type='submit' value='Apply Changes'" .
+       " onClick='undisable_divs();'>\n";
     print &ui_form_end();
+    print &myLoaderMaker;
 }
 
 sub host_stuff {
@@ -463,3 +482,16 @@ sub hidden_values {
 <input type="hidden" name="lan_dhcp_was_on" value="' . $in{'lan_dhcp_on'} . '">
 ';
 }
+
+sub myLoaderMaker {
+    $s = '';
+    foreach $f (@myLoaders) {
+        $s .= ' ' . $f . '();';
+    }
+    return '
+<script>
+function myLoader() {' . $s . '}
+</script>
+';
+}
+
