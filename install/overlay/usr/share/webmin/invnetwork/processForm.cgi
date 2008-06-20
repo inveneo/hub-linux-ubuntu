@@ -17,6 +17,7 @@ from subprocess import Popen, PIPE, call
 from inveneo import configfiles
 
 ERR_PREFIX = 'err_'
+MAX_HOSTNAME_LEN = 42
 
 HOSTNAME_CHANGED      = 'hostname_changed'
 DNS_CHANGED           = 'dns_changed'
@@ -145,6 +146,8 @@ def validate_inputs():
     global int_lan_dhcp_range_start, int_lan_dhcp_range_end
 
     hostname = required_single_word('hostname')
+    if len(hostname) > MAX_HOSTNAME_LEN:
+        errors['hostname'] = 'Invalid hostname (too long)'
     ip_dns_0 = optional_ip('dns_0')
     ip_dns_1 = optional_ip('dns_1')
 
