@@ -28,7 +28,9 @@ def main():
     
     # add inveneo_users group to ldap
     stdout.write("Adding 'inveneo_users' group")
+    sp.call(['smbldap-groupdel','inveneo_users'])
     sp.check_call(['smbldap-groupadd','-a','-g','999','inveneo_users'])
+
 
     # adding permissions groups to ldap 
     stdout.write("\nAdding 'permissions' groups to ldap...\n")
