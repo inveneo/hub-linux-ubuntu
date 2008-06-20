@@ -21,7 +21,7 @@ use constant RET_USER_EXISTS => 9;
 
 	if ( !is_valid_username($username) ) {
 		$valid_input = 0;
-		push @errors,'The username must start with a letter or number and be greater than 2 characters. The body of the user name must contain only alphanumeric characters or an underscore.';
+		push @errors,'The username must start with a letter or number and be greater than 2 characters and less than 61. The body of the user name must contain only alphanumeric characters or an underscore.';
 	}
 
 	if ( $upasswd =~ /^\s*$/ ) {
