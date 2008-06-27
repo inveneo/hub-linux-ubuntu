@@ -193,6 +193,7 @@ class Globals(object):
     USER = 'user'
     TEMP_DIR = '/opt/inveneo/config-server/tmp'
     SAVE_DIR = '/opt/inveneo/config-server/saved-configuration'
+    SWEEP_SECS = 180
     HOST_TYPES = ['station', 'hub']
 
     DEFAULT_ADMIN = 'inveneo'
