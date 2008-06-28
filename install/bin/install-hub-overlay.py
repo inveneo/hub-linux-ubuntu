@@ -177,14 +177,15 @@ def transfer_overlay(src,dest):
     os.chdir(cur_dir)
 
 root_drive=None
-rootdev_matcher=re.compile(r'^(.*)\son\s/',re.M)
+rootdev_matcher=re.compile(r'^(/.*)\s/\s',re.M)
 
 def get_root_drive():
     global root_drive
     if root_drive == None:
         # get mount output
-        mount = sp.Popen(['mount'],stdout=sp.PIPE).communicate()[0]
-        root_drive = rootdev_matcher.search(mount).groups()[0]
+        with open('/proc/mounts') as mounts:
+            root_drive = rootdev_matcher.search(mounts.read()).groups()[0]
+
         root_drive = root_drive[root_drive.rfind('/')+1:]
         
     return root_drive
@@ -282,5 +283,6 @@ if __name__ == '__main__':
     # sanitize PATH
     os.environ['PATH'] = '/bin:/sbin:/usr/bin:/usr/sbin'
     sys.exit(main())
+
 
 
