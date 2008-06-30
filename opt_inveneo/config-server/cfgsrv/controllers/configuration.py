@@ -15,12 +15,17 @@ class ConfigurationController(BaseController):
 
     def _make_some_space(self):
         """Remove old files from temp dir."""
+        now = time()
+        log.debug('_make_some_space() at %f looking back %d secs' % \
+                (now, g.SWEEP_SECS))
         for file in os.listdir(g.TEMP_DIR):
             path = os.path.join(g.TEMP_DIR, file)
             if not os.path.isfile(path): continue
             statinfo = os.stat(path)
-            if (time() > statinfo.st_mtime + g.SWEEP_SECS):
+            mtime = float(statinfo.st_mtime)
+            if (time() > mtime + g.SWEEP_SECS):
                 os.remove(path)
+                log.debug('Removed %s (mtime %f)' % (path, mtime))
 
     def _return_config_file(self, name, category):
         log.debug('_return_config_file(%s, %s)' % (name, category))
@@ -29,7 +34,7 @@ class ConfigurationController(BaseController):
         config_file_path = os.path.join(g.SAVE_DIR, category, name + '.tar.gz')
         if not os.path.exists(config_file_path):
             abort(404, 'Config file not found')
-        _make_some_space()
+        self._make_some_space()
         tmp_config_file = h.copy_to_temp_file(config_file_path, log)
         if not tmp_config_file:
             abort(404, 'Cannot obtain lockfile')
