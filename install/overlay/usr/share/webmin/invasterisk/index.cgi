@@ -46,10 +46,10 @@ else {
         $config_url = "http://$server:$port/asterisk/static/config/cfgbasic.html";
 
 	print "<h2>Asterisk Management</h2>\n";
-        print "<p><br>";
-        print_href(undef,undef,$initial_setup_url,"Initial Asterisk Configuration","_asterisk_");
-        print "&nbsp;&nbsp; | &nbsp;&nbsp;";
-        print_href(undef,undef,$config_url,"Detailed Asterisk Configuration","_asterisk_");
+        #print "<p><br>";
+        #print_href(undef,undef,$initial_setup_url,"Initial Asterisk Configuration","_asterisk_");
+        #print "&nbsp;&nbsp; | &nbsp;&nbsp;";
+        print_href(undef,undef,$config_url,"Asterisk Configuration","_asterisk_");
         
 	&ui_print_footer("/", $text{'index'});
     }

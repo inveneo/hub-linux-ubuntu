@@ -11,17 +11,112 @@ use URI::Escape;
 
 $ERR_PREFIX = 'err_';
 
-# draw the page
-&ui_print_header(undef, $module_info{'desc'}, "");     
+$head_stuff = '
+<script type="text/javascript">
 
-print "<style type='text/css'>\n";
-print "p.good {";
-print " border-style: solid; border-width: thin; padding: 0.5em;";
-print " color: green}\n";
-print "p.bad  {";
-print " border-style: solid; border-width: thin; padding: 0.5em;";
-print " color: red}\n";
-print "</style>\n";
+function disable_div(the_div, value) {
+    var arr = the_div.getElementsByTagName("input");
+    for (var i = 0; i < arr.length; i++) {
+        arr[i].disabled = value;
+    }
+}
+
+function wan_interface_eth0() {
+    disable_div(document.getElementById("eth0_stuff"), false);
+    disable_div(document.getElementById("modem_stuff"), true);
+    disable_div(document.getElementById("eth1_stuff"), true);
+    disable_div(document.getElementById("eth1_dhcp_stuff"), false);
+}
+
+function wan_interface_modem() {
+    disable_div(document.getElementById("eth0_stuff"), true);
+    disable_div(document.getElementById("modem_stuff"), false);
+    disable_div(document.getElementById("eth1_stuff"), true);
+    disable_div(document.getElementById("eth1_dhcp_stuff"), false);
+}
+
+function wan_interface_eth1() {
+    disable_div(document.getElementById("eth0_stuff"), true);
+    disable_div(document.getElementById("modem_stuff"), true);
+    disable_div(document.getElementById("eth1_stuff"), false);
+    disable_div(document.getElementById("eth1_dhcp_stuff"), true);
+}
+
+function wan_method_dhcp() {
+    disable_div(document.getElementById("eth0_static_stuff"), true);
+}
+
+function wan_method_static() {
+    disable_div(document.getElementById("eth0_static_stuff"), false);
+}
+
+function lan_dhcp_on_on() {
+    disable_div(document.getElementById("eth1_dhcp_range_stuff"), false);
+}
+
+function lan_dhcp_on_off() {
+    disable_div(document.getElementById("eth1_dhcp_range_stuff"), true);
+}
+
+function undisable_divs() {
+    disable_div(document.getElementById("eth0_stuff"), false);
+    disable_div(document.getElementById("modem_stuff"), false);
+    disable_div(document.getElementById("eth1_stuff"), false);
+    disable_div(document.getElementById("eth1_dhcp_stuff"), false);
+    disable_div(document.getElementById("eth0_static_stuff"), false);
+    disable_div(document.getElementById("eth1_dhcp_range_stuff"), false);
+}
+</script>
+
+<style type="text/css">
+p.good {
+    border-style: solid;
+    border-width: thin;
+    padding: 0.5em;
+    color: green;
+}
+p.bad  {
+    border-style: solid;
+    border-width: thin;
+    padding: 0.5em;
+    color: red;
+}
+table.wide {
+    border-width: 1px;
+    border-style: solid;
+    width: 100%;
+}
+
+td.label {
+    text-align: right;
+    width: 20%;
+}
+td.entry {
+    width: 20%;
+    background-color: #FFFFEE;
+    text-align: left;
+}
+td.error {
+    text-align: left;
+}
+
+td.indent {
+    width: 10%;
+}
+</style>';
+
+@myLoaders = ();
+
+# draw the page... this comment from web-lib-funcs.pl may be helpful:
+# header(title, image, [help], [config], [nomodule], [nowebmin], [rightside],
+# #        [head-stuff], [body-stuff], [below])
+# # Output a page header with some title and image. The header may also
+# # include a link to help, and a link to the config page.
+# # The header will also have a link to to webmin index, and a link to the
+# # module menu if there is no config link
+#
+&ui_print_header(undef, $module_info{'desc'}, undef, undef, undef, undef,
+    undef, undef, $head_stuff, 'onLoad="myLoader();"', undef); 
 
 $error_string = &get_cgi;
 if ($error_string eq "") {
@@ -84,167 +179,319 @@ sub get_cgi {
     return "";
 }
 
+sub my_radio {
+    local ($ctl, $val) = @_;
+    $js = $ctl.'_'.$val;
+    if ($in{$ctl} eq $val) {
+        $checked = ' checked ';
+        push(@myLoaders, $js);
+    } else {
+        $checked = ' ';
+    }
+    return '<input type="radio" name="' . $ctl . '" value="' . $val . '"' .
+        $checked . 'onClick="' . $js . '();">';
+}
+
+sub my_textbox {
+    local ($name) = @_;
+    return '<input name="' . $name . '" value="' . $in{$name} . '" size="20">';
+}
+
+sub my_textbox3 {
+    local ($name) = @_;
+    return '<input name="' . $name . '" value="' . $in{$name} . '" size="3">';
+}
+
+sub my_password {
+    local ($name) = @_;
+    return '<input type="password" name="' . $name . '" value="' .
+        $in{$name} . '" size="20">';
+}
+
 sub draw_form {
     print &ui_form_start('processForm.cgi', 'post');
-    print &name_stuff;
+    print &host_stuff;
     print "<br>\n";
     print &wan_stuff;
     print "<br>\n";
+    print &dns_stuff;
+    print "<br>\n";
     print &lan_stuff;
-    print &ui_submit('Submit');
+    print &hidden_values;
+    print "<br>\n";
+    print "<input type='submit' value='Apply Changes'" .
+       " onClick='undisable_divs();'>\n";
     print &ui_form_end();
+    print &myLoaderMaker;
 }
 
-sub name_stuff {
-    local $s = "<h2>Network Names</h2>\n";
-    $s .= "<table border>\n";
-
-    $s .= "<tr><td align='right' width='20%'>Hostname: </td>\n";
-    $s .= "<td width='20%'>" .
-        &ui_textbox('hostname', $in{'hostname'}, 20) . "</td>\n";
-    $s .= "<td>" . &error_text('hostname') . "</td></tr>\n";
-
-    $s .= "<tr><td align='right' width='20%'>Primary DNS: </td>\n";
-    $s .= "<td width='20%'>" .
-        &ui_textbox('dns_0', $in{'dns_0'}, 20) . "</td>\n";
-    $s .= "<td>" . &error_text('dns_0') . "</td></tr>\n";
-
-    $s .= "<tr><td align='right' width='20%'>Secondary DNS: </td>\n";
-    $s .= "<td width='20%'>" .
-        &ui_textbox('dns_1', $in{'dns_1'}, 20) . "</td>\n";
-    $s .= "<td>" . &error_text('dns_1') . "</td></tr>\n";
-
-    $s .= "</table>\n";
-    return $s;
+sub host_stuff {
+    return '
+<div id="host_stuff">
+<table class="wide">
+<tr>
+  <td class="label">Hub Hostname:</td>
+  <td class="entry">' . &my_textbox('hostname') . '</td>
+  <td class="error">' . &error_text('hostname') . '</td>
+</tr>
+</table>
+</div>
+';
 }
 
 sub wan_stuff {
-    local $s = "<h2>WAN</h2>\n";
-    $s .= "<table border>\n";
-
-    $s .= "<tr><td>" . &error_text('wan_interface') . "</td></tr>\n";
-
-    $s .= "<tr><td>" . &ui_radio_table('wan_interface', $in{'wan_interface'},
-        [ [ 'off',      'Off',      '&nbsp;' ],
-          [ 'ethernet', 'Ethernet', &eth0_stuff ],
-          [ 'modem',    'Modem',    &modem_stuff ] ]) .
-        "</td></tr>\n";
-
-    $s .= "</table>\n";
-    return $s;
+    return '
+<div id="wan_stuff">
+<h2>Connection to the Internet</h2>
+<table class="wide">
+<tr>
+  <td colspan="2">' . &error_text('wan_interface') . '</td>
+</tr>
+<tr>
+  <td colspan="2">' . &my_radio('wan_interface', 'eth0') .
+    'WAN Port connection to Internet</td>
+</tr>
+<tr>
+  <td class="indent"></td>
+  <td>' . &eth0_stuff . '</td>
+</tr>
+<tr>
+  <td colspan="2">' . &my_radio('wan_interface', 'modem') .
+    'Modem connection to Internet</td>
+</tr>
+<tr>
+  <td class="indent"></td>
+  <td>' . &modem_stuff . '</td>
+</tr>
+<tr>
+  <td colspan="2">' . &my_radio('wan_interface', 'eth1') .
+    'LAN Port connection to Internet</td>
+</tr>
+<tr>
+  <td class="indent"></td>
+  <td>' . &eth1_stuff . '</td>
+</tr>
+</table>
+</div>
+';
 }
 
 sub eth0_stuff {
-    local $s = "<table border>\n";
-
-    $s .= "<tr><td>" . &error_text('wan_method') . "</td></tr>\n";
-
-    $s .= "<tr><td>" . &ui_radio_table('wan_method', $in{'wan_method'},
-        [ ['dhcp',   'DHCP Client', '&nbsp'],
-          ['static', 'Static', &eth0_static_stuff] ]) .
-        "</td></tr>\n";
-
-    $s .= "</table>\n";
-    return $s;
+    return '
+<div id="eth0_stuff">
+<table class="wide">
+<tr>
+  <td colspan="2">' . &error_text('wan_method') . '</td>
+</tr>
+<tr>
+  <td colspan="2">' . &my_radio('wan_method', 'dhcp') .
+    'DHCP provides setup</td>
+</tr>
+<tr>
+  <td colspan="2">' . &my_radio('wan_method', 'static') .
+    'Static setup</td>
+</tr>
+<tr>
+  <td class="indent"></td>
+  <td>' . &eth0_static_stuff . '</td>
+</tr>
+</table>
+</div>
+';
 }
 
 sub eth0_static_stuff {
-    local $s = "<table border>\n";
-
-    $s .= "<tr><td align='right'>IP Address: </td>\n";
-    $s .= "<td>". &ui_textbox('wan_address', $in{'wan_address'}, 20). "</td>\n";
-    $s .= "<td>" . &error_text('wan_address') . "</td></tr>\n";
-
-    $s .= "<tr><td align='right'>Netmask: </td>\n";
-    $s .= "<td>". &ui_textbox('wan_netmask', $in{'wan_netmask'}, 20). "</td>\n";
-    $s .= "<td>" . &error_text('wan_netmask') . "</td></tr>\n";
-
-    $s .= "<tr><td align='right'>Gateway: </td>\n";
-    $s .= "<td>". &ui_textbox('wan_gateway', $in{'wan_gateway'}, 20). "</td>\n";
-    $s .= "<td>" . &error_text('wan_gateway') . "</td></tr>\n";
-
-    $s .= "</table>\n";
-    return $s;
+    return '
+<div id="eth0_static_stuff">
+<table class="wide">
+<tr>
+  <td class="label">IP Address:</td>
+  <td class="entry">' . &my_textbox('wan_address') . '</td>
+  <td class="error">' . &error_text('wan_address') . '</td>
+</tr>
+<tr>
+  <td class="label">Netmask:</td>
+  <td class="entry">' . &my_textbox('wan_netmask') . '</td>
+  <td class="error">' . &error_text('wan_netmask') . '</td>
+</tr>
+<tr>
+  <td class="label">Gateway:</td>
+  <td class="entry">' . &my_textbox('wan_gateway') . '</td>
+  <td class="error">' . &error_text('wan_gateway') . '</td>
+</tr>
+</table>
+</div>
+';
 }
 
 sub modem_stuff {
-    local $s = "<table border>\n";
+    return '
+<div id="modem_stuff">
+<table class="wide">
+<tr>
+  <td class="label">Modem Device:</td>
+  <td class="entry">' . &my_textbox('ppp_modem') . '</td>
+  <td class="error">' . &error_text('ppp_modem') . '</td>
+</tr>
+<tr>
+  <td class="label">Phone Number:</td>
+  <td class="entry">' . &my_textbox('ppp_phone') . '</td>
+  <td class="error">' . &error_text('ppp_phone') . '</td>
+</tr>
+<tr>
+  <td class="label">Username:</td>
+  <td class="entry">' . &my_textbox('ppp_username') . '</td>
+  <td class="error">' . &error_text('ppp_username') . '</td>
+</tr>
+<tr>
+  <td class="label">Password:</td>
+  <td class="entry">' . &my_password('ppp_password') . '</td>
+  <td class="error">' . &error_text('ppp_password') . '</td>
+</tr>
+<tr>
+  <td class="label">Baud Rate:</td>
+  <td class="entry">' . &my_textbox('ppp_baud'). '</td>
+  <td class="error">' . &error_text('ppp_baud') . '</td>
+</tr>
+<tr>
+  <td class="label">Idle (secs):</td>
+  <td class="entry">' . &my_textbox('ppp_idle_seconds') . '</td>
+  <td class="error">' . &error_text('ppp_idle_seconds') . '</td>
+</tr>
+<tr>
+  <td class="label">Init String 1:</td>
+  <td class="entry">' . &my_textbox('ppp_init1') . '</td>
+  <td class="error">' . &error_text('ppp_init1') . '</td>
+</tr>
+<tr>
+  <td class="label">Init String 2:</td>
+  <td class="entry">' . &my_textbox('ppp_init2') . '</td>
+  <td class="error">' . &error_text('ppp_init2') . '</td>
+</tr>
+</table>
+</div>
+';
+}
 
-    $s .= "<tr><td align='right'>Device: </td>\n";
-    $s .= "<td>" . &ui_textbox('ppp_modem', $in{'ppp_modem'}, 20) . "</td>\n";
-    $s .= "<td>" . &error_text('ppp_modem') . "</td></tr>\n";
+sub eth1_stuff {
+    return '
+<div id="eth1_stuff">
+<table class="wide">
+  <tr>
+    <td class="label">Gateway:</td>
+    <td class="entry">' . &my_textbox('lan_gateway') . '</td>
+    <td class="error">' . &error_text('lan_gateway') . '</td>
+  </tr>
+</table>
+</div>
+';
+}
 
-    $s .= "<tr><td align='right'>Phone Number: </td>\n";
-    $s .= "<td>" . &ui_textbox('ppp_phone', $in{'ppp_phone'}, 20) . "</td>\n";
-    $s .= "<td>" . &error_text('ppp_phone') . "</td></tr>\n";
-
-    $s .= "<tr><td align='right'>Username: </td>\n";
-    $s .= "<td>" . &ui_textbox('ppp_username', $in{'ppp_username'}, 20) .
-        "</td>\n";
-    $s .= "<td>" . &error_text('ppp_username') . "</td></tr>\n";
-
-    $s .= "<tr><td align='right'>Password: </td>\n";
-    $s .= "<td>" . &ui_password('ppp_password', $in{'ppp_password'}, 20) .
-        "</td>\n";
-    $s .= "<td>" . &error_text('ppp_password') . "</td></tr>\n";
-
-    $s .= "<tr><td align='right'>Baud Rate: </td>\n";
-    $s .= "<td>" . &ui_textbox('ppp_baud', $in{'ppp_baud'}, 20). "</td>\n";
-    $s .= "<td>" . &error_text('ppp_baud') . "</td></tr>\n";
-
-    $s .= "<tr><td align='right'>Idle (secs): </td>\n";
-    $s .= "<td>" .
-        &ui_textbox('ppp_idle_seconds', $in{'ppp_idle_seconds'}, 20) .
-        "</td>\n";
-    $s .= "<td>" . &error_text('ppp_idle_seconds') . "</td></tr>\n";
-
-    $s .= "<tr><td align='right'>Init String 1: </td>\n";
-    $s .= "<td>" . &ui_textbox('ppp_init1', $in{'ppp_init1'}, 20) . "</td>\n";
-    $s .= "<td>" . &error_text('ppp_init1') . "</td></tr>\n";
-
-    $s .= "<tr><td align='right'>Init String 2: </td>\n";
-    $s .= "<td>" . &ui_textbox('ppp_init2', $in{'ppp_init2'}, 20) . "</td>\n";
-    $s .= "<td>" . &error_text('ppp_init2') . "</td></tr>\n";
-
-    $s .= "</table>\n";
-    return $s;
+sub dns_stuff {
+    return '
+<div id="dns_stuff">
+<table class="wide">
+<tr>
+  <td class="label">External DNS Server(s):</td>
+  <td class="entry">' . &my_textbox('dns_0') . '<br/>' .
+    &my_textbox('dns_1') . '</td>
+  <td class="error">' .
+    &error_text('dns_0') . '<br/>' .
+    &error_text('dns_1') . '</td>
+  </td>
+</tr>
+</table>
+</div>
+';
 }
 
 sub lan_stuff {
-    local $s = "<h2>LAN</h2>\n";
-
-    $s .= &ui_hidden('lan_netmask', $in{'lan_netmask'});
-    $s .= &error_text('lan_netmask');
-    $s .= &error_text('lan_network');
-    $s .= &error_text('lan_network_range');
-
-    $s .= "<table border>\n";
-
-    $s .= "<tr><td align='right' width='20%'>IP Address: </td>\n";
-    $s .= "<td width='20%'>" .
-        &ui_textbox('lan_address', $in{'lan_address'}, 20) . "</td>\n";
-    $s .= "<td>" . &error_text('lan_address') . "</td></tr>\n";
-
-    $s .= "<tr><td align='right' width='20%'>Gateway: </td>\n";
-    $s .= "<td width='20%'>" .
-        &ui_textbox('lan_gateway', $in{'lan_gateway'}, 20) . "</td>\n";
-    $s .= "<td>" . &error_text('lan_gateway') . "</td></tr>\n";
-
-    $s .= "<tr><td align='right' width='20%'>&nbsp;</td>\n";
-    $s .= "<td width='20%'>" .
-        &ui_checkbox('lan_dhcp_on', 'on', 'DHCP Server On', $in{'lan_dhcp_on'}).
-        "</td>\n";
-    $s .= "<td>" . &error_text('lan_dhcp_on') . "</td></tr>\n";
-
-    $s .= "<tr><td align='right' width='20%'>DHCP Address Range: </td>\n";
-    $s .= "<td width='20%'>" .
-        &ui_textbox('lan_dhcp_range_start', $in{'lan_dhcp_range_start'}, 3) .
-        " to " .
-        &ui_textbox('lan_dhcp_range_end', $in{'lan_dhcp_range_end'}, 3) .
-        "</td>\n";
-    $s .= "<td>" . &error_text('lan_dhcp_range_start') .
-        &error_text('lan_dhcp_range_end') . "</td></tr>\n";
-
-    $s .= "</table>\n";
-    return $s;
+    return '
+<div id="lan_stuff">
+<h2>Connection to Local Area Network</h2>' .
+&eth1_static_stuff .
+&eth1_dhcp_stuff . '
+</div>
+';
 }
+
+sub eth1_static_stuff {
+    return '
+<div id="eth1_static_stuff">
+<table class="wide">
+<tr>
+  <td colspan="3">' .
+    &error_text('lan_network') . '<br/>' .
+    &error_text('lan_network_range') . '</td>
+</tr>
+<tr>
+  <td class="label">Hub&apos;s address on LAN:</td>
+  <td class="entry">' . &my_textbox('lan_address') . '</td>
+  <td class="error">' . &error_text('lan_address') . '</td>
+</tr>
+<tr>
+  <td class="label">Netmask:</td>
+  <td class="entry">' . &my_textbox('lan_netmask') . '</td>
+  <td class="error">' . &error_text('lan_netmask') . '</td>
+</tr>
+</table>
+</div>
+';
+}
+
+sub eth1_dhcp_stuff {
+    return '
+<div id="eth1_dhcp_stuff">
+<table class="wide">
+<tr>
+  <td colspan="2">' . &my_radio('lan_dhcp_on', 'on') .
+    'Hub is a DHCP server</td>
+</tr>
+<tr>
+  <td class="indent"></td>
+  <td>' . &eth1_dhcp_range_stuff . '</td>
+</tr>
+<tr>
+  <td colspan="2">' . &my_radio('lan_dhcp_on', 'off') .
+    'Hub is not serving DHCP</td>
+</tr>
+</table>
+</div>
+';
+}
+
+sub eth1_dhcp_range_stuff {
+    return '
+<div id="eth1_dhcp_range_stuff">
+<table class="wide">
+<tr>
+  <td>Address range:' .
+    &my_textbox3('lan_dhcp_range_start') . ' to ' .
+    &my_textbox3('lan_dhcp_range_end') . '</td>
+  <td class="error">' .
+    &error_text('lan_dhcp_range_start') . '<br/>' .
+    &error_text('lan_dhcp_range_end') . '</td>
+</tr>
+</table>
+</div>
+';
+}
+
+sub hidden_values {
+    return '
+<input type="hidden" name="lan_dhcp_was_on" value="' . $in{'lan_dhcp_on'} . '">
+';
+}
+
+sub myLoaderMaker {
+    $s = '';
+    foreach $f (@myLoaders) {
+        $s .= ' ' . $f . '();';
+    }
+    return '
+<script>
+function myLoader() {' . $s . '}
+</script>
+';
+}
+

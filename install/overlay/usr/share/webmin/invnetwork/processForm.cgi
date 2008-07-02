@@ -12,19 +12,32 @@ from os.path import abspath, dirname, join
 import cgi
 import cgitb; cgitb.enable()  # XXX remove this for production systems
 from IPy import IP
-from subprocess import Popen, PIPE
-
-sys.path.append('/opt/inveneo/lib/python/inveneo')
-import configfiles
+from urllib import quote
+from subprocess import Popen, PIPE, call
+from inveneo import configfiles
 
 ERR_PREFIX = 'err_'
+MAX_HOSTNAME_LEN = 42
 
-HOSTNAME_CHANGED    = 'hostname_changed'
-DNS_CHANGED         = 'dns_changed'
-LAN_ADDRESS_CHANGED = 'lan_address_changed'
-DHCP_CHANGED        = 'dhcp_changed'
+HOSTNAME_CHANGED      = 'hostname_changed'
+DNS_CHANGED           = 'dns_changed'
+WAN_INTERFACE_CHANGED = 'wan_method_changed'
+WAN_METHOD_CHANGED    = 'wan_method_changed'
+WAN_STATIC_CHANGED    = 'wan_static_changed'
+LAN_ADDRESS_CHANGED   = 'lan_address_changed'
+LAN_NETMASK_CHANGED   = 'lan_netmask_changed'
+LAN_GATEWAY_CHANGED   = 'lan_gateway_changed'
+DHCPD_PARAM_CHANGED   = 'dhcpd_param_changed'
 
 RESTARTER = 'restarter.py'
+FIREWALL  = '/opt/inveneo/sbin/wan-firewall.sh'
+
+CHKCONFIG = '/usr/sbin/sysv-rc-conf'
+
+def appendQueryString(qs, key, value):
+    """Helper for building up properly quoted query string."""
+    sep = ['','&'][len(qs) > 0]
+    return qs + '%s%s=%s' % (sep, quote(key), quote(value))
 
 # CGI validation helpers
 def required_single_word(name, default=None):
@@ -106,17 +119,18 @@ def get_network(ip_address, ip_netmask):
         ip_network = None
     return ip_network
 
+def get_bits(netmask):
+    """Given netmask as string, return mask bits as int, else None."""
+    try:
+        ip = IP('0/%s' % netmask)
+        bits = int(ip.strNormal(1).split('/')[1])
+    except:
+        bits = None
+    return bits
+
 def str_or_empty(value):
     """Given a value or None, returns str(value) or empty string."""
     return [str(value), ''][value == None]
-
-def trigger(flag_list):
-    """Lets you know if any of the flags in your list are set."""
-    global flags
-    for flag in flag_list:
-        if flag in flags:
-            return True
-    return False
 
 # work sections
 def validate_inputs():
@@ -128,15 +142,17 @@ def validate_inputs():
     global ppp_modem, ppp_phone, ppp_username, ppp_password
     global int_ppp_baud, int_ppp_idle_seconds, ppp_init1, ppp_init2
     global ip_lan_address, ip_lan_netmask, ip_lan_gateway
-    global ip_lan_network, ip_lan_network_range
-    global bool_lan_dhcp_on, int_lan_dhcp_range_start, int_lan_dhcp_range_end
+    global bool_lan_dhcp_on, bool_lan_dhcp_was_on
+    global int_lan_dhcp_range_start, int_lan_dhcp_range_end
 
     hostname = required_single_word('hostname')
-    ip_dns_0 = required_ip('dns_0')
+    if len(hostname) > MAX_HOSTNAME_LEN:
+        errors['hostname'] = 'Invalid hostname (too long)'
+    ip_dns_0 = optional_ip('dns_0')
     ip_dns_1 = optional_ip('dns_1')
 
     wan_interface = choose_from_list('wan_interface', \
-            ['off', 'ethernet', 'modem'])
+            ['eth0', 'modem', 'eth1'])
     wan_method = choose_from_list('wan_method', ['dhcp', 'static'])
     if wan_method == 'static':
         ip_wan_address = required_ip('wan_address')
@@ -158,8 +174,10 @@ def validate_inputs():
 
     ip_lan_address = required_ip('lan_address')
     ip_lan_netmask = required_ip('lan_netmask')
-    ip_lan_gateway = required_ip('lan_gateway')
+    ip_lan_gateway = optional_ip('lan_gateway')
     bool_lan_dhcp_on = form.getfirst("lan_dhcp_on", "off").lower() == "on"
+    bool_lan_dhcp_was_on = \
+            form.getfirst("lan_dhcp_was_on", "off").lower() == "on"
     int_lan_dhcp_range_start = optional_integer('lan_dhcp_range_start', '100')
     int_lan_dhcp_range_end = optional_integer('lan_dhcp_range_end', '200')
 
@@ -169,30 +187,35 @@ def business_logic():
     global errors
     global ip_lan_address, ip_lan_netmask, ip_lan_gateway
     global ip_lan_network, ip_lan_network_range
-    global bool_lan_dhcp_on, int_lan_dhcp_range_start, int_lan_dhcp_range_end
+    global bool_lan_dhcp_on
+    global int_lan_dhcp_range_start, int_lan_dhcp_range_end
 
     ip_lan_network = get_network(ip_lan_address, ip_lan_netmask)
     if not ip_lan_network:
-        errors['lan_network'] = 'Invalid LAN network'
+        errors['lan_network'] = 'Invalid network'
 
     try:
         ip_lan_network_range = IP('%s/%s' % (ip_lan_network, ip_lan_netmask))
     except:
-        errors['lan_network_range'] = 'Invalid LAN network range'
+        errors['lan_network_range'] = 'Invalid network range'
+        ip_lan_network_range = None
 
-    if int_lan_dhcp_range_start:
-        if (int_lan_dhcp_range_start < 1) or (254 < int_lan_dhcp_range_start):
-            errors['lan_dhcp_range_start'] = 'Must be between 1 and 254'
-    if int_lan_dhcp_range_end:
-        if (int_lan_dhcp_range_end < 1) or (254 < int_lan_dhcp_range_end):
-            errors['lan_dhcp_range_end'] = 'Must be between 1 and 254'
+    if int_lan_dhcp_range_start and ip_lan_network_range:
+        ip_start = IP(ip_lan_network.int() + int_lan_dhcp_range_start)
+        if not ip_start in ip_lan_network_range:
+            errors['lan_dhcp_range_start'] = 'Not in network range'
+    if int_lan_dhcp_range_end and ip_lan_network_range:
+        ip_end = IP(ip_lan_network.int() + int_lan_dhcp_range_end)
+        if not ip_end in ip_lan_network_range:
+            errors['lan_dhcp_range_end'] = 'Not in network range'
+
     if int_lan_dhcp_range_start and int_lan_dhcp_range_end:
-        if (int_lan_dhcp_range_end <= int_lan_dhcp_range_start):
+        if (int_lan_dhcp_range_end < int_lan_dhcp_range_start):
             errors['lan_dhcp_range_start'] = 'Must start before end'
             errors['lan_dhcp_range_end']   = 'Must end after start'
 
 def rewrite_config_files(flags):
-    """Rewrite the config files. Set flags for actions taken."""
+    """Rewrite all the config files. Set flags for actions taken."""
 
     global errors
     global hostname, ip_dns_0, ip_dns_1, wan_interface, wan_method
@@ -201,45 +224,44 @@ def rewrite_config_files(flags):
     global int_ppp_baud, int_ppp_idle_seconds, ppp_init1, ppp_init2
     global ip_lan_address, ip_lan_netmask, ip_lan_gateway
     global ip_lan_network, ip_lan_network_range
-    global bool_lan_dhcp_on, int_lan_dhcp_range_start, int_lan_dhcp_range_end
+    global bool_lan_dhcp_on
+    global int_lan_dhcp_range_start, int_lan_dhcp_range_end
+
+    # set up empty change set
+    flags.discard(HOSTNAME_CHANGED)
+    flags.discard(DNS_CHANGED)
+    flags.discard(WAN_INTERFACE_CHANGED)
+    flags.discard(WAN_METHOD_CHANGED)
+    flags.discard(WAN_STATIC_CHANGED)
+    flags.discard(LAN_ADDRESS_CHANGED)
+    flags.discard(LAN_NETMASK_CHANGED)
+    flags.discard(LAN_GATEWAY_CHANGED)
+    flags.discard(DHCPD_PARAM_CHANGED)
 
     # /etc/hostname
     o = configfiles.EtcHostname()
-    previous_hostname = o.hostname
-    if hostname != previous_hostname:
+    old_hostname = o.hostname
+    if hostname != old_hostname:
         o.hostname = hostname
-        o.write()
         flags.add(HOSTNAME_CHANGED)
-    else:
-        flags.discard(HOSTNAME_CHANGED)
-
-    # /etc/resolv.conf
-    o = configfiles.EtcResolvConf()
-    previous_nameservers = set(o.nameservers)
-    current_nameservers = set()
-    dns_0 = ip_dns_0.strNormal()
-    current_nameservers.add(dns_0)
-    if len(o.nameservers) > 0:
-        o.nameservers[0] = dns_0
-    else:
-        o.nameservers.append(dns_0)
-    if ip_dns_1:
-        dns_1 = ip_dns_1.strNormal()
-        current_nameservers.add(dns_1)
-        if len(o.nameservers) > 1:
-            o.nameservers[1] = dns_1
-        else:
-            o.nameservers.append(dns_1)
-    if current_nameservers != previous_nameservers:
-        flags.add(DNS_CHANGED)
-    else:
-        flags.discard(DNS_CHANGED)
     o.write()
 
     # /etc/hosts
     o = configfiles.EtcHosts()
     o.ips['127.0.1.1'] = \
             [hostname, hostname + '.local', hostname + '.localdomain']
+    o.write()
+
+    # /etc/dhcp3/dhclient.conf OR /etc/resolv.conf
+    if (wan_interface == 'eth0') and (wan_method == 'dhcp'):
+        o = configfiles.EtcDhcp3DhclientConf()
+    else:
+        o = configfiles.EtcResolvConf()
+    old_nameservers = o.nameservers
+    o.nameservers = []
+    if ip_dns_0: o.nameservers.append(ip_dns_0.strNormal())
+    if ip_dns_1: o.nameservers.append(ip_dns_1.strNormal())
+    if set(old_nameservers) != set(o.nameservers): flags.add(DNS_CHANGED)
     o.write()
 
     # /etc/wvdial.conf
@@ -265,108 +287,138 @@ def rewrite_config_files(flags):
     o.write()
 
     # /etc/network/interfaces
-    flags.discard(LAN_ADDRESS_CHANGED)
     o = configfiles.EtcNetworkInterfaces()
+    if ('eth0' in o.autoset) and (wan_interface != 'eth0'):
+        flags.add(WAN_INTERFACE_CHANGED)
+    elif ('ppp0' in o.autoset) and (wan_interface != 'modem'):
+        flags.add(WAN_INTERFACE_CHANGED)
+    elif (wan_interface != 'eth1'):
+        flags.add(WAN_INTERFACE_CHANGED)
     if 'eth0' in o.ifaces:
         wan = o.ifaces['eth0']
     else:
         wan = o.add_iface('eth0', wan_method)
-        wan.extras = [ \
-                '  pre-up /opt/inveneo/sbin/wan-firewall.sh eth0 up', \
-                '  post-down /opt/inveneo/sbin/wan-firewall.sh eth0 down']
+        wan.extras = ['  pre-up %s eth0 up' % FIREWALL,
+                      '  post-down %s eth0 down' % FIREWALL]
+    if not wan.method or (wan.method != wan_method):
+        flags.add(WAN_METHOD_CHANGED)
+    if ip_wan_address and \
+            (not wan.address or (wan.address != ip_wan_address)) or \
+        ip_wan_netmask and \
+            (not wan.netmask or (wan.netmask != ip_wan_netmask)) or \
+        ip_wan_gateway and \
+            (not wan.gateway or (wan.gateway != ip_wan_gateway)):
+                flags.add(WAN_STATIC_CHANGED)
     wan.iface = 'eth0'
     wan.method = wan_method
-    if ip_wan_address: wan.address = ip_wan_address
-    if ip_wan_netmask: wan.netmask = ip_wan_netmask
-    if ip_wan_gateway: wan.gateway = ip_wan_gateway
+    wan.address = ip_wan_address
+    wan.netmask = ip_wan_netmask
+    wan.gateway = ip_wan_gateway
 
     if 'eth1' in o.ifaces:
         lan = o.ifaces['eth1']
-        if lan.address != ip_lan_address:
-            flags.add(LAN_ADDRESS_CHANGED)
-            old_ip_lan_address = lan.address
-            old_ip_lan_netmask = lan.netmask
-            old_ip_lan_gateway = lan.gateway
+        # save this for later DHCPD check
+        ip_old_lan_network = get_network(lan.address, lan.netmask)
     else:
         lan = o.add_iface('eth1', 'static')
+        ip_old_lan_network = None
+    if not lan.address or (lan.address != ip_lan_address):
+        flags.add(LAN_ADDRESS_CHANGED)
+    if not lan.netmask or (lan.netmask != ip_lan_netmask):
+        flags.add(LAN_NETMASK_CHANGED)
+    if ip_lan_gateway and \
+            (not lan.gateway or (lan.gateway != ip_lan_gateway)):
+        flags.add(LAN_GATEWAY_CHANGED)
     lan.iface = 'eth1'
     lan.method = 'static'
     lan.address = ip_lan_address
     lan.netmask = ip_lan_netmask
-    lan.gateway = ip_lan_gateway
+    if ip_lan_gateway: lan.gateway = ip_lan_gateway
 
     if not 'ppp0' in o.ifaces:
         ppp = o.add_iface('ppp0', 'ppp')
-        ppp.extras = [ \
-                '  pre-up /opt/inveneo/sbin/wan-firewall.sh ppp0 up', \
-                '  post-down /opt/inveneo/sbin/wan-firewall.sh ppp0 down']
+        ppp.extras = ['  pre-up %s ppp0 up' % FIREWALL,
+                      '  post-down %s ppp0 down' % FIREWALL]
 
     o.autoset.discard('eth0')
     o.autoset.discard('ppp0')
-    if wan_interface == 'ethernet':
-        o.autoset.add('eth0')
-    elif wan_interface == 'modem':
-        o.autoset.add('ppp0')
-    o.autoset.add('eth1')
+    if wan_interface == 'eth0':    o.autoset.add('eth0')
+    elif wan_interface == 'modem': o.autoset.add('ppp0')
+    elif wan_interface == 'eth1':  o.autoset.add('eth1')
+    elif not 'wan_interface' in errors:
+        errors['wan_interface'] = "Illegal interface choice"
     o.write()
 
     # /etc/dhcp3/dhcp.conf
-    flags.discard(DHCP_CHANGED)
     o = configfiles.EtcDhcp3DhcpConf()
     lan_network = ip_lan_network.strNormal()
     lan_netmask = ip_lan_netmask.strNormal()
     if lan_network in o.subnets:
         dhcp = o.subnets[lan_network]
     else:
+        # ip_old_lan_network comes from /etc/network/interfaces section above
+        if ip_old_lan_network:
+            # remove previous subnet from server
+            o.subnets.pop(ip_old_lan_network.strNormal(), None)
         dhcp = o.add_subnet(lan_network, lan_netmask)
-        if trigger([LAN_ADDRESS_CHANGED]):
-            # things are moving around...
-            old_lan_network = get_network(old_ip_lan_address,
-                        old_ip_lan_netmask).strNormal()
-            o.subnets.pop(old_lan_network, None)
-    dhcp.subnet   = ip_lan_network
-    dhcp.netmask  = ip_lan_netmask
-    dhcp.start_ip = ip_lan_network_range[int_lan_dhcp_range_start]
-    dhcp.end_ip   = ip_lan_network_range[int_lan_dhcp_range_end]
-    dhcp.options['routers'] = ip_lan_gateway.strNormal()
+        flags.add(DHCPD_PARAM_CHANGED)
+    if ip_lan_network_range:
+        new_start = ip_lan_network_range[int_lan_dhcp_range_start]
+        new_end = ip_lan_network_range[int_lan_dhcp_range_end]
+        if not dhcp.start_ip or not dhcp.end_ip or \
+            (dhcp.start_ip.strNormal() != new_start.strNormal()) or \
+            (dhcp.end_ip.strNormal() != new_end.strNormal()):
+                flags.add(DHCPD_PARAM_CHANGED)
+    new_router = ip_lan_address.strNormal()
+    old_router = dhcp.options.get('routers', '')
+    if old_router != new_router:
+        flags.add(DHCPD_PARAM_CHANGED)
+
+    dhcp.subnet  = ip_lan_network
+    dhcp.netmask = ip_lan_netmask
+    if ip_lan_network_range:
+        dhcp.start_ip = new_start
+        dhcp.end_ip = new_end
+    dhcp.options['routers'] = new_router
     dhcp.options['domain-name'] = '"local"'
     dhcp.options['domain-name-servers'] = ip_lan_address.strNormal()
     o.write()
 
 def restart_services(flags):
     """Act on config file changes, guided by flags."""
+    global wan_interface, wan_method
+    global bool_lan_dhcp_on, bool_lan_dhcp_was_on
 
-    tasks = []
+    tasks = set()
 
-    # maybe reload the hostname
-    if trigger([HOSTNAME_CHANGED]):
-        tasks.append('hostname')
+    if HOSTNAME_CHANGED in flags:      tasks.add('hostname')
+    if DNS_CHANGED in flags:           tasks.add('dns')
+    if WAN_INTERFACE_CHANGED in flags: tasks.add('networking')
+    if WAN_METHOD_CHANGED in flags:    tasks.add('networking')
+    if (wan_method == 'static') and (WAN_STATIC_CHANGED in flags):
+        tasks.add('networking')
+    if (LAN_ADDRESS_CHANGED in flags) or (LAN_NETMASK_CHANGED in flags):
+        tasks.add('networking')
+        tasks.add('dhcp_restart')
+    if (wan_interface == 'eth1') and (LAN_GATEWAY_CHANGED in flags):
+        tasks.add('networking')
+    if bool_lan_dhcp_on and \
+            ((LAN_ADDRESS_CHANGED in flags) or \
+             (LAN_NETMASK_CHANGED in flags) or \
+             (DHCPD_PARAM_CHANGED in flags)):
+        if bool_lan_dhcp_was_on:
+            tasks.add('dhcp_restart')
+        else:
+            tasks.add('dhcp_start')
+    elif bool_lan_dhcp_was_on:
+        tasks.add('dhcp_stop')
 
-    # maybe restart networking
-    # this also does avahi
-    if trigger([HOSTNAME_CHANGED, LAN_ADDRESS_CHANGED]):
-        tasks.append('networking')
+    # configure DHCP to start at boot or not
+    call([CHKCONFIG, 'dhcp3-server', ['off', 'on'][bool_lan_dhcp_on]])
 
-    '''
-    # maybe restart the nameserver
-    if trigger([DNS_CHANGED]):
-        tasks.append('bind')
-    '''
-
-    # maybe restart the DHCP server
-    if trigger([DHCP_CHANGED]):
-        tasks.append('dhcp')
-
-    # maybe restart Samba
-    if trigger([HOSTNAME_CHANGED, LAN_ADDRESS_CHANGED]):
-        tasks.append('samba')
-
-    # maybe restart Apache
-    if trigger([LAN_ADDRESS_CHANGED]):
-        tasks.append('apache')
-
+    # run the restarter as NOHUP so it will run to completion
     path = abspath(dirname(sys.argv[0]))
-    return Popen(['nohup', join(path, RESTARTER)] + tasks + ['&']).pid
+    return Popen(['nohup', join(path, RESTARTER)] + list(tasks) + ['&']).pid
 
 ##
 # START HERE
@@ -376,10 +428,14 @@ errors = {}
 flags = set()
 
 # uncomment this section for some debugging
-#print "Content-Type: text/html"
-#print
-#for key in form.keys():
-#    print '%s = "%s"<br>' % (key, form[key].value)
+'''
+print "Content-Type: text/html"
+print
+L = form.keys()
+L.sort()
+for key in L:
+    print '%s = "%s"<br>' % (key, form[key].value)
+'''
 
 validate_inputs()
 business_logic()
@@ -390,20 +446,19 @@ if len(errors) < 1:
 # return all form values, plus error/info messages
 qs = ''
 for key in form.keys():
-    qs = configfiles.appendQueryString(qs, key, form[key].value)
+    qs = appendQueryString(qs, key, form[key].value)
 
 if len(errors) == 0:
-    qs = configfiles.appendQueryString(qs, 'good_news', \
-            'Your settings have been saved.')
+    qs = appendQueryString(qs, 'good_news', 'Your settings have been saved.')
 else:
     # errors go back as key/val where key is the special prefix followed by
     # the control name, and val is the error message
     for key, value in errors.iteritems():
-        qs = configfiles.appendQueryString(qs, ERR_PREFIX + key, value)
-    qs = configfiles.appendQueryString(qs, 'bad_news', 'There were errors...')
+        qs = appendQueryString(qs, ERR_PREFIX + key, value)
+    qs = appendQueryString(qs, 'bad_news', 'There were errors...')
 
 # redirect to (possibly moved) webmin page
-if trigger([LAN_ADDRESS_CHANGED]):
+if LAN_ADDRESS_CHANGED in flags:
     urlbase = 'https://%s:10000' % ip_lan_address.strNormal()
 else:
     urlbase = ''

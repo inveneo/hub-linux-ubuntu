@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 import sys
 import string
-sys.path.append('/opt/inveneo/lib/python/inveneo')
-import fileutils, raidutils, diskutils, constants
+from inveneo import fileutils, raidutils, diskutils, constants
 
 def get_drive_number(config,serial_num,num_expected_drives):
         if serial_num == None: 
