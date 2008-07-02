@@ -29,7 +29,7 @@ hpijs           install
 hpijs-ppds      install
 foo2zjs         install
 openprinting-ppds install
-hp-ppd	install
+hp-ppd	        install
 
 # cd/dvd burning
 wodim           install
@@ -43,8 +43,8 @@ cdrskin		install
 dvd+rw-tools	install
 
 # For Jeff's sanity
-emacs-nox   install
-python-mode install
+emacs22-nox     install
+python-mode     install
 
 # And for Jim's
 vim             install
@@ -63,16 +63,17 @@ samba           install
 smbclient       install
 quagga		install
 avahi-utils	install
-mysql-server-5.0 install
+mysql-server    install
 webmin	        install
 asterisk	install
-asterisk-web-vmail	install
-perl-suid		install
-python-asterisk		install
-zaptel		install
-zaptel-modules-2.6.22-14-generic	install
-smartmontools		install
-beep	install
+# XXX does not exist anymore
+# asterisk-web-vmail	install
+perl-suid	install
+python-asterisk	install
+zaptel		                        install
+zaptel-modules-2.6.24-19-generic        install
+smartmontools	install
+beep	        install
 
 # dial-up and modem connections
 pppoe		install
@@ -104,8 +105,6 @@ python-sqlalchemy       install
 libapache2-mod-python   install
 python-mysqldb          install
 python-ipy              install
-
-
 
 # dev, not needed in production but not a bad idea to have...
 subversion	install
