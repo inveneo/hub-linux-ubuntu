@@ -32,6 +32,20 @@ def main():
     sp.call(['apt-get','autoremove'])
     sp.call(['apt-get','autoclean'])
     sp.call(['apt-get','clean'])
+
+    #
+    # remove old kernels
+    #
+    
+    # what's the current kernel?
+    kern=sp.Popen(['uname','-r'], stdout=sp.PIPE).communicate()[0].strip()
+    default_kernel='2.6.24-16-generic'
+    if kern.find(default_kernel) == -1:
+        print "Attempting to remove kernel 2.6.24-16-generic."
+        sp.call(['apt-get','remove','-y','--force-yes','--purge','.*%s' % default_kernel])
+        print "Ignore any error above about 'package not found'"
+
+    print "Done"
         
     return 0
                 
