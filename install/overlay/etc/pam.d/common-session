@@ -6,11 +6,9 @@
 # at the start and end of sessions of *any* kind (both interactive and
 # non-interactive).  The default is pam_unix.
 #
-#session	optional	pam_foreground.so
 #session sufficient	pam_ldap.so
 #session	required	pam_unix.so
 
 session [success=1 default=ignore] pam_unix.so
 session required pam_ldap.so
-session optional pam_foreground.so
 

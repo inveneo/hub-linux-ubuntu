@@ -1,2 +1,2 @@
 # Inveneo release repository
-deb http://community.inveneo.org/apt/ hub-oneoh main
+deb http://community.inveneo.org/apt/ hub-8.04 main
