@@ -128,6 +128,9 @@ def send_email_notice(config, subject='', message=''):
     # take care of defaults
     if subject == '':
         subject=config.get_as_str('MONITOR_SMTP_DEFAULT_SUBJECT')
+  
+    # Add 'Subject: ' prefix as required by smtp
+    subject='Subject: '+subject
 
     # Add SMTP required 'Subject: ' prefix
     subject='Subject: '+subject

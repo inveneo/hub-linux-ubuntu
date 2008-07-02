@@ -11,7 +11,7 @@ from os import path
 from sys import stdout, stderr
 
 OTHER_GROUPS='adm,dialout,fax,voice,cdrom,floppy,audio,dip,video,plugdev,games,lpadmin,scanner,fuse'
-DEFAULT_GROUP='Domain\\ Users'
+DEFAULT_GROUP='inveneo_users'
 SKELETON_DIR='/opt/inveneo/skeleton/samba/user-share-dir'
 HOME_DIR_BASE='/srv/samba/user_shares'
 ADD_CMD_BASE="smbldap-useradd -a -n -g "+DEFAULT_GROUP+" -G "+OTHER_GROUPS+" -d "+HOME_DIR_BASE+"/%(user_name)s"

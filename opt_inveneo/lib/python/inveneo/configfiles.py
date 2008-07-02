@@ -16,12 +16,6 @@ Copyright (c) 2008 Inveneo, inc. All rights reserved.
 
 import sys, traceback, string, os
 from IPy import IP
-from urllib import quote
-
-def appendQueryString(qs, key, value):
-    """Helper for building up properly quoted query string."""
-    sep = ['','&'][len(qs) > 0]
-    return qs + '%s%s=%s' % (sep, quote(key), quote(value))
 
 class ConfigFileBase(object):
     """Operations and data present in all config file managers.
@@ -380,8 +374,63 @@ class EtcPppPeersDod(ConfigFileBase):
         self.lines = self._update_lines()
         ConfigFileBase.write(self, makeBackup)
 
+class EtcDhcp3DhclientConf(ConfigFileBase):
+    """DHCP Client configuration."""
+
+    def __init__(self):
+        """Initialize self from config file, parsing out interesting content."""
+        ConfigFileBase.__init__(self, '/etc/dhcp3/dhclient.conf')
+        self.nameservers = []
+        for line in self.lines:
+            namelist = self._parse_line(line)
+            if namelist and len(namelist) > 0:
+                self.nameservers += namelist
+
+    def _parse_line(self, line):
+        """Parse out the interesting bits of one line.
+        
+        Returns list of nameservers, or None if wrong line."""
+        line = line.strip().strip(';')
+        fields = line.split(' ', 2)
+        if (len(fields) < 2) or \
+           (fields[0].lower() != 'append') or \
+           (fields[1].lower() != 'domain-name-servers'):
+               return None
+        result = []
+        if len(fields) > 2:
+            for address in fields[2].split(','):
+                result.append(address.strip())
+        return result
+
+    def _update_lines(self):
+        """Return original list of lines updated by current metadata."""
+        did_append = False
+        newlines = []
+        for line in self.lines:
+            namelist = self._parse_line(line)
+            if namelist == None:
+                newlines.append(line)
+            elif self.nameservers:
+                line = 'append domain-name-servers %s;\n' % \
+                        string.join(self.nameservers, ',')
+                newlines.append(line)
+                did_append = True
+        if self.nameservers and not did_append:
+            newlines.append('append domain-name-servers %s;\n' % \
+                    string.join(self.nameservers, ','))
+        return newlines
+
+    def __str__(self):
+        """Return entire config file as string, modified by current metadata."""
+        return string.join(self._update_lines(), '')
+
+    def write(self, makeBackup = True):
+        """Rewrite the config file, perhaps making a backup of the old one."""
+        self.lines = self._update_lines()
+        ConfigFileBase.write(self, makeBackup)
+
 class EtcDhcp3DhcpConf(ConfigFileBase):
-    """DHCP configuration.
+    """DHCP Server configuration.
     
     The metadata is a dictionary of subnet objects."""
 
@@ -729,6 +778,13 @@ if __name__ == '__main__':
     print "==================================================="
     o = EtcPppPeersDod()
     print "* Metadata =", o.metadata
+    print "* File contents:\n----------------\n%s" % str(o)
+
+    print "==================================================="
+    print "Parsing /etc/dhcp3/dhclient.conf"
+    print "==================================================="
+    o = EtcDhcp3DhclientConf()
+    print "* Nameservers =", o.nameservers
     print "* File contents:\n----------------\n%s" % str(o)
 
     print "==================================================="
