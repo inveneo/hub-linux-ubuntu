@@ -323,10 +323,11 @@ function load_codecs_fromast() {
 					if(resp[i][1][0] == "a") {
 						continue; /* codec is a_mu, alaw to mulaw direct codec/decoder, not a codec preference. */
 					}
-						allcodecs[i] = resp[i][1][0];
-				}
-				if(resp[i][1][0] == "g729a") { 
-					resp[i][1][0] = "g729"; 
+					if(resp[i][1][0] == "g729a") { 
+						resp[i][1][0] = "g729"; 
+					}
+					/* make sure we add g729 to the global list */
+					allcodecs[i] = resp[i][1][0];
 				}
 			}
 		}

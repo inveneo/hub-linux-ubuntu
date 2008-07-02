@@ -30,7 +30,7 @@ div.accordionTabTitleBar {
 	border-style : solid none solid none;
 	border-top-color : #BDC7E7;
 	border-bottom-color : #182052;
-	border-width : 1px 0px 1px 0px;
+	border-width : 0px 0px 1px 0px;
 	height : 16px;
 	cursor: pointer;
 	background-color : #6B79A5;

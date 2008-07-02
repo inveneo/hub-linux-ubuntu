@@ -34,7 +34,7 @@ var callbacks = new Object;
 var usercallbacks = new Object;
 var voicemailcallbacks = new Object;
 var localextenlength;
-var vmfields = ['attach' ,'attachfmt' ,'cancel' ,'deletevoicemail' ,'envelope' ,'maxgreet' ,'maxmessage' ,'maxmsg' ,'minmessage' ,'operator' ,'review' ,'save' ,'saycid' ,'sayduration'];
+var vmfields = ['attach' ,'attachfmt' ,'cancel' ,'deletevoicemail' ,'envelope' ,'maxgreet' ,'maxmessage' ,'maxmsg' ,'minmessage' ,'operator' ,'review' ,'save' ,'saycid' ,'sayduration','mailcmd'];
 
 var fields = new Array('name');
 
@@ -337,6 +337,11 @@ function free_mem( ){
 			<div>	<fieldset  style="width: 225px;">
 				<legend>&nbsp;Message Options:&nbsp;</legend>
 				<table align='center' cellpadding=1 cellspacing=1 border=0 width=270>
+					<tr>	<td class="field_text" align=right tip="en,voicemail,14">Mail Command:</td>
+						<td>
+							<input id='mailcmd' class="input8" size=9 dfalt='/usr/sbin/sendmail -t'>
+						</td>
+					</tr>
 					<tr>	<td class="field_text" align=right tip="en,voicemail,10">Attach&nbsp;Format:</td>
 						<td>
 							<select id='attachfmt' class="input8">

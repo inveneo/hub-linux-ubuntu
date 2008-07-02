@@ -177,7 +177,7 @@ function detectHwChanges(){ // compare DETECTEDHARDWARE vs CONFIGUREDHARDWARE
 
 function verify_priChLimit(){
 	var l = String(CURRENT_SPAN);
-	if(_$('editspan_signalling').value.beginsWith('fx')){ return true;}
+	if( !_$('editspan_signalling').value.beginsWith('pri')){ return true;}
 	var y = Number(_$('edit_DefinedChans').value);
 	if( Number(SPANS[l]['totchans'] ) <= 24 && y ==24){return false;}//alert("You should leave atleast 1 channel for PRI signalling");
 	if( Number(SPANS[l]['totchans'] ) > 24 && y ==31){return false;}//alert("You should leave atleast 1 channel for PRI signalling");
@@ -189,9 +189,8 @@ function calc_bchan_fxx(l){ // calculates the bchan,and fxx strings for a given 
 	var z = Number(SPANS[l]['definedchans']);
 	if(z==1){return String(y);}
 
-	if( SPANS[l]['signalling'] && SPANS[l]['signalling'].beginsWith('fx') ){
-
-		return y + "-" + String(y+z-1);
+	if( SPANS[l]['signalling'] && !SPANS[l]['signalling'].beginsWith('pri') ){ // if is an fxo/fxs or e&m
+		return y + "-" + String(y+z);
 	}else{
 		if(SPANS[l]['totchans'] <= 24){ // if T1
 			return y + "-" + String(y+z-1);
@@ -240,12 +239,12 @@ var editSPAN = function(l){ // show values for SPAN l in the edit_span dialog bo
 		ASTGUI.selectbox.append(_$('editspan_fac'),'D4/AMI', 'D4/AMI');
 	}else{
 		ASTGUI.selectbox.append(_$('editspan_fac'),'CCS/HDB3', 'CCS/HDB3');
-		ASTGUI.selectbox.append(_$('editspan_fac'),'CCS/CRC4/HDB3', 'CCS/CRC4/HDB3');
+		ASTGUI.selectbox.append(_$('editspan_fac'),'CCS/HDB3/CRC4', 'CCS/HDB3/CRC4');
 	}
 
 	if(SPANS[l]['framing'] && SPANS[l]['coding']) {
 		if( SPANS[l]['framing'] == 'CCS/CRC4' ){
-			ASTGUI.selectbox.selectOption( _$('editspan_fac') , 'CCS/CRC4/HDB3' );
+			ASTGUI.selectbox.selectOption( _$('editspan_fac') , 'CCS/HDB3/CRC4' );
 		}else{
 			ASTGUI.selectbox.selectOption( _$('editspan_fac') , SPANS[l]['framing'] + '/' + SPANS[l]['coding'] );
 		}
@@ -320,7 +319,7 @@ function showtable(){ // navigates through the SPANS object and presents as a ta
 			ntd.innerHTML = '<B>' + SPANS[span]['location'] + ' --> ' + SPANS[span]['devicetype'] + '</B>';
 			newRow.appendChild(ntd);
 		}
-
+		var singalling_defs = {pri_net: 'PRI - Net', pri_cpe: 'PRI - CPE', em: 'E & M',em_w: 'E & M -- Wink', featd:'E & M -- featd(DTMF)', fxo_ks:'FXOKS', fxo_ls:'FXOLS'  };
 		var sno = tbl.rows.length + 1;
 		var newRow = tbl.insertRow(-1);
 		newRow.className = ((tbl.rows.length)%2==1)?"odd":"even";
@@ -350,7 +349,7 @@ function showtable(){ // navigates through the SPANS object and presents as a ta
 		newCell3.align = "center";
 
 		var newCell4 = newRow.insertCell(4);
-		newCell4.innerHTML = (SPANS[span]['signalling'])?SPANS[span]['signalling'] : "<font color=red>NOT DEFINED</font>" ;
+		newCell4.innerHTML = (SPANS[span]['signalling'])? singalling_defs[ SPANS[span]['signalling'] ] : "<font color=red>NOT DEFINED</font>" ;
 		newCell4.align = "center";
 
 
@@ -693,7 +692,7 @@ function resetmainscreen(){ top._$('mainscreen').width= 540; }
 function reloadpage(){ window.location.href="digital.html"; }
 
 function disablEnable_sc() {
-	if( _$('editspan_signalling').value.beginsWith('fx') ){
+	if( !_$('editspan_signalling').value.beginsWith('pri') ){
 		_$('editspan_switchtype').disabled =  true;
 		_$('editspan_switchtype').selectedIndex = -1;
 
@@ -731,9 +730,9 @@ function updateSpanInfo(){
 
 	var b = String(CURRENT_SPAN);
 
-	if( _$('editspan_fac').value == 'CCS/CRC4/HDB3' ){
-		SPANS[b]['framing'] = 'CCS/CRC4';
-		SPANS[b]['coding'] = 'HDB3';
+	if( _$('editspan_fac').value == 'CCS/HDB3/CRC4' ){
+		SPANS[b]['framing'] = 'CCS/HDB3';
+		SPANS[b]['coding'] = 'CRC4';
 	}else{
 		SPANS[b]['framing'] = _$('editspan_fac').value.split('/')[0];
 		SPANS[b]['coding'] = _$('editspan_fac').value.split('/')[1];;
@@ -838,7 +837,7 @@ var applySettings = {
 				e = asterisk_guiTDPrefix + d ;
 				uri += build_action('delcat', c, d , "", ""); c++;
 				uri += build_action('newcat', c, d , "", ""); c++;
-				if ( !SPANS[k]['signalling'].beginsWith('fx') ){ 
+				if ( SPANS[k]['signalling'].beginsWith('pri') ){ 
 					// we do not want a switchtype to be set for channelized T1/E1 interfaces
 					uri += build_action('update', c, d , "switchtype", SPANS[k]['switchtype']); c++;
 				}
@@ -847,6 +846,7 @@ var applySettings = {
 				uri += build_action('update', c, d , "trunkstyle", 'digital'); c++;
 				uri += build_action('update', c, d , "hassip", 'no'); c++;
 				uri += build_action('update', c, d , "hasiax", 'no'); c++;
+				uri += build_action('update', c, d , "hasexten", 'no'); c++;
 				uri += build_action('update', c, d , "group", NEWGROUPNUMBER ); c++;
 				if ( !SPANS[k]['signalling'].beginsWith('fxo') ){ 
 					// we do not want a context to be set for user stations
@@ -917,8 +917,12 @@ var applySettings = {
 				tmp3 = (dchanstring)? ",":"";
 
 				var ppp = calc_bchan_fxx(k);
-				if ( SPANS[k]['signalling'].beginsWith('fx') ){ 
-					var qqq = (SPANS[k]['signalling']).replace('_',''); // zaptel.conf uses fxoks instead of fxo_ks
+				if ( !SPANS[k]['signalling'].beginsWith('pri') ){
+					if(SPANS[k]['signalling'].beginsWith('fx')){
+						var qqq = (SPANS[k]['signalling']).replace('_',''); // zaptel.conf uses fxoks instead of fxo_ks
+					}else{
+						var qqq = 'e&m'; // if not a pri and not a fxo/s - assume e&m
+					}
 					if(fxx[ qqq ]){
 						fxx[ qqq ] = fxx[ qqq ] + "," + ppp;
 					}else{
@@ -976,58 +980,57 @@ function applyDigitalSettings(){
 	<span style="cursor: pointer; cursor: hand;" onclick="window.location.href=window.location.href;" >&nbsp;<img src="images/refresh.png" title=" Refresh " border=0 >&nbsp;</span>
 </div>
 
-<div id="div_maintable">
+<div id="div_maintable" style="text-align:center">
 	<div class="pageheading">Digital Hardware</div>
-	<div style="overflow:auto;left:40">
-		<table class="taglist" id="digitalcardstable" cellpadding=5 cellspacing=1 border=0 align=center></table>
-		<table  cellpadding=5 cellspacing=1 align=center border=0>
-			<tr>	<td align="right"><B>Country : </B>
-					<select id="loadZone">
-						<option value="us">United States/North America</option>
-						<option value="au">Australia</option>
-						<option value="fr">France</option>
-						<option value="nl">Netherlands</option>
-						<option value="uk">United Kingdom</option>
-						<option value="fi">Finland</option>
-						<option value="es">Spain</option>
-						<option value="jp">Japan</option>
-						<option value="no">Norway</option>
-						<option value="at">Austria</option>
-						<option value="nz">New Zealand</option>
-						<option value="it">Italy</option>
-						<option value="us-old">United States Circa 1950 / North America</option>
-						<option value="gr">Greece</option>
-						<option value="tw">Taiwan</option>
-						<option value="cl">Chile</option>
-						<option value="se">Sweden</option>
-						<option value="be">Belgium</option>
-						<option value="sg">Singapore</option>
-						<option value="il">Israel</option>
-						<option value="br">Brazil</option>
-						<option value="hu">Hungary</option>
-						<option value="lt">Lithuania</option>
-						<option value="pl">Poland</option>
-						<option value="za">South Africa</option>
-						<option value="pt">Portugal</option>
-						<option value="ee">Estonia</option>
-						<option value="mx">Mexico</option>
-						<option value="in">India</option>
-						<option value="de">Germany</option>
-						<option value="ch">Switzerland</option>
-						<option value="dk">Denmark</option>
-						<option value="cz">Czech Republic</option>
-						<option value="cn">China</option>
-						<option value="ar"Argentina></option>
-						<option value="my">Malaysia</option>
-						<option value="th">Thailand</option>
-						<option value="bg">Bulgaria</option>
-						<option value="ve">Venezuela</option>
-						<option value="ph">Philippines</option>
-						<option value="ru">Russian Federation</option>
-					</select>
-				</td>
-			</tr>
-		</table>
+		<div style="overflow:auto;left:40; height:300; width:99%">
+			<table class="taglist" id="digitalcardstable" cellpadding=5 cellspacing=1 border=0 align=center></table>
+		</div>
+		<div style='text-align:center; margin-top:10px;'>
+			<B>Country : </B>
+			<select id="loadZone">
+				<option value="us">United States/North America</option>
+				<option value="au">Australia</option>
+				<option value="fr">France</option>
+				<option value="nl">Netherlands</option>
+				<option value="uk">United Kingdom</option>
+				<option value="fi">Finland</option>
+				<option value="es">Spain</option>
+				<option value="jp">Japan</option>
+				<option value="no">Norway</option>
+				<option value="at">Austria</option>
+				<option value="nz">New Zealand</option>
+				<option value="it">Italy</option>
+				<option value="us-old">United States Circa 1950 / North America</option>
+				<option value="gr">Greece</option>
+				<option value="tw">Taiwan</option>
+				<option value="cl">Chile</option>
+				<option value="se">Sweden</option>
+				<option value="be">Belgium</option>
+				<option value="sg">Singapore</option>
+				<option value="il">Israel</option>
+				<option value="br">Brazil</option>
+				<option value="hu">Hungary</option>
+				<option value="lt">Lithuania</option>
+				<option value="pl">Poland</option>
+				<option value="za">South Africa</option>
+				<option value="pt">Portugal</option>
+				<option value="ee">Estonia</option>
+				<option value="mx">Mexico</option>
+				<option value="in">India</option>
+				<option value="de">Germany</option>
+				<option value="ch">Switzerland</option>
+				<option value="dk">Denmark</option>
+				<option value="cz">Czech Republic</option>
+				<option value="cn">China</option>
+				<option value="ar"Argentina></option>
+				<option value="my">Malaysia</option>
+				<option value="th">Thailand</option>
+				<option value="bg">Bulgaria</option>
+				<option value="ve">Venezuela</option>
+				<option value="ph">Philippines</option>
+				<option value="ru">Russian Federation</option>
+			</select>
+		</div>
 	</div><BR>
 	<div class="pageheading">Analog Hardware</div>
 	<div style="overflow:auto;left:40">
@@ -1077,6 +1080,9 @@ function applyDigitalSettings(){
 		<TD>	<select id="editspan_signalling" onChange="disablEnable_sc();">
 			<option value="pri_net">PRI - Net</option>
 			<option value="pri_cpe">PRI - CPE</option>
+			<option value="em">E & M</option>
+			<option value="em_w">E & M -- Wink</option>
+			<option value="featd">E & M -- featd(DTMF)</option>
 			<option value="fxo_ks">FXOKS</option>
 			<option value="fxo_ls">FXOLS</option>
 			<!--<option value="fxs_ks">FXSKS</option>

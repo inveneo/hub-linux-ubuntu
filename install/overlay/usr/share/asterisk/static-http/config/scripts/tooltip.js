@@ -81,6 +81,8 @@ function show_tooltip(event){
 	tooltips['voicemail'] .en[11] = "<B>Allow Users to Review:</B> Checking this option allows the caller leaving the voicemail the opportunity to review their recorded message before it is submitted as a voicemail message.";
 	tooltips['voicemail'] .en[12] = "<B>Play Envelope:</B> Selecting this option causes Asterisk not to play introductions about each message when accessing them from the voicemail application.";
 	tooltips['voicemail'] .en[13] = "<B> Max Greeting:</B> Defining this option sets a maximum time for a users's voicemail away message.";
+	tooltips['voicemail'] .en[14] = "<B> Mail Command:</B> Default program used to send emails.";
+
 
 // Tooltips for CallQueues (queues)
 	tooltips['queues']= new Object;

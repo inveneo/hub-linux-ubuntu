@@ -85,7 +85,7 @@ function loggedOn() {
 	}
 
 	if( parent.asterisk_guitools_inextconf == 0){
-		checkessentials();
+		checkWritePermissions();
 	}
 
 	setTimeout( function(){
@@ -166,6 +166,33 @@ function submitOnEnter(e){
 	}
 }
 
+
+function checkWritePermissions(){
+	// check if gui has write permissions
+		var rand = 'test_' + Math.round(100000*Math.random());
+		var wa = 'writeaccess';
+
+		var chs = new listOfActions(); 
+		chs.filename('http.conf'); var c = 0;
+		chs.build_action ( 'newcat', c , rand, '', '');
+		chs.build_action ( 'append', c , rand, wa, 'yes');
+		var after = function(){
+			var httpconfloaded = function(op){
+				if( op.hasOwnProperty(rand) ){ // has write permissions
+					var uri = build_action('delcat', 0, rand , '', '') ;
+					makerequest('u', 'http.conf', uri, function(t) { 
+						checkessentials();
+					});
+				}else{ // no write permissions
+					parent.gui_feedback("GUI does not have write access !! <BR> Please check manager.conf",'default',6000);
+					alert("GUI does not have write access !! \n Please check manager.conf");
+				}
+			}
+			config2json('http.conf',0,httpconfloaded);
+		}
+		chs.callActions(after);
+}
+
 function checkessentials(){
 	// see if asterisk_guitools exists in extensions.conf
 	//if everything ok set  asterisk_guitools_inextconf = 1;
@@ -182,7 +209,7 @@ function checkessentials(){
 		chs.build_action ( 'delcat', c , mtd, '', '');
 		chs.build_action ( 'newcat', c , mtd, '', '');
 
-		chs.build_action ( 'append', c , mtd, 'exten', 's,1,set(CALLERID(all)=${IF($["${LEN(${CALLERID(num)})}" > "6"]?${CALLERID(all)}:${ARG2})})' );
+		chs.build_action ( 'append', c , mtd, 'exten', 's,1,set(CALLERID(all)=${IF($[${LEN(${CALLERID(num)})} > 6]?${CALLERID(all)}:${ARG2})})' );
 		chs.build_action ( 'append', c , mtd, 'exten', 's,n,Dial(${ARG1})' );
 		chs.build_action ( 'append', c , mtd, 'exten', 's,n,Goto(s-${DIALSTATUS},1)' );
 		chs.build_action ( 'append', c , mtd, 'exten', 's-NOANSWER,1,Hangup' );
@@ -215,7 +242,7 @@ function checkessentials(){
 	};
 
 	var checkExtconfig = function (op){
-		if( !op.hasOwnProperty(mtd) || (op[mtd] && !op[mtd][0].beginsWith('exten=s,1,set')) ){
+		if( !op.hasOwnProperty(mtd) || (op[mtd] && !op[mtd][0].beginsWith('exten=s,1,set(CALLERID(all)=${IF($[')) ){
 			updateTrunkDial();
 			return;
 		}

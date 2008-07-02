@@ -29,7 +29,7 @@ var trunkcallbacks = { };
 var trunks_desc = { };
 var numplan_callbacks = { };
 var numberplansdata = { };
-var fieldnames = ['cancel', 'delete', 'include', 'name', 'new', 'plancomment', 'save', 'parked'];
+var fieldnames = ['cancel', 'delete', 'include', 'name', 'new', 'plancomment', 'save'];
 
 //var default_numberplan = 0;
 var isnewrule ;
@@ -52,13 +52,13 @@ function update_parkedcalls() {
 
 	if(_$("parked").checked) {
 		gui_feedback("Parking lots now added for Dialplan: " + _exten + " context: " + _context, 'blue');
-		var uri = build_action('append', 0, _exten, "include", "parkedcalls");   	
+		var uri = build_action('append', 0, _context , "include", "parkedcalls");	
 		makerequest('u', 'extensions.conf', uri, function(t) { return true;});
 		setTimeout( function(){ _bg_s.display = 'none'; _sm_s.display = 'none'; } , 1000 ); // add an unnecessary delay - for user perception, BE-335
 	} 
 	if(!_$("parked").checked) {
 		gui_feedback("Parking lots now deleted for Dialplan: " + _exten + " context: " + _context);
-		var uri = build_action('delete', 0, _exten, "include", "", "parkedcalls");   	
+		var uri = build_action('delete', 0, _context , "include", "", "parkedcalls");
 		makerequest('u', 'extensions.conf', uri, function(t) { return true;});
 		setTimeout( function(){ _bg_s.display = 'none'; _sm_s.display = 'none'; } , 1000 ); // add an unnecessary delay - for user perception, BE-335
 	}
@@ -479,7 +479,13 @@ function numberplan_context(){
 	this.plancomment = "";
 	this.nprules = [ ];
 	this.npcomments = [ ];
-	this.npdata = { }; 
+	this.npdata = { };
+	this.parkedcalls = false ;
+}
+
+numplan_callbacks.postselect = function(box, val) {
+	if(!box.value){ return; }
+	_$("parked").checked = (numberplansdata[box.value]['parkedcalls'] == true ) ? true : false ;
 }
 
 numplan_callbacks.format = function(t, x) {
@@ -501,8 +507,10 @@ numplan_callbacks.format = function(t, x) {
 		if( tmp.length > 1 ){
 			numberplansdata[t.name]['npcomments'].push( t.fields[x] ) ; 
 		}
+	}else if( t.names[x]=='include' && t.fields[x] == 'parkedcalls') {
+		numberplansdata[t.name]['parkedcalls'] = true ;
 	}
-	
+
 	return null;
 }
 
@@ -658,7 +666,7 @@ function addthe_default_callingplan(){
 	uri += build_action('append', 1, default_planname,"plancomment", "Default DialPlan"); 
 	uri += build_action('append', 2, default_planname,"include", "default"); 
 	uri += build_action('append', 3, default_planname,"include", "parkedcalls"); 
-	makerequest('u','extensions.conf', uri, function(t){gui_feedback("Created a Default DialPlan",'green',3000); location.reload(); }   );
+	makerequest('u','extensions.conf', uri, function(t){gui_feedback("Created a Default DialPlan",'green',3000); window.location.reload(); }   );
 }
 
 
