@@ -50,16 +50,16 @@ hiddenmenu
 #
 # Put static boot stanzas before and/or after AUTOMAGIC KERNEL LIST
 
-title		Ubuntu 7.10, kernel 2.6.22-14-generic (hd0)
+title		Ubuntu 8.04, kernel 2.6.24-19-generic (hd0)
 root		(hd0,0)
-kernel		/boot/vmlinuz-2.6.22-14-generic root=/dev/md0 ro quiet splash
-initrd		/boot/initrd.img-2.6.22-14-generic
+kernel		/boot/vmlinuz-2.6.24-19-generic root=/dev/md0 ro quiet splash
+initrd		/boot/initrd.img-2.6.24-19-generic
 quiet
 
-title		Ubuntu 7.10, kernel 2.6.22-14-generic (hd1)
+title		Ubuntu 8.04, kernel 2.6.24-19-generic (hd1)
 root		(hd1,0)
-kernel		/boot/vmlinuz-2.6.22-14-generic root=/dev/md0 ro quiet splash
-initrd		/boot/initrd.img-2.6.22-14-generic
+kernel		/boot/vmlinuz-2.6.24-19-generic root=/dev/md0 ro quiet splash
+initrd		/boot/initrd.img-2.6.24-19-generic
 quiet
 
 ### BEGIN AUTOMAGIC KERNELS LIST
@@ -141,16 +141,16 @@ quiet
 
 ## ## End Default Options ##
 
-title		Ubuntu 7.10, kernel 2.6.22-14-generic
+title		Ubuntu 8.04, kernel 2.6.24-19-generic
 root		(hd0,0)
-kernel		/boot/vmlinuz-2.6.22-14-generic root=/dev/md0 ro quiet splash
-initrd		/boot/initrd.img-2.6.22-14-generic
+kernel		/boot/vmlinuz-2.6.24-19-generic root=/dev/md0 ro quiet splash
+initrd		/boot/initrd.img-2.6.24-19-generic
 quiet
 
-title		Ubuntu 7.10, kernel 2.6.22-14-generic (recovery mode)
+title		Ubuntu 8.04, kernel 2.6.22-19-generic (recovery mode)
 root		(hd0,0)
-kernel		/boot/vmlinuz-2.6.22-14-generic root=/dev/md0 ro single
-initrd		/boot/initrd.img-2.6.22-14-generic
+kernel		/boot/vmlinuz-2.6.22-19-generic root=/dev/md0 ro single
+initrd		/boot/initrd.img-2.6.22-19-generic
 
 title		Ubuntu 7.10, memtest86+
 root		(hd0,0)
