@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # SVN Report
-REPO="http://svn.inveneo.org/repos/hub-linux-ubuntu/trunk"
+REPO="http://svn.inveneo.org/repos/hub-linux-ubuntu/branches/hardy-port"
 
 # work in /tmp
 cd /tmp
