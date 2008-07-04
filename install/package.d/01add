@@ -60,6 +60,7 @@ squid-cgi	install
 squidguard	install
 libnss-mdns	install
 samba           install
+smbfs		install
 smbclient       install
 quagga		install
 avahi-utils	install
