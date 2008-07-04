@@ -7,7 +7,7 @@ import syslog
 import traceback
 import subprocess as sp
 from os import path
-from sys import stdout, stderr
+from sys import stdout, stderr, stdin
 
 def main():
     syslog.openlog('install-hub-linux', 0, syslog.LOG_LOCAL5)

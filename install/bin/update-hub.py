@@ -17,7 +17,7 @@ import re
 import pwd
 import subprocess as sp
 from os import path
-from sys import stderr,stdout
+from sys import stderr,stdout,stdin
 
 def svn_update(to_update):
     """docstring for svn_update"""
