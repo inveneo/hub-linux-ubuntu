@@ -157,6 +157,9 @@ def post_overlay_transfer(overlay_root, dest):
     # update certs
     stdout.write("Updating Root Certificate Authorities...\n")
     sp.check_call(['update-ca-certificates'])
+
+    # Initialize squidGuard blacklist
+    sp.call(['squidGuard','-C','all'])
     
     # install new initramfs - we need the scripts to handle raid drives
     sp.check_call(['update-initramfs','-k','all','-u'])

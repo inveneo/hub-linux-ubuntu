@@ -220,6 +220,20 @@ NAME NL:
 NAME PT:
 NAME ES:
 
+NAME:   finance/realestate
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites about all types of realestate, bying and selling homes, finding appartments for rent and selling.
+DESC DE: Seite über alle Arten von Immobilien, Kauf und Verkauf von Wohnungen und Häusern, auch Mietmarkt.
+DESC FR:
+NAME EN: Finance/Realestate
+NAME DE: Finanzen/Immobilien
+NAME FR:
+NAME IT: 
+NAME NL:
+NAME PT:
+NAME ES:
+
 NAME:   forum
 DEFAULT_TYPE: black
 SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
@@ -303,6 +317,34 @@ NAME IT:
 NAME NL:
 NAME PT:
 NAME ES:
+
+NAME:   hospitals
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites of hospitals and medical facilities.
+DESC DE: Seiten von Krankenhäusern und medizinischen Einrichtungen.
+DESC FR:
+NAME EN: Hospitals
+NAME DE: Krankenhäuser
+NAME FR: Hôpitaux
+NAME IT: Ospedali
+NAME NL:
+NAME PT: Hospitais
+NAME ES: Hospitales
+
+NAME:   imagehosting
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites specialized on hosting images, photogalleries and so on.
+DESC DE: Seiten, die insbesondere alle Arten von Bildern und Graphiken hosten, auch Photogallerien und ähnliches.
+DESC FR:
+NAME EN: Imagehosting
+NAME DE: Bildergallerien
+NAME FR:
+NAME IT: 
+NAME NL:
+NAME PT: 
+NAME ES: 
 
 NAME:   isp
 DEFAULT_TYPE: black
@@ -388,6 +430,35 @@ NAME NL: Nieuws
 NAME PT: Notícia
 NAME ES: Noticias
 
+NAME:   podcasts
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites offering podcasts or podcast services.
+DESC DE: Seiten mit podcasts oder Podcast Angeboten; beinhaltet auch Hörbücher.
+DESC FR:
+NAME EN: Podcasts
+NAME DE: Podcasts
+NAME FR: 
+NAME IT: 
+NAME NL: 
+NAME PT: 
+NAME ES: 
+
+NAME:   politics
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites of political parties, political organisations and associations; sites with political discussions.
+DESC DE: Seiten politischer Parteien und politischer Organisationen; Seiten mit politischen Diskussionen.
+DESC FR:
+NAME EN: Politics
+NAME DE: Politik
+NAME FR: La politique
+NAME IT: Politica
+NAME NL: 
+NAME PT: Política
+NAME ES: Política
+
+
 NAME:   porn
 DEFAULT_TYPE: black
 SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
@@ -461,7 +532,7 @@ NAME ES:
 NAME:   redirector
 DEFAULT_TYPE: black
 SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
-DESC EN: Site that actively help to bypass url filters by accepting urls via webform and play a proxing and redirecting role.
+DESC EN: Sites that actively help to bypass url filters by accepting urls via webform and play a proxing and redirecting role.
 DESC DE: Seiten mit Proxydiensten, die eine aktive Umgehung des URL Filters erlauben.
 DESC FR: Quelques sites qui permettent de contourner les filtres.
 NAME EN: Proxy
@@ -471,6 +542,20 @@ NAME IT: Proxy
 NAME NL: Proxy
 NAME PT: Proxy
 NAME ES: Proxy
+
+NAME:   religion
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites with religious content: all kind of churches, sects, religious interpretations etc.
+DESC DE: Seiten mit religiösem Inhalt: Jegliche Art von Kirchen, Sekten, religiöse Interpretationsn usw.
+DESC FR: 
+NAME EN: Religion
+NAME DE: Religion
+NAME FR: 
+NAME IT: 
+NAME NL:
+NAME PT: 
+NAME ES: 
 
 NAME:   ringtones
 DEFAULT_TYPE: black
@@ -527,6 +612,20 @@ NAME IT:
 NAME NL:
 NAME PT:
 NAME ES:
+
+NAME:   sex/lingerie
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites selling and presenting sexy lingerie.
+DESC DE: Seiten, auf denen Reizwäsche präsnetiert und angeboten wird.
+DESC FR: Sites de sexy dessous.
+NAME EN: Sex/Lingerie.
+NAME DE: Sex/Reizwäsche.
+NAME FR: Sex/Dessous.
+NAME IT:
+NAME NL:
+NAME PT:
+NAME ES: Sex/Lenceria.
 
 NAME:   shopping
 DEFAULT_TYPE: black
