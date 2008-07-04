@@ -27,9 +27,10 @@ def main():
     sp.check_call([path.join(install_bin,'populate-hub-ldap.py')])
     
     
-    # TO DO: install ruby
-    #
-    
+    stdout.write("\nHit any key to reboot--you really need to...\n")
+    stdin.readline()
+    os.system("reboot")
+        
     return 0
         
                 

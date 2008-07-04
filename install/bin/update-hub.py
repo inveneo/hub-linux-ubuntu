@@ -46,7 +46,10 @@ def main():
     stdout.write('\nRepopulating Samba...\n')
     sp.call([path.join(install_root,'bin','populate-hub-ldap.py')])
     
-    stdout.write('\n')
+    stdout.write("\nDone. Press enter/return key to reboot...\n")
+    stdin.readline()
+    os.system("reboot")
+            
     return 0
 
 if __name__ == '__main__':
