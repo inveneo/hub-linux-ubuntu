@@ -12,6 +12,10 @@ mdadm           install
 rssh		install
 ca-certificates install
 
+# Mail delivery (lots of services like Drupal require it)
+ssmtp  		install
+mailx		install
+
 # useful utilities
 screen  install
 lynx    install
