@@ -96,7 +96,7 @@ def main(tasks):
         o = configfiles.EtcHosts()
         o.ips['127.0.1.1'] = \
                 [hostname, hostname + '.local', hostname + '.localdomain']
-        for addr in o.ips.keys():
+        for addr in list(o.ips.keys()):
             nameset = set(o.ips[addr])
             print "nameset =", nameset
             nameset.discard(SPECIAL_LAN_NAME)
