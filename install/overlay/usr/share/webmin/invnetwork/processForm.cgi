@@ -247,10 +247,7 @@ def rewrite_config_files(flags):
     o.write()
 
     # /etc/hosts
-    o = configfiles.EtcHosts()
-    o.ips['127.0.1.1'] = \
-            [hostname, hostname + '.local', hostname + '.localdomain']
-    o.write()
+    # this is now done in the restarter script
 
     # /etc/dhcp3/dhclient.conf OR /etc/resolv.conf
     if (wan_interface == 'eth0') and (wan_method == 'dhcp'):
@@ -400,6 +397,8 @@ def restart_services(flags):
     if (LAN_ADDRESS_CHANGED in flags) or (LAN_NETMASK_CHANGED in flags):
         tasks.add('networking')
         tasks.add('dhcp_restart')
+    if (LAN_ADDRESS_CHANGED in flags):
+        tasks.add('squid')
     if (wan_interface == 'eth1') and (LAN_GATEWAY_CHANGED in flags):
         tasks.add('networking')
     if bool_lan_dhcp_on and \

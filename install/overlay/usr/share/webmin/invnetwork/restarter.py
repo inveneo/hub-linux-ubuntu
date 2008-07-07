@@ -10,8 +10,9 @@ Copyright (c) 2008 Inveneo, inc. All rights reserved.
 """
 
 import sys, os, time
+from IPy import IP
 from subprocess import Popen, PIPE
-from inveneo import processes
+from inveneo import configfiles, processes
 
 LOGDIR = '/var/log/webmin'
 
@@ -19,12 +20,16 @@ APACHE_BIN   = '/usr/sbin/apache2'
 APACHE_CTL   = '/etc/init.d/apache2'
 SAMBA_BIN    = '/usr/sbin/smbd'
 SAMBA_CTL    = '/etc/init.d/samba'
+SQUID_BIN    = '/usr/sbin/squid3'
+SQUID_CTL    = '/etc/init.d/squid3'
 DHCP_BIN     = '/usr/sbin/dhcpd3'
 DHCP_CTL     = '/etc/init.d/dhcp3-server'
 DNS_BIN      = '/usr/sbin/named'
 DNS_CTL      = '/etc/init.d/bind9'
 NETWORK_CTL  = '/etc/init.d/networking'
 HOSTNAME_BIN = '/bin/hostname'
+
+SPECIAL_LAN_NAME = 'lan-ip-do-not-edit'
 
 def execute(cmdlist):
     """Executes the given command line.
@@ -60,6 +65,9 @@ def main(tasks):
     if ('samba' in tasks) and procSnap.is_running(SAMBA_BIN):
         execute([SAMBA_CTL, 'stop'])
 
+    if ('squid' in tasks) and procSnap.is_running(SQUID_BIN):
+        execute([SQUID_CTL, 'stop'])
+
     if (('dhcp' in tasks) or \
         ('dhcp_stop' in tasks) or \
         ('dhcp_restart' in tasks)) and \
@@ -76,6 +84,32 @@ def main(tasks):
     if 'hostname' in tasks:
         execute([HOSTNAME_BIN, '-F', '/etc/hostname'])
 
+    # /etc/hosts only changes when all is quiet
+    if 'networking' in tasks:
+        hostname = configfiles.EtcHostname().hostname
+        ifaces = configfiles.EtcNetworkInterfaces().ifaces
+        lan_address = None
+        if 'eth1' in ifaces:
+            lan_address = ifaces['eth1'].address
+
+        # fix /etc/hosts
+        o = configfiles.EtcHosts()
+        o.ips['127.0.1.1'] = \
+                [hostname, hostname + '.local', hostname + '.localdomain']
+        for addr in o.ips.keys():
+            nameset = set(o.ips[addr])
+            print "nameset =", nameset
+            nameset.discard(SPECIAL_LAN_NAME)
+            print "nameset =", nameset
+            if len(nameset):
+                o.ips[addr] = [name for name in nameset]
+            else:
+                del o.ips[addr]
+        if lan_address:
+            names = o.ips.get(lan_address.strNormal(), [])
+            o.ips[lan_address.strNormal()] = names + [SPECIAL_LAN_NAME]
+        o.write()
+
     # start up services in order
     if 'networking' in tasks:
         execute([NETWORK_CTL, 'start'])
@@ -87,6 +121,9 @@ def main(tasks):
        ('dhcp_start' in tasks) or \
        ('dhcp_restart' in tasks):
         execute([DHCP_CTL, 'start'])
+
+    if ('squid' in tasks) and procSnap.is_running(SQUID_BIN):
+        execute([SQUID_CTL, 'start'])
 
     if ('samba' in tasks) and procSnap.is_running(SAMBA_BIN):
         execute([SAMBA_CTL, 'start'])
