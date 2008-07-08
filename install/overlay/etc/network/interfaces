@@ -8,6 +8,10 @@ iface lo inet loopback
 # WAN interfaces
 auto eth0
 iface eth0 inet dhcp
+        # NOTE: Address, Gateway and Netmask options
+	# are only read when iface mode above is STATIC.
+	# When set to DHCP, these values are ignored, though
+	# kept for informationation purposes
         pre-up /opt/inveneo/sbin/wan-firewall.sh eth0 up
         post-down /opt/inveneo/sbin/wan-firewall.sh eth0 down
 
