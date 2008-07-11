@@ -24,6 +24,7 @@ unzip	install
 minicom install
 p7zip-full install
 p7zip-rar	install
+sshpass		install
 
 # printing
 cupsys          install
