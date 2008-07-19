@@ -11,6 +11,7 @@ Copyright (c) 2008 Inveneo, inc. All rights reserved.
 
 import string, os.path
 from subprocess import Popen, PIPE
+from inveneo import constants
 
 class ProcSnap(object):
     """A snapshot of system processes.
@@ -19,7 +20,7 @@ class ProcSnap(object):
     
     def __init__(self):
         """Snapshot system process list."""
-        cmdlist = ['/bin/ps', '-eo', 'pid,ppid,args']
+        cmdlist = ['env',constants.INV_LANG_EN,'/bin/ps', '-eo', 'pid,ppid,args']
         (sout, serr) = Popen(cmdlist, stdout=PIPE, stderr=PIPE).communicate()
         if serr:
             raise Exception(serr)

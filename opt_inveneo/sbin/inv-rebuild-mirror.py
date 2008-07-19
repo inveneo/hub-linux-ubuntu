@@ -12,6 +12,7 @@ import subprocess as sp
 import re
 from os import path
 from sys import stdout, stderr
+from inveneo import constants
 
 MDADM_CONF='/etc/mdadm/mdadm.conf'
 MDADM_STAT='/proc/mdstat'
@@ -45,7 +46,7 @@ def strip_partition(drive):
 
 def is_root_device_raid():
     try:
-        root_dev = sp.Popen(["rdev"], stdout=sp.PIPE).communicate()[0].split()[0]
+        root_dev = sp.Popen(['env',constants.INV_LANG_EN,'rdev'], stdout=sp.PIPE).communicate()[0].split()[0]
         sp.check_call(['mdadm','-D','--brief',root_dev]) # will throw exception if not a RAID device
     except Exception, ex:
         return False

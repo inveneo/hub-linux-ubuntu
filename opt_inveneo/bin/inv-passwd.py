@@ -39,7 +39,7 @@ def main():
         usage()
         return 3
         
-    output, exit = pexpect.run('smbldap-passwd '+user_name, withexitstatus=True, events={'New password':password+'\n', 'type new password':password+'\n'})
+    output, exit = pexpect.run('env LANG=en_US.utf-8 smbldap-passwd '+user_name, withexitstatus=True, events={'New password':password+'\n', 'type new password':password+'\n'})
     return exit
     
         

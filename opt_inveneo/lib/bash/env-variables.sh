@@ -10,10 +10,10 @@ INV_TRUE=0 # to match bash's 'test' and '[' constructs
 INV_FALSE=1
 
 # Drive partitions
-INV_ROOT_DRIVE=`rdev | awk -F '/' '{ print "/"$(NF-2)"/"substr($(NF-1),0,match($(NF-1),/[0-9]+.*$/)) }'`
+INV_ROOT_DRIVE=`env $INV_LANG_EN rdev | awk -F '/' '{ print "/"$(NF-2)"/"substr($(NF-1),0,match($(NF-1),/[0-9]+.*$/)) }'`
 
 # network
-PRIMARY_ENET=`ifconfig -a | awk '/HWaddr/ { print $5; exit }' | sed s/://g | tr '[:upper:]' '[:lower:]'`
+PRIMARY_ENET=`env $INV_LANG_EN  ifconfig -a | awk '/HWaddr/ { print $5; exit }' | sed s/://g | tr '[:upper:]' '[:lower:]'`
 
 # Boot flags
 INSTALL_MODE_REQUESTED_FLAG=${INV_BOOT_FLAG_DIR}/${INV_BOOT_FLAG_REQUEST_INSTALL_MODE}

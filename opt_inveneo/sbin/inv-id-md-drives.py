@@ -4,7 +4,6 @@
 import sys
 import syslog
 from inveneo import constants, raidutils, fileutils, diskutils
-from time import sleep
 
 class IdentifyMDDrives:
     def __init__(self):
@@ -19,7 +18,7 @@ class IdentifyMDDrives:
         
         syslog.openlog('inv-driveid', 0, syslog.LOG_LOCAL5)
 
-    # drives come back sorted for me! Whee!
+        # drives come back sorted for me! Whee!
         good_drives=raidutils.drives_in_array(md, True)
         if good_drives == None:
             message="No drives found for device: %s\n" % md
