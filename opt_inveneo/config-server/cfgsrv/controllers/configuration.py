@@ -70,13 +70,15 @@ class ConfigurationController(BaseController):
         return server.server_on
 
     def _is_station_on(self, mac):
+        # For now, just return True always
         log.debug('_is_station_on(%s)' % mac)
-        stations = model.Session.query(model.Station)
-        station = stations.filter(model.Station.mac == mac).first()
-        if station:
-            return station.on
-        else:
-            return False
+        # stations = model.Session.query(model.Station)
+        # station = stations.filter(model.Station.mac == mac).first()
+        # if station:
+        #    return station.on
+        # else:
+        #    return False
+        return True
 
     ###########################
     # controller methods
@@ -88,6 +90,9 @@ class ConfigurationController(BaseController):
         log.debug("get_user_config(%s)" % id)
         if not self._is_server_on():
             abort(501, 'Server is not on')
+        # TO DO: shouldn't return user config if requesting station 
+        # is off, but don't get station MAC here. Probably need to start
+        # passing MAC address on _all_ calls
         return self._return_config_file(id, 'user')
 
     def get_station_config(self, id):
@@ -104,7 +109,8 @@ class ConfigurationController(BaseController):
         log.debug("get_station_initial_config(%s)" % id)
         if not self._is_server_on():
             abort(501, 'Server is not on')
-
+        if not self._is_station_on(id):
+            abort(404, 'Station is not on')
         # XXX for now, we force everything into default MAC
         #mac = id 
         mac = g.DEFAULT_MAC
