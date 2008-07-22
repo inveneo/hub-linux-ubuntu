@@ -32,7 +32,7 @@ def setup_config(command, filename, section, vars):
     print "Creating default admin if not existing"
     try:
         q = model.Session.query(model.Admin)
-        q.filter(model.Admin.login_name == 'root').one()
+        q.filter(model.Admin.login_name == 'inveneo').one()
         print "Admin already existing"
     except:
         admin_q = model.Admin()
@@ -64,6 +64,7 @@ def setup_config(command, filename, section, vars):
 
     # Create default station
     print "Creating default station"
+    stations = model.Session.query(model.Station)
     station = stations.filter(model.Station.mac == g.DEFAULT_MAC).first()
     if station:
         print "Default station already exists"
