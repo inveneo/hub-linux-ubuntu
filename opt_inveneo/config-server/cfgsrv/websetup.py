@@ -47,12 +47,26 @@ def setup_config(command, filename, section, vars):
         model.Session.commit()
         print "Successfully created default admin"
 
+    # Migrate old data
+    old_station = model.Session.query(model.Old_Station).first()
+    if old_station:
+        print "There be existing data here, yar!"
+        old_stations = model.Session.query(model.Old_Station).all()
+        for old_station in old_stations:
+            mac = old_station.mac
+            print "Copying data for MAC %s" % mac
+            new_station = model.Station(mac)
+            new_station.update(old_station.properties())
+            model.Session.save(new_station)
+        for old_station in old_stations:
+            model.Session.delete(old_station)
+        model.Session.commit()
+
     # Create default station
     print "Creating default station"
-    stations = model.Session.query(model.Station)
     station = stations.filter(model.Station.mac == g.DEFAULT_MAC).first()
     if station:
-        print "Station already existing"
+        print "Default station already exists"
     else:
         station = model.Station(g.DEFAULT_MAC)
         model.Session.save(station)

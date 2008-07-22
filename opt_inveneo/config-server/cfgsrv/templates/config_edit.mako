@@ -15,13 +15,23 @@ ${h.form(h.url(controller='admin', action='config_edit_process', id=c.Config.id)
 </tr>
 
 <tr>
-<td>Language:</td>
+<td>Lang:</td>
 <td>
-${ h.select('lang',
-    h.options_for_select(h.get_langs_as_list(), c.Config.lang)) }
+${h.select('lang', h.options_for_select(h.get_langs_as_list(), c.Config.lang))}
 </td>
 % if c.Error and c.Error.has_key('lang'):
      <td><b>${c.Error['lang']}<b></td>
+% endif
+</tr>
+
+<tr>
+<td>Language:</td>
+<td>
+${ h.select('language',
+    h.options_for_select(h.get_langs_as_list(), c.Config.language)) }
+</td>
+% if c.Error and c.Error.has_key('language'):
+     <td><b>${c.Error['language']}<b></td>
 % endif
 </tr>
 

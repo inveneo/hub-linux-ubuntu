@@ -10,7 +10,8 @@ ${h.link_to('Create New', url=h.url(controller='admin', action='config_add'), me
 % for config in c.Configs:
 <div class="content">
 <span class="line"><b>MAC:</b> ${config.mac} </span>
-<span class="line"><b>Language:</b> ${config.lang} </span>
+<span class="line"><b>Lang:</b> ${config.lang} </span>
+<span class="line"><b>Language:</b> ${config.language} </span>
 <span class="line"><b>Time Zone:</b> ${config.time_zone} </span>
 <br/>
 <span class="line"><b>Config Host:</b> ${config.config_host} </span>

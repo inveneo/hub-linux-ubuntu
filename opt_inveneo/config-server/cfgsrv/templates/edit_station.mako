@@ -36,6 +36,7 @@ ${h.form(h.url(controller='admin', action='edit_station', mac=c.Station.mac),
 ## <tr><td>ON:</td><td>${c.Station.on}</td></tr>
 
 ${emit_text_field('Hostname', c.Station.hostname)}
+${emit_select('Lang', c.Station.lang, g.LANGS_LIST)}
 ${emit_select('Language', c.Station.language, g.LANGS_LIST)}
 ${emit_text_field('Time Zone', c.Station.time_zone)}
 ${emit_check_box('NTP On', c.Station.ntp_on)}
