@@ -12,6 +12,8 @@ from sys import stdout, stderr
 sys.path.append('/opt/inveneo/lib/python')
 from inveneo import constants, fileutils
 
+ENV = ['env', constants.INV_LANG_EN]
+
 def main():
     syslog.openlog('pre-image-clean', 0, syslog.LOG_LOCAL5)
     
@@ -38,7 +40,7 @@ def main():
     #
     
     # what's the current kernel?
-    kern=sp.Popen(['uname','-r'], stdout=sp.PIPE).communicate()[0].strip()
+    kern=sp.Popen(ENV + ['uname','-r'], stdout=sp.PIPE).communicate()[0].strip()
     default_kernel='2.6.24-16-generic'
     if kern.find(default_kernel) == -1:
         print "Attempting to remove kernel 2.6.24-16-generic."

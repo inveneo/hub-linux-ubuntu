@@ -9,6 +9,9 @@ import subprocess as sp
 from os import path
 from sys import stdout, stderr
 import pexpect
+from inveneo import constants
+
+ENV = ['env', constants.INV_LANG_EN]
 
 def main():
     syslog.openlog('populate-hub-ldap', 0, syslog.LOG_LOCAL5)
@@ -39,7 +42,7 @@ def main():
     # Add default samba user
     try:
         stdout.write("Attempting to delete the 'default' user.\n")
-        sp.Popen(['inv-user-del.py','default'],stderr=sp.PIPE).communicate()
+        sp.Popen(ENV + ['inv-user-del.py','default'],stderr=sp.PIPE).communicate()
         stdout.write("Success")
     except Exception, ex:
         pass # don't care if user not there

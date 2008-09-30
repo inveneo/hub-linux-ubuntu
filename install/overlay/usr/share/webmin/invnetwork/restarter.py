@@ -12,7 +12,9 @@ Copyright (c) 2008 Inveneo, inc. All rights reserved.
 import sys, os, time
 from IPy import IP
 from subprocess import Popen, PIPE
-from inveneo import configfiles, processes
+from inveneo import configfiles, processes, constants
+
+ENV = ['env', constants.INV_LANG_EN]
 
 LOGDIR = '/var/log/webmin'
 
@@ -38,7 +40,7 @@ def execute(cmdlist):
     global fout
 
     fout.write('=== Command = %s\n' % str(cmdlist))
-    (sout, serr) = Popen(cmdlist, stdout=PIPE, stderr=PIPE).communicate() 
+    (sout, serr) = Popen(ENV + cmdlist, stdout=PIPE, stderr=PIPE).communicate() 
     fout.write('--- stdout: ---\n%s\n' % sout)
     fout.write('--- stderr: ---\n%s\n' % serr)
     return (sout, serr)

@@ -14,7 +14,9 @@ import cgitb; cgitb.enable()  # XXX remove this for production systems
 from IPy import IP
 from urllib import quote
 from subprocess import Popen, PIPE, call
-from inveneo import configfiles
+from inveneo import configfiles, constants
+
+ENV = ['env', constants.INV_LANG_EN]
 
 ERR_PREFIX = 'err_'
 MAX_HOSTNAME_LEN = 42
@@ -417,7 +419,7 @@ def restart_services(flags):
 
     # run the restarter as NOHUP so it will run to completion
     path = abspath(dirname(sys.argv[0]))
-    return Popen(['nohup', join(path, RESTARTER)] + list(tasks) + ['&']).pid
+    return Popen(ENV + ['nohup', join(path, RESTARTER)] + list(tasks) + ['&']).pid
 
 ##
 # START HERE
