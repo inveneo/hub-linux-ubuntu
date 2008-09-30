@@ -14,6 +14,8 @@ from os import path
 from sys import stdout, stderr
 from inveneo import constants
 
+ENV = ['env', constants.INV_LANG_EN]
+
 MDADM_CONF='/etc/mdadm/mdadm.conf'
 MDADM_STAT='/proc/mdstat'
 PARTITIONS='/proc/partitions'
@@ -46,7 +48,7 @@ def strip_partition(drive):
 
 def is_root_device_raid():
     try:
-        root_dev = sp.Popen(['env',constants.INV_LANG_EN,'rdev'], stdout=sp.PIPE).communicate()[0].split()[0]
+        root_dev = sp.Popen(ENV + ['rdev'], stdout=sp.PIPE).communicate()[0].split()[0]
         sp.check_call(['mdadm','-D','--brief',root_dev]) # will throw exception if not a RAID device
     except Exception, ex:
         return False
@@ -91,7 +93,7 @@ def get_phys_drives_for_array(array_dev):
 
 def is_scsi(dev):
     """is the device really scsi or is it USB hiding as scsi?"""
-    udev_out=sp.Popen(['udevinfo','--query=env','--name='+dev],stdout=sp.PIPE).communicate()[0]
+    udev_out=sp.Popen(ENV + ['udevinfo','--query=env','--name='+dev],stdout=sp.PIPE).communicate()[0]
     
     match=udev_id_bus_matcher.search(udev_out)
     return match and match.groups()[0]=='scsi'
@@ -144,7 +146,7 @@ def part_tables_same(dev1,dev2):
 
     output=[]
     for dev in ( dev1, dev2 ):
-        output.append(sp.Popen(['sfdisk','-d',dev],stdout=sp.PIPE).communicate()[0].\
+        output.append(sp.Popen(ENV + ['sfdisk','-d',dev],stdout=sp.PIPE).communicate()[0].\
                split('\n\n')[1].replace(dev, blank_dev))
  
     return output[0] == output[1]
@@ -228,7 +230,7 @@ def add_drive_to_mirror(arrays_hash):
     '''
     write_msg("Installing GRUB on new drive %s" % target_device)
     command = [GRUB, '--batch']
-    child = sp.Popen(command, stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.STDOUT)
+    child = sp.Popen(ENV + command, stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.STDOUT)
     child.stdin.write("device (hd0) %s\n" % target_device)
     child.stdin.write("root (hd0,0)\n")
     child.stdin.write("setup (hd0)\n")
@@ -238,8 +240,8 @@ def add_drive_to_mirror(arrays_hash):
 
     # now copy over the partition table from the good drive
     write_msg("Copying partition table to: "+target_device)
-    dump = sp.Popen(['sfdisk','-d',active_device], stdout=sp.PIPE)
-    sp.Popen(['sfdisk', target_device], stdin=dump.stdout, stdout=sp.PIPE).communicate()
+    dump = sp.Popen(ENV + ['sfdisk','-d',active_device], stdout=sp.PIPE)
+    sp.Popen(ENV + ['sfdisk', target_device], stdin=dump.stdout, stdout=sp.PIPE).communicate()
     
     # verify tables are now the same
     write_msg("Verifying partition table copied properly...")
@@ -313,7 +315,7 @@ def main():
     some_degraded=False # again, assume opposite
     for array in arrays.keys():
 	array_hash=arrays[array]
-	mdadm_proc=sp.Popen(['mdadm','-D','--test',array],stdout=sp.PIPE)
+	mdadm_proc=sp.Popen(ENV + ['mdadm','-D','--test',array],stdout=sp.PIPE)
 	mdadm_out=mdadm_proc.communicate()[0]
 
 	array_hash[DEGRADED]=mdadm_proc.returncode != 0

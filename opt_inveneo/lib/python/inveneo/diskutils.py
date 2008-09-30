@@ -6,6 +6,8 @@ import re
 import subprocess as sp
 from inveneo import constants
 
+ENV = ['env', constants.INV_LANG_EN]
+
 SERIAL_MATCHER=re.compile(r'Serial Number:\s*(\S+)')
 
 def id_for_device(dev):
@@ -14,7 +16,7 @@ def id_for_device(dev):
     for a device in the form '/dev/sda'
     """
 
-    output = sp.Popen(['env',constants.INV_LANG_EN,'hdparm','-I',dev], stdout=sp.PIPE).communicate()[0]
+    output = sp.Popen(ENV + ['hdparm','-I',dev], stdout=sp.PIPE).communicate()[0]
     m=SERIAL_MATCHER.search(output)
 
     if m:

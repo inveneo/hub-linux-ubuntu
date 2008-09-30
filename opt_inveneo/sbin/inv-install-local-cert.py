@@ -9,6 +9,8 @@ import subprocess as sp
 import os.path
 from inveneo import constants, fileutils
 
+ENV = ['env', constants.INV_LANG_EN]
+
 class InstallSelfSignedCert:
     def __init__(self):
         pass	
@@ -31,7 +33,7 @@ class InstallSelfSignedCert:
 
         # generate a new private key
         with open(pkey, 'w') as f:
-            sp.Popen(['openssl','genrsa','1024'], stdout=f).wait()
+            sp.Popen(ENV + ['openssl','genrsa','1024'], stdout=f).wait()
 
         # make private
         os.chmod(pkey, 0400)
@@ -39,12 +41,12 @@ class InstallSelfSignedCert:
         cnf=constants.INV_HUB_CERT_SSL_CONF
         # create self-signed cert from the key
         with open(cert,'w') as f:
-            sp.Popen(['openssl','req','-new','-x509','-nodes','-sha1','-days','3650','-key',pkey,'-config',cnf,'-batch'], \
+            sp.Popen(ENV + ['openssl','req','-new','-x509','-nodes','-sha1','-days','3650','-key',pkey,'-config',cnf,'-batch'], \
                      stdout=f).wait()
 
         # create pem file
         with open(pem,'w') as f:
-            sp.Popen(['cat',pkey,cert],stdout=f).wait()
+            sp.Popen(ENV + ['cat',pkey,cert],stdout=f).wait()
 
 if __name__ == '__main__':
     if len(sys.argv) != 1:

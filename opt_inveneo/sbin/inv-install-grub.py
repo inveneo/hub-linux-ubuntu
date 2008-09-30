@@ -8,6 +8,9 @@ import traceback
 import subprocess as sp
 from os import path
 from sys import stdout, stderr
+from inveneo import constants
+
+ENV = ['env', constants.INV_LANG_EN]
 
 GRUB='/usr/sbin/grub'
     
@@ -20,8 +23,8 @@ def main(target_device):
 
     write_msg("Installing GRUB on new drive %s" % target_device)
     command = [GRUB, '--batch']
-#    child = sp.Popen(command, stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.STDOUT)
-    child = sp.Popen(command, stdin=sp.PIPE, stdout=sp.PIPE)
+#    child = sp.Popen(ENV + command, stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.STDOUT)
+    child = sp.Popen(ENV + command, stdin=sp.PIPE, stdout=sp.PIPE)
     child.stdin.write("device (hd0) %s\n" % target_device)
     child.stdin.write("root (hd0,0)\n")
     child.stdin.write("setup (hd0)\n")

@@ -13,6 +13,7 @@ import subprocess as sp
 import traceback
 import constants, fileutils, diskutils
 
+ENV = ['env', constants.INV_LANG_EN]
 
 ACTIVE_DEV_MATCHER=re.compile(r'Active Devices\s+:\s+(\d)')
 WORKING_DEV_MATCHER=re.compile(r'Working Devices\s+:\s+(\d)')
@@ -33,7 +34,7 @@ def num_active_drives_in_array(array_dev='/dev/md0'):
     return num_drives_in_array(ACTIVE_DEV_MATCHER, array_dev)
     
 def num_drives_in_array(matcher, array_dev):
-    output = sp.Popen(['env',constants.INV_LANG_EN,'mdadm','--detail',array_dev], stdout=sp.PIPE).communicate()[0]
+    output = sp.Popen(ENV + ['mdadm','--detail',array_dev], stdout=sp.PIPE).communicate()[0]
     
     m=matcher.search(output)
 
@@ -99,7 +100,7 @@ def drives_in_array(array_dev='/dev/md0', good_only=False):
     # make sure whatever the input, md0 or /dev/md0 we get the right arg for mdadm
     array_dev='/dev/'+array_dev.split('/')[-1]
 
-    output = StringIO.StringIO(sp.Popen(['env',constants.INV_LANG_EN,'mdadm','--detail',array_dev], stdout=sp.PIPE).communicate()[0])
+    output = StringIO.StringIO(sp.Popen(ENV + ['mdadm','--detail',array_dev], stdout=sp.PIPE).communicate()[0])
     devices=[]
     start_caring=False
     for line in output:
