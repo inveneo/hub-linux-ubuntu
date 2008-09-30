@@ -10,7 +10,7 @@ Copyright (c) 2007 Inveneo, inc. All rights reserved.
 import sys, os, string
 from os.path import abspath, dirname, join
 import cgi
-import cgitb; cgitb.enable()  # XXX remove this for production systems
+# import cgitb; cgitb.enable()  # XXX remove this for production systems
 from IPy import IP
 from urllib import quote
 from subprocess import Popen, PIPE, call
