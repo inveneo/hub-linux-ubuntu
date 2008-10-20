@@ -23,6 +23,11 @@ def id_for_device(dev):
         return m.groups()[0]
 
     return None
+    
+def root_dev():
+    dev=sp.Popen(['rdev'],pipe=sp.STDOUT).communicate()[0]
+    dev=re.match(r'^(.+)[0-9]', dev).groups()[0]
+    return dev
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:

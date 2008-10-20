@@ -25,7 +25,7 @@ class PIDFile(object):
         if os.path.isfile(self.pid_file):
             try:
                 with open(self.pid_file, 'r') as f:
-                    self.pid_file_pid=int(f.readline())
+                    self.pid_file_pid=int(f.readline().strip())
             except:
                 traceback.print_exc(file=sys.stderr)
                 raise Exception("pid file '%s' exists but cannot be read" % self.pid_file)
