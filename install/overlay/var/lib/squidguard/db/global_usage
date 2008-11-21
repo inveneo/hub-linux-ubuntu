@@ -304,6 +304,20 @@ NAME NL:
 NAME PT:
 NAME ES:
 
+NAME:   hobby/gardening
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites about gardening, grewing plants, fighting bugs and everything related to gardening.
+DESC DE: Seiten über das Gärtnern, wie man Pflanzenn züchtet, Ungeziefer bekämft und alle mit dem Thema Gärtnern verwandten Themen.
+DESC FR: 
+NAME EN: Hobby/Gardening
+NAME DE: Hobby/Gärtnern
+NAME FR:
+NAME IT:
+NAME NL:
+NAME PT:
+NAME ES:
+
 NAME:   hobby/pets
 DEFAULT_TYPE: black
 SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
@@ -368,6 +382,20 @@ DESC DE: Arbeitsportale für Arbeitssuchende und Arbeitgeber. Beinhaltet auch Ka
 DESC FR:
 NAME EN: Jobsearch
 NAME DE: Arbeitssuche
+NAME FR:
+NAME IT:
+NAME NL:
+NAME PT:
+NAME ES:
+
+NAME:   military
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites of military facilites or related to the armed forces.
+DESC DE: Seiten militärischer Einrichtungen bzw. jene, die mit der Armee im Zusammenhang stehen.
+DESC FR:
+NAME EN: Military
+NAME DE: Militär
 NAME FR:
 NAME IT:
 NAME NL:
@@ -556,6 +584,20 @@ NAME IT:
 NAME NL:
 NAME PT: 
 NAME ES: 
+
+NAME:   remotecontrol
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites offering the service to remotely access computers, expecially (but not limited to going) through firewalls. This does not cover traditional VPN.
+DESC DE: Seiten mit Diensten, die es ermöglichen, an entfernten Rechnern zu arbeiten (auch aber nicht nur durch Firewall durch). Normales, traditionelle VPN Zugänge werden nicht betrachtet.
+DESC FR:
+NAME EN: Remote Control
+NAME DE: Fernkontrolle
+NAME FR:
+NAME IT:
+NAME NL:
+NAME PT:
+NAME ES:
 
 NAME:   ringtones
 DEFAULT_TYPE: black
