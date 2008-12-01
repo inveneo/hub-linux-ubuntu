@@ -42,6 +42,8 @@ def main():
     # remove old kernels
     print "Attempting to remove old kernels. Don't worry about any errors"
     sp.call(['apt-get','remove','-y','--force-yes','--purge','.*-1[6789]-generic'])
+    sp.call(['apt-get','remove','-y','--force-yes','--purge','.*-2[01]-generic'])
+    
     print "Ignore any error above about 'package not found'"
 
     print "Done"
