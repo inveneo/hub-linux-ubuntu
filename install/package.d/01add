@@ -77,7 +77,7 @@ asterisk	install
 perl-suid	install
 python-asterisk	install
 zaptel		                        install
-zaptel-modules-2.6.24-21-generic        install
+zaptel-modules-2.6.24-22-generic        install
 smartmontools	install
 beep	        install
 
