@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # SVN Report
-REPO="http://svn.inveneo.org/repos/hub-linux-ubuntu/trunk"
+REPO="http://svn.inveneo.org/repos/hub-linux-ubuntu/tags/release-1.0.2"
 
 # work in /tmp
 cd /tmp
