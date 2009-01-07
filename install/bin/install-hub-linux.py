@@ -27,7 +27,7 @@ def main():
     sp.check_call([path.join(install_bin,'populate-hub-ldap.py')])
     
     
-    stdout.write("\nHit Enter to reboot--you really need to...\n")
+    stdout.write("\nHit Enter/Return to reboot--you really need to...\n")
     stdin.readline()
     os.system("reboot")
         
