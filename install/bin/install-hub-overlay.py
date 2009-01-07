@@ -186,7 +186,7 @@ def get_root_drive():
     global root_drive
     if root_drive == None:
         # get mount output
-        with open('/proc/mounts') as mounts:
+        with open('/proc/mtab') as mounts:
             root_drive = rootdev_matcher.search(mounts.read()).groups()[0]
 
         root_drive = root_drive[root_drive.rfind('/')+1:]
