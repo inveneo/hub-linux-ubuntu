@@ -35,7 +35,7 @@ class CheckSwap:
             
         # find swap entry... go with first   
         match=self.matcher.search(buf)
-        if match==nil:
+        if match==None:
             mess="No 'swap' entry found in fstab: %s" % fstab
             sys.stderr.write(mess+"\n")
             syslog.syslog(mess)
