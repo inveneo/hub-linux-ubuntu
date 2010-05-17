@@ -1,8 +1,0 @@
-desc=Inveneo Network Management
-longdesc=Administer Network Settings
-risk=low medium high
-category=system
-depends=1.360
-version=1.360
-name=Inveneo Network Mananger
-os_support=debian-linux generic-linux

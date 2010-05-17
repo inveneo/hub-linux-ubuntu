@@ -1,8 +1,0 @@
-desc=Inveneo Share Management
-longdesc=Administer Samba Shares
-risk=low medium high
-category=system
-depends=1.360
-version=1.360
-name=Inveneo Share Mamanger
-os_support=debian-linux generic-linux

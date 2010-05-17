@@ -1,8 +1,0 @@
-desc=Inveneo Asterisk Configuration 
-longdesc=Inveneo Asterisk Configuration
-risk=low medium high
-category=system
-depends=1.360
-version=1.360
-name=Inveneo Asterisk Configuration
-os_support=debian-linux generic-linux

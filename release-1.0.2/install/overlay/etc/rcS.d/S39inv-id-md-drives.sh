@@ -1,1 +1,0 @@
-../init.d/inv-id-md-drives.sh
