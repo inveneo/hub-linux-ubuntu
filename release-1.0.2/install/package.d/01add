@@ -1,0 +1,120 @@
+# core system
+openssh-server	install
+openssh-client	install
+php5	        install
+php5-ldap	install
+php5-mysql	install
+phpmyadmin	install
+sysv-rc-conf    install
+ntp             install
+# network-manager install
+mdadm           install
+rssh		install
+ca-certificates install
+
+# Mail delivery (lots of services like Drupal require it)
+ssmtp  		install
+mailx		install
+
+# useful utilities
+screen  install
+lynx    install
+zip	install
+unzip	install
+minicom install
+p7zip-full install
+p7zip-rar	install
+sshpass		install
+
+# printing
+cupsys          install
+cupsys-client   install
+hplip           install
+hpijs           install
+hpijs-ppds      install
+foo2zjs         install
+openprinting-ppds install
+hp-ppd	        install
+
+# cd/dvd burning
+wodim           install
+genisoimage     install
+icedax          install
+mkisofs         install
+cdda2wav        install
+lame            install
+cdrecord	install
+cdrskin		install
+dvd+rw-tools	install
+
+# For Jeff's sanity
+emacs22-nox     install
+python-mode     install
+
+# And for Jim's
+vim             install
+nmap            install
+
+# services
+bind9		install
+dhcp3-server	install
+dhcp3-client 	install
+apache2 	install
+squid3	        install
+squid-cgi	install
+squidguard	install
+libnss-mdns	install
+samba           install
+smbfs		install
+smbclient       install
+quagga		install
+avahi-utils	install
+mysql-server    install
+webmin	        install
+asterisk	install
+# XXX does not exist anymore
+# asterisk-web-vmail	install
+perl-suid	install
+python-asterisk	install
+zaptel		                        install
+zaptel-modules-2.6.24-22-generic        install
+smartmontools	install
+beep	        install
+
+# dial-up and modem connections
+pppoe		install
+pppoeconf 	install
+wvdial		install
+
+#freeradius	install
+#freeradius-mysql	install
+
+# ldap
+libpam-ldap	install
+ldap-utils	install
+smbldap-tools	install
+slapd           install
+libnss-ldap	install
+phpldapadmin    install
+libnet-ldap-perl install
+
+# sqlite3
+sqlite3         install 
+libsqlite3-0    install
+
+# python
+python-pexpect          install
+python-ldap             install
+python-pylons           install
+python-pysqlite2        install
+python-sqlalchemy       install
+libapache2-mod-python   install
+python-mysqldb          install
+python-ipy              install
+
+# dev, not needed in production but not a bad idea to have...
+subversion	install
+build-essential install
+libncurses5-dev	install
+patch           install
+

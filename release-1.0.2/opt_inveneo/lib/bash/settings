@@ -1,0 +1,13 @@
+# inveneo bash settings
+
+if [ `whoami` == "root" ]; then
+    export PS1="\h:\W# "
+else
+    export PS1="\h:\W$ "
+fi
+
+alias lsa='ls -al'
+alias lsf='ls -F'
+
+export PATH="~/bin:$PATH"
+export EDITOR="/usr/bin/vi"

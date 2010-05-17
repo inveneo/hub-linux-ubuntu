@@ -1,0 +1,5 @@
+#TI USB 3410 USB->Serial cable
+SUBSYSTEM=="usb_device" ACTION=="add" SYSFS{idVendor}=="0451",SYSFS{idProduct}=="3410" \
+SYSFS{bNumConfigurations}=="2" \
+SYSFS{bConfigurationValue}=="1" \
+RUN+="/bin/sh -c 'echo 2 > /sys%p/device/bConfigurationValue'"

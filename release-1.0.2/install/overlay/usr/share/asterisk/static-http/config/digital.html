@@ -1,0 +1,1142 @@
+1<!--
+ * Asterisk-GUI	-	an Asterisk configuration interface
+ *
+ * Digital Card Setup / Detection 
+ *
+ * Copyright (C) 2006-2007, Digium, Inc.
+ *
+ * Brandon Kruse <bkruse@digium.com>
+ * & Pari Nannapaneni <pari@digium.com>
+ *
+ *
+ * See http://www.asterisk.org for more information about
+ * the Asterisk project. Please do not directly contact
+ * any of the maintainers of this project for assistance;
+ * the project provides a web site, mailing lists and IRC
+ * channels for your use.
+ *
+ * This program is free software, distributed under the terms of
+ * the GNU General Public License Version 2. See the LICENSE file
+ * at the top of the source tree.
+ *
+ ** this page is designed to work with the following sample ztscan output 
+ ** - - - - - - begin ztscan output - - - - - - - - 
+ **   [3]
+ **   active=yes
+ **   alarms=UNCONFIGURED
+ **   description=T4XXP (PCI) Card 2 Span 1
+ **   name=TE4/2/1
+ **   manufacturer=Digium
+ **   devicetype=Wildcard TE410P/TE405P (1st Gen)
+ **   location=PCI Bus 02 Slot 04
+ **   basechan=1
+ **   totchans=24
+ **   irq=21
+ **   type=digital-T1
+ **   syncsrc=0
+ **   lbo=0 db (CSU)/0-133 feet (DSX-1)
+ **   coding_opts=B8ZS,AMI
+ **   framing_opts=ESF,D4
+ **   coding=
+ **   framing=
+ ** - - - - - - End of ztscan output - - - - - - - - 
+ ** in the above output, [3] is the span number and the description says 'Card 2 Span 1' which is 
+ ** still valid because 'span 3' is the 'span 1' on 'card 2'
+ ** if your ztscan outputs in some other wiered format, this page will go crazy and might not work as expected.
+ ** 
+ ** 
+ *** in this page, SPANS[l]['syncsrc'] is NOT the syncsrc from ztscan - but it is read from zaptel.conf
+ -->
+<script src="scripts/prototype.js"></script>
+<script src="scripts/astman.js"></script>
+<script src="scripts/tooltip.js"></script>
+<link href="stylesheets/schwing.css" media="all" rel="Stylesheet" type="text/css" />
+<style>
+
+	.taglist {
+		border: 1px solid #666666;
+		margin-top:10px;
+		margin-bottom:10px;
+		max-width: 745;
+	}
+
+	.taglist tr.frow {
+		background-color: #6b79a5;
+		color: #CED7EF;
+	}
+
+	.taglist tr.even {
+		background-color: #DFDFDF;
+	}
+
+	.taglist tr.odd{
+		background-color: #FFFFFF;
+	}
+
+	.taglist tr.even:hover, .taglist tr.odd:hover {
+		background-color: #a8b6e5;
+	}
+
+	#errmsg{
+		border: 1px solid #666666;
+		margin-left:50px;
+		margin-right:50px;
+		padding : 20px 10px 20px 10px;
+		font-size: 125%;
+		text-align: center;
+		background-color:#FFFFFF;
+	}
+
+	.pageheading{
+		padding : 10px 10px 4px 10px;
+		font-size: 135%;
+		text-align: center;
+		font-weight: bold;
+	}
+	
+	span.downbutton {
+		font-size:12px;
+		background:#FFFFFF; 
+		border:1px solid #8A8A8A; 
+		padding:2px 7px 2px 7px;
+		text-decoration:none;
+	}
+	span.downbutton:hover {
+		background:#F3640D;
+		color:#FFFFFF;
+		text-decoration:none;
+	}
+
+</style>
+<script>
+var SPANS = {};
+var oldSpanCount = 0; // we get this from previuos applyzap.conf
+var oldLoadZone;
+var GROUPS = [];
+var NEWGROUPNUMBER;
+var CURRENT_SPAN; // span being edited
+var CONFIGUREDHARDWARE = {}; // configuration read from an existing hwcfgfile (if exists)
+var DETECTEDHARDWARE = {};
+var hwcfgfile = parent.hwcfgfile ;
+var spans_todelete = []; // we delete all the span_x entries in users.conf (and their extensions.conf counter parts) before writing back any new information.
+var hwchanged = true ; // -1 for no previous configuration found (first time), true for detected hardware changes, false for no hardware changes
+
+var HAS_ANALOGHARDWARE = true; var HAS_DIGITALHARDWARE = true; // if the user does not have any hardware - always set parent.REQUIRE_RESTART to false
+
+var SPANCOUNT_LOCATION = {}; // this object is used to store the number of spans found in each location Ex: SPANCOUNT_LOCATION['PCI Bus 02 Slot 04'] = 4;
+
+function detectHwChanges(){ // compare DETECTEDHARDWARE vs CONFIGUREDHARDWARE 
+// returns true if a hardware change is detected and false if there are no hardware changes
+// we can actually check a lot of things here like
+	// [A] check if - any cards are missing 
+	//	if yes - delete all existing configuration and ask the user to reconfigure from scratch
+
+	// [B] check if - any cards are added  - if something is added 
+	//	- check if the basechan of configured hardware matches with basechan of detected hardware
+	//	- if (matches) { 
+	//		no need to delete existing configuration - just present the current card information as detected/configured and new card as unconfigured 
+	//	}else{ 
+	//		delete all existing configuration and ask the user to reconfigure from scratch 
+	//	}
+
+	// [C] if all the cards match - check if basechan of detected hardware matches with basechan of configured hardware
+	//	- if does not match - delete all existing configuration and ask the user to reconfigure from scratch
+// BUT to avoid all the complexity and to keep things simple (atleast for now) - we will just do [c]
+	// check if the devices match 
+	// check if the basechan match for all the devices
+
+	var configured_devices = [];
+	var detected_devices = [];
+	for( var l in CONFIGUREDHARDWARE ){ if(CONFIGUREDHARDWARE.hasOwnProperty(l)){ 
+		configured_devices.push( CONFIGUREDHARDWARE[l]['device'] + '::' + CONFIGUREDHARDWARE[l]['basechan'] + '::' + CONFIGUREDHARDWARE[l]['type'] ); 
+		// this way we can check for whether 'device' and 'basechan' and 'type' all matched in one go
+	}}
+	for( var l in DETECTEDHARDWARE ){ if(DETECTEDHARDWARE.hasOwnProperty(l)){ 
+		detected_devices.push( DETECTEDHARDWARE[l]['device'] + '::' + DETECTEDHARDWARE[l]['basechan'] + '::' + DETECTEDHARDWARE[l]['type']  ); 
+	}}
+	configured_devices.sort(); detected_devices.sort();
+	if( !configured_devices.length && !detected_devices.length){ return false; }
+	if(configured_devices.length == detected_devices.length){
+		for(var l=0; l < configured_devices.length; l++){
+			if(configured_devices[l] != detected_devices[l]){ // devices does not match - but the number of devices match
+				//console.log("DEVICES or basechans does not MATCHED"); //
+				return true;
+			}
+		}
+		//console.log("DEVICES and basechans MATCH"); 
+		return false;
+	}else{	
+		//console.log("DEVICES or basechans does not MATCHED"); 
+		return true;
+	}
+}
+
+
+
+
+
+function verify_priChLimit(){
+	var l = String(CURRENT_SPAN);
+	if( !_$('editspan_signalling').value.beginsWith('pri')){ return true;}
+	var y = Number(_$('edit_DefinedChans').value);
+	if( Number(SPANS[l]['totchans'] ) <= 24 && y ==24){return false;}//alert("You should leave atleast 1 channel for PRI signalling");
+	if( Number(SPANS[l]['totchans'] ) > 24 && y ==31){return false;}//alert("You should leave atleast 1 channel for PRI signalling");
+	return true;
+};
+
+function calc_bchan_fxx(l){ // calculates the bchan,and fxx strings for a given span
+	var y = Number(SPANS[l]['min_ch']);
+	var z = Number(SPANS[l]['definedchans']);
+	if(z==1){return String(y);}
+
+	if( SPANS[l]['signalling'] && !SPANS[l]['signalling'].beginsWith('pri') ){ // if is an fxo/fxs or e&m
+		return y + "-" + String(y+z);
+	}else{
+		if(SPANS[l]['totchans'] <= 24){ // if T1
+			return y + "-" + String(y+z-1);
+		}else{ // if E1 - take first 15 as b-channels, then a d channel and then take the next 15 as bchannels
+			if(z==16){ return y+"-"+String(y+14)+","+String(y+16); }
+			if(z<= 15){
+				return y+"-"+String(y+z-1);
+			}else{
+				return y+"-"+String(y+14)+","+String(y+16) +"-"+ String(y+z);
+			}
+		}
+	}
+}
+
+
+function canelSpanInfo(){
+	_$('edit_span').style.display = "none";
+	_$('bg_transparent').style.display = "none";
+	CURRENT_SPAN = null;
+}
+
+var editSPAN = function(l){ // show values for SPAN l in the edit_span dialog box
+	CURRENT_SPAN = l;
+	_$('editspan_SPAN').innerHTML = SPANS[l]['description'];
+	_$('editspan_ALARMS').innerHTML = SPANS[l]['alarms'];
+
+	// console.log( SPANS[l]['min_ch'] );
+	// console.log( SPANS[l]['max_ch'] );
+	// console.log( SPANS[l]['definedchans']  );
+
+	ASTGUI.selectbox.clear( _$('editspan_fac') );
+	var w = _$('edit_DefinedChans') ;
+
+	var ijkl = function(){
+		ASTGUI.selectbox.clear(w);
+		var f = Number( SPANS[l]['totchans'] ), g=0;
+		if(f == 31){ f = 30;} // always make sure that only a max of 30 ports are available on E1 
+		for(g=1; g <=f; g++){ ASTGUI.selectbox.append(w,g,g); }
+		ASTGUI.selectbox.selectOption(w,SPANS[l]['definedchans']);
+		_$('edit_labelReserved').innerHTML = SPANS[l]['reserved_ch'];
+		_$('edit_labelZapchan').innerHTML = calc_bchan_fxx(l);
+	}();
+
+	if ( Number(SPANS[l]['totchans']) <= 24 ){
+		ASTGUI.selectbox.append(_$('editspan_fac'),'ESF/B8ZS', 'ESF/B8ZS');
+		ASTGUI.selectbox.append(_$('editspan_fac'),'D4/AMI', 'D4/AMI');
+	}else{
+		ASTGUI.selectbox.append(_$('editspan_fac'),'CCS/HDB3', 'CCS/HDB3');
+		ASTGUI.selectbox.append(_$('editspan_fac'),'CCS/HDB3/CRC4', 'CCS/HDB3/CRC4');
+	}
+
+	if(SPANS[l]['framing'] && SPANS[l]['coding']) {
+		if( SPANS[l]['framing'] == 'CCS/CRC4' ){
+			ASTGUI.selectbox.selectOption( _$('editspan_fac') , 'CCS/HDB3/CRC4' );
+		}else{
+			ASTGUI.selectbox.selectOption( _$('editspan_fac') , SPANS[l]['framing'] + '/' + SPANS[l]['coding'] );
+		}
+	}
+
+	_$('editspan_channels').innerHTML = String(SPANS[l]['definedchans']) + "/" + String(SPANS[l]['totchans']) + " ("+SPANS[l]['spantype']+")";
+
+	if( SPANS[l]['signalling'] ){
+		ASTGUI.selectbox.selectOption( _$('editspan_signalling') , SPANS[l]['signalling'] );
+	}else{
+		_$('editspan_signalling').selectedIndex = -1 ; 
+	}
+	disablEnable_sc();
+	if(SPANS[l]['switchtype']){
+		ASTGUI.selectbox.selectOption( _$('editspan_switchtype') , SPANS[l]['switchtype'] );
+	}else{
+		_$('editspan_switchtype').selectedIndex = -1 ;
+	}
+
+	(function (){
+		ASTGUI.selectbox.clear( _$('editspan_syncsrc'));
+		var y = SPANCOUNT_LOCATION[ SPANS[l]['location'] ];
+		var u =0; 
+		while(u<=y){ ASTGUI.selectbox.append( _$('editspan_syncsrc'),u,u ); u++ }
+		if( !SPANS[l].hasOwnProperty('syncsrc') ){ SPANS[l]['syncsrc'] = '1' } // default
+		ASTGUI.selectbox.selectOption( _$('editspan_syncsrc') , SPANS[l]['syncsrc'] );
+	})();
+
+	ASTGUI.selectbox.selectOption( _$('editspan_lbo') , SPANS[l]['lbo'] );
+	_$('edit_span').style.display = "";
+	_$('bg_transparent').style.display = "";
+};
+
+
+function showtable(){ // navigates through the SPANS object and presents as a table to the user
+	try{
+	var tbl = _$('digitalcardstable') ;
+
+	var add_fRow = function(){
+		var newRow = tbl.insertRow(-1);
+		newRow.className = "frow";
+
+		var newCell0 = newRow.insertCell(0);
+		newCell0.innerHTML = "SPAN";
+
+		var newCell1 = newRow.insertCell(1);
+		newCell1.innerHTML = "ALARMS";
+
+		var newCell2 = newRow.insertCell(2);
+		newCell2.innerHTML =  "Framing/Coding";
+
+		var newCell3 = newRow.insertCell(3);
+		newCell3.innerHTML = "channels<BR>Used/Total" ;
+		newCell3.align = "center";
+
+		var newCell4 = newRow.insertCell(4);
+		newCell4.innerHTML = "Signalling" ;
+		newCell4.align = "center";
+
+		var newCell5 = newRow.insertCell(5);
+		newCell5.innerHTML = "" ;
+
+	};
+
+	var addrow_totable = function(span){
+		if( LAST_LOCATION != SPANS[span]['location'] ){
+			var newRow = tbl.insertRow(-1);
+			var ntd = document.createElement('TD');
+			ntd.setAttribute('colspan',6);
+			ntd.style.backgroundColor='#B0B9D0';
+			ntd.align = 'center';
+			ntd.innerHTML = '<B>' + SPANS[span]['location'] + ' --> ' + SPANS[span]['devicetype'] + '</B>';
+			newRow.appendChild(ntd);
+		}
+		var singalling_defs = {pri_net: 'PRI - Net', pri_cpe: 'PRI - CPE', em: 'E & M',em_w: 'E & M -- Wink', featd:'E & M -- featd(DTMF)', fxo_ks:'FXOKS', fxo_ls:'FXOLS'  };
+		var sno = tbl.rows.length + 1;
+		var newRow = tbl.insertRow(-1);
+		newRow.className = ((tbl.rows.length)%2==1)?"odd":"even";
+
+		newRow.id ="row" + span ;
+		newRow["span_value"] = span;
+
+		var newCell0 = newRow.insertCell(0);
+		(function(){
+			var u = SPANS[span]['name'].split('/'); // Ex: name=TE4/2/1 where 2 is card number and 1 is the span number on that card
+			var w = SPANS[span]['devicetype'] ; // Ex: 'Wildcard TE410P/TE405P (1st Gen)'
+			var v = w + ', Card ' + String(Number(u[1]) + 1) + ' - Port ' + u[2] + "&nbsp;(span_" + span + ")&nbsp;&nbsp;" ;
+			newCell0.innerHTML = v ; // Ex: 'Wildcard TE410P/TE405P (1st Gen), Card 3 - Port 1, (span_3)'
+			newCell0.align = "center";
+		})();
+
+		var newCell1 = newRow.insertCell(1);
+		newCell1.innerHTML = SPANS[span]['alarms'];
+		newCell1.align = "center";
+
+		var newCell2 = newRow.insertCell(2);
+		newCell2.innerHTML =  (SPANS[span]['framing'] && SPANS[span]['coding']) ? SPANS[span]['framing'] + '/' + SPANS[span]['coding'] : '';
+
+		var newCell3 = newRow.insertCell(3);
+		//newCell3.innerHTML = String(SPANS[span]['usedchans'])+"/"+String(SPANS[span]['totchans'])+" ("+SPANS[k]['spantype']+")";
+		newCell3.innerHTML = String(SPANS[span]['definedchans']) + '/' + String(SPANS[span]['totchans']); //for the time being
+		newCell3.align = "center";
+
+		var newCell4 = newRow.insertCell(4);
+		newCell4.innerHTML = (SPANS[span]['signalling'])? singalling_defs[ SPANS[span]['signalling'] ] : "<font color=red>NOT DEFINED</font>" ;
+		newCell4.align = "center";
+
+
+		var newCell5 = newRow.insertCell(5);
+
+		newCell5.innerHTML = "<span class=\"downbutton\" id='" + "span_" + span + "'  onclick=\"editSPAN( '"+ span + "');\">Edit</span>" ;
+
+		//newCell5.innerHTML = "<span class=\"downmenubutton\" id='" + "span_" + span + "'  onclick=\"show_downmenu( '"+ span + "');\">Options&nbsp;&nbsp;<img src=images/1.gif></span>" ;
+
+
+		newCell5.style.width = 90;
+		newCell5.align = "center";
+		LAST_LOCATION = SPANS[span]['location'] ;
+	};
+
+	ASTGUI.domActions.clear_table(tbl);
+	add_fRow();
+	var foo_spans =0;
+	var LAST_LOCATION = '';
+	for( var k in SPANS ){ if( SPANS.hasOwnProperty(k) ){ foo_spans++; addrow_totable(k); }}
+	if(!foo_spans){
+		ASTGUI.domActions.clear_table(tbl);
+		var newRow = tbl.insertRow(-1);
+		newRow.className = "even";
+
+		var newCell0 = newRow.insertCell(0);
+		newCell0.innerHTML = "No Digital Hardware detected !!";
+		HAS_DIGITALHARDWARE = false;
+	}
+
+	if(foo_spans && hwchanged == -1){ // no previous hardware information found - configuring for the first time
+		gui_alert('Please configure your hardware using the Edit button(s)' + '<BR>'+
+			   "When done click on the 'Apply Changes'" );
+	}else{ // if previous config file found 
+		if(foo_spans && hwchanged){ //
+			gui_alert('Hardware Changes detected !! <BR><BR>' +
+				'When you "Apply Changes" all your previous settings will be over written' );
+		}else{ // no hardware changes detected
+			//gui_alert('No Hardware Changes detected !! ');
+		}
+	}
+
+	}catch(err){}
+	finally{
+		_$('save_b').disabled = false;
+		_$('cancel_b').disabled = false;
+		loadConfigFiles.load_zaptel_conf(); // used only for retreiving loadzone
+	}
+}
+
+function localajaxinit(){
+	setWindowTitle("Analog & Digital Cards(T1/E1) Setup & Configuration");
+	top._$('mainscreen').width= 798;
+	_$('save_b').disabled = true;
+	_$('cancel_b').disabled = true;
+
+	ASTGUI.events.add( _$('loadZone') , "change" , function(){_$('save_b').disabled = false; _$('cancel_b').disabled = false;}) ;
+
+	showdiv_statusmessage(); // create status message dialog
+	_$('message_text').innerHTML = "Detecting Digital Cards ...";
+	_$('status_message').style.display="block";
+	setTimeout("_$('status_message').style.display='none';", 1000);
+
+	if(!parent.FXS_PORTS_DETECTED.length && !parent.FXO_PORTS_DETECTED.length ){
+		_$('FXSFXO_ports_td').innerHTML = "<table class=\"taglist\" cellpadding=5 cellspacing=1 border=0 align=center><tr><td>No Analog Hardware detected !! </td></tr></table><BR><BR>";
+		HAS_ANALOGHARDWARE = false;
+	}else{
+		if(parent.FXS_PORTS_DETECTED.length){
+			var s1 = ((parent.FXS_PORTS_DETECTED.length > 1) ?'Ports ':'Port ') + parent.FXS_PORTS_DETECTED.join(' , ') ;
+		}else{ 
+			var s1 = 'none' ;
+		}
+
+		if(parent.FXO_PORTS_DETECTED.length){
+			var s2 = ((parent.FXO_PORTS_DETECTED.length > 1) ?'Ports ':'Port ') + parent.FXO_PORTS_DETECTED.join(' , ') ;
+		}else{ 
+			var s2 = 'none' ;
+		}
+
+		_$('FXSFXO_ports_td').innerHTML = '<B>FXS Ports :</B> ' + s1 + '<BR>' + '<B>FXO Ports :</B> ' + s2 + '<BR>' ;
+	}
+
+	var edit_DefinedChans_changed = function(){
+		var b = CURRENT_SPAN ;
+		var y = Number(_$('edit_DefinedChans').value);
+		if( !verify_priChLimit() ){
+			alert("You should leave atleast one channel for signalling");
+			return true;
+		}
+
+		SPANS[b]['definedchans'] = y;
+		//_$('edit_labelReserved').innerHTML = SPANS[b]['reserved_ch'];
+		_$('edit_labelZapchan').innerHTML = calc_bchan_fxx(b);
+	};
+
+	ASTGUI.events.add( _$('edit_DefinedChans'), "change", edit_DefinedChans_changed );
+
+	parent.loadscreen(this);
+	loadConfigFiles.load_hwcfgfile(); // try to load last detected/configured hardware information
+}
+
+var loadConfigFiles = {
+	// read hwcfgfile (if exists) into CONFIGUREDHARDWARE - so that the GUI knows the last configured hardware
+	// run ztscan - to detect digital cards
+	// read ztscan.conf - store hardware information in DETECTEDHARDWARE, read spans information - also set the max , min values for each span
+	//   see if the hardware matches with that from CONFIGUREDHARDWARE 
+	//   (this way we know if any changes in digital hardware since the gui was last used)
+	// read users.conf - and read spans information 
+	//   check if the channels in zapchan are within max and min
+	//   if yes then set the current range values
+	load_hwcfgfile: function(){ // read hwcfgfile (if exists) into CONFIGUREDHARDWARE 
+		var hwcfgfile_parse = function(n){
+			if( n == "ERROR: CONFIG FILE NOT FOUND"){
+				// hwcfgfile does not exist, proceed to Ztscan
+				hwchanged = -1;
+				loadConfigFiles.runZtscan();
+				return;
+			}
+			CONFIGUREDHARDWARE = {};
+			for( var l in n ){ if(n.hasOwnProperty(l) && l!='ANALOGPORTS' ){ // l is location
+				CONFIGUREDHARDWARE[l] = {};
+				CONFIGUREDHARDWARE[l]['device'] = n[l]['device'];
+				CONFIGUREDHARDWARE[l]['basechan'] = n[l]['basechan'];
+				CONFIGUREDHARDWARE[l]['type'] = n[l]['type'];
+			}}
+			loadConfigFiles.runZtscan();
+		};
+		config2json(hwcfgfile, 1, hwcfgfile_parse);
+		
+	},
+
+	runZtscan: function(){
+		parent.astmanEngine.run_tool(asterisk_guiZtscan + '; touch /etc/asterisk/applyzap.conf', function(t) { // run ztscan and then try loading ztscan.conf
+			setTimeout( function(){ loadConfigFiles.readZtscanConf(); } , 700); // leave some time for ztscan to generate ztscan.conf
+		});
+	},
+
+	readZtscanConf:function(){
+		var digitalparse = function(n){
+			if( n == "ERROR: CONFIG FILE NOT FOUND"){
+				_$('errmsg').innerHTML = "Please check if <B>ztscan</B> is installed ? <BR> /etc/asterisk/ztscan.conf not found";
+				_$('errmsg').style.display = '';
+				_$('div_maintable').style.display = 'none';
+				gui_feedback("No Cards/Spans found,  No Config File found !!");
+				//_$('tablecontainer').style.display="none";
+				return false;
+			}
+			for( var l in n ){ if(n.hasOwnProperty(l)){
+				if(n[l]['type'] == 'analog'){
+					DETECTEDHARDWARE[ n[l]['location'] ] = {};
+					DETECTEDHARDWARE[ n[l]['location'] ]['device'] = n[l]['devicetype'];
+					DETECTEDHARDWARE[ n[l]['location'] ]['basechan'] = n[l]['basechan'];
+					DETECTEDHARDWARE[ n[l]['location'] ]['type'] = n[l]['type'] ;
+					continue;
+				} // in this page, we care only about digital spans 
+				//  note: function detectHwChanges checks if there are any changes in analog ports detected
+				if(  n[l]['description'].toLowerCase().contains('ztdummy') ){ continue;} // ignore ztdummy :-)
+				SPANS[l] = {};
+				for( var k in n[l] ){ if(n[l].hasOwnProperty(k)){ 
+					SPANS[l][k] = n[l][k]; // store all the other fields in spans[l]
+					if( k == 'location'){
+						if(!(SPANCOUNT_LOCATION[n[l]['location']]) ){ SPANCOUNT_LOCATION[n[l]['location']] = 0; }
+						SPANCOUNT_LOCATION[n[l]['location']] = SPANCOUNT_LOCATION[n[l]['location']] + 1;
+					}
+					if( k=='location' && !(DETECTEDHARDWARE[n[l]['location']]) ){
+						DETECTEDHARDWARE[ n[l]['location'] ] = {};
+						DETECTEDHARDWARE[ n[l]['location'] ]['device'] = n[l]['devicetype'];
+						DETECTEDHARDWARE[ n[l]['location'] ]['basechan'] = n[l]['basechan'];
+						DETECTEDHARDWARE[ n[l]['location'] ]['type'] = n[l]['type'];
+					}
+					if( k == 'totchans' ){
+						SPANS[l]['spantype'] = n[l]['type'].split('-')[1]; // part after '-' in 'digital-T1' or 'digital-E1'
+						SPANS[l]['min_ch'] = Number(n[l]['basechan']); 
+						SPANS[l]['max_ch'] =  Number(n[l]['basechan']) + Number(n[l]['totchans']) - 1 ; 
+						SPANS[l]['reserved_ch'] = Number(n[l]['basechan']) + ( (Number(n[l]['totchans'])==24)? 23 : 15 );
+						SPANS[l]['definedchans'] = (Number(n[l]['totchans'])==24)? 23 : 30 ; // default values
+					}
+					if( k == 'lbo' ) {
+						switch(n[l][k]){
+							case '0 db (CSU)/0-133 feet (DSX-1)':
+								SPANS[l]['lbo'] = 0; break; 
+							case '133-266 feet (DSX-1)':
+								SPANS[l]['lbo'] = 1; break; 
+							case '266-399 feet (DSX-1)':
+								SPANS[l]['lbo'] = 2; break;
+							case '399-533 feet (DSX-1)':
+								SPANS[l]['lbo'] = 3; break;
+							case '533-655 feet (DSX-1)':
+								SPANS[l]['lbo'] = 4; break;
+							case '-7.5db (CSU)':
+								SPANS[l]['lbo'] = 5; break;
+							case '-15db (CSU)':
+								SPANS[l]['lbo'] = 6; break;
+							case '-22.5db (CSU)':
+								SPANS[l]['lbo'] = 7; break;
+							default:
+								SPANS[l]['lbo'] = 0; break; 
+						}
+					}
+				}}
+			}}
+
+			if(hwchanged != -1){
+				hwchanged = detectHwChanges();
+			}
+
+			loadConfigFiles.readUsersConf(); // read span_x (where T1/E1 trunks are defined)
+		};
+		config2json("ztscan.conf", 1, digitalparse);
+	},
+
+	readUsersConf: function(){
+		var usersparse = function(n){ // read users.conf and load switchtype, signalling, zapchan into the SPANS object
+			if( n == "ERROR: CONFIG FILE NOT FOUND"){
+				_$('errmsg').innerHTML = "/etc/asterisk/users.conf not found";
+				_$('errmsg').style.display = '';
+				_$('div_maintable').style.display = 'none';
+				gui_feedback("No Users File found !!");
+				//_$('tablecontainer').style.display="none";
+				return false;
+			}
+
+			var efgh = function(zc){ 
+					// calculate the number of channels defined for use in zapchan string
+					// zc can be in the format 'u', 'u-v', 'u-v,w-x' or 'u-v,w'
+					// the function returns 1 if u, (v-u +1) for the second case 
+					// and x-u for the third and // v-u+2 for the fourth case
+				try{
+					if( zc.contains('-') ){
+						if(zc.contains(',')){ // case 3 or case 4
+							if( zc.split('-').length > 2 ) { // case 3
+								return (Number(zc.split('-')[2]) - Number(zc.split('-')[0]));
+							}else{ // case 4
+								return (Number((zc.split('-')[1]).split(',')[0])-Number(zc.split('-')[0]) + 2);
+							}
+						} else { // case 'u-v'
+							return (Number(zc.split('-')[1])-Number(zc.split('-')[0])+1);
+						}
+					}else{ // case 1
+						return 1;
+					}
+				}catch(err){
+					return null;
+				}
+			};
+
+			var abcd = function(){
+				var tmp;
+				var tmp_spantodelete = {};
+				for( var l in n ){ if(n.hasOwnProperty(l)){
+
+					if( n[l]['group'] && l !='general' ){
+						if( GROUPS.contains( Number(n[l]['group'])) ){
+							// duplicate group ??? 
+							// we wish to address this situation in future
+						}else{
+							GROUPS.push( Number(n[l]['group']) );
+						}
+					}
+
+					if( l.beginsWith('span_')) {
+						tmp_spantodelete = {};
+						tmp_spantodelete['spanName'] = l;
+						if( n[l]['context'] ){ tmp_spantodelete['spanContext'] = n[l]['context']; }
+
+						spans_todelete.push(tmp_spantodelete);
+
+						tmp = l.split('span_')[1];
+						//if (!SPANS[tmp]){ SPANS[tmp] = {}; }
+						if (!SPANS[tmp]){  //ztscan did not detect any such span as tmp
+							continue;
+						}
+						SPANS[tmp]['definedchans'] = 0;
+						for( var k in n[l] ){ if(n[l].hasOwnProperty(k)){
+							if( k == 'signalling' || k == 'zapchan' || k == 'switchtype' ){ SPANS[tmp][k] = n[l][k]; }
+							if( k=='zapchan'){ SPANS[tmp]['definedchans'] = efgh(n[l][k]); }
+						}}
+					}
+				}}
+			}();
+			showtable();
+		};
+		config2json("users.conf", 1, usersparse);
+	},
+
+	load_zaptel_conf: function(){
+		// we parse zaptel.conf to get the loadzone and syncsrc for each span
+
+		var tmp_file = 'zaptel_guiRead.conf';
+		parent.astmanEngine.run_tool("touch /etc/asterisk/" + tmp_file, function(t){
+			var parseZaptelconf = function(zp){
+				(function (){
+					var t = zp['general'] ; // t is an array
+					var line = '';
+					_$('loadZone').selectedIndex = -1;
+					for(var g=0; g < t.length; g++){
+						line = t[g];
+						//try{
+							if( line.beginsWith('loadzone=')) {
+								var y = ASTGUI.parseContextLine.read(line) ;
+								ASTGUI.selectbox.selectOption( _$('loadZone'), y[1] );
+								return;
+							}
+						//}catch(err){
+						//	_$('loadZone').selectedIndex = -1;
+						//}
+					}
+				})();
+
+				(function (){
+					
+					var t = zp['general'] ; // t is an array
+					t.each(function(line){
+						try{
+						if(line.beginsWith('span=')){
+							var y = ASTGUI.parseContextLine.read(line)[1] ;
+							var span_no = y.split(',')[0];
+							var src_span = y.split(',')[1];
+							if(SPANS[span_no]){ SPANS[span_no]['syncsrc'] = src_span; }
+						}
+						}catch(err){}
+					});
+				})();
+
+			};
+
+			var somefunction = function(){
+				var c = 0;
+				var uri = build_action('delcat', c, 'general', "", ""); c++;
+				uri += build_action('newcat', c, 'general', "", ""); c++;
+				uri += build_action('update', c, 'general', '#include "../zaptel.conf" ;', ''); c++;
+				makerequest('u', tmp_file, uri, function(t) { config2json(tmp_file, 0, parseZaptelconf); });
+			}();
+		});
+	},
+};
+
+function resetmainscreen(){ top._$('mainscreen').width= 540; }
+
+function reloadpage(){ window.location.href="digital.html"; }
+
+function disablEnable_sc() {
+	if( !_$('editspan_signalling').value.beginsWith('pri') ){
+		_$('editspan_switchtype').disabled =  true;
+		_$('editspan_switchtype').selectedIndex = -1;
+
+		if( _$('edit_DefinedChans').options.length == 24) {
+			_$('edit_DefinedChans').options[23].disabled = false;
+		}
+	}else{
+		_$('editspan_switchtype').disabled =  false;
+		if( _$('edit_DefinedChans').options.length == 24) { // if is a PRI singalled T1
+			_$('edit_DefinedChans').options[23].disabled = true;
+			if(_$('edit_DefinedChans').selectedIndex == 23 ){ _$('edit_DefinedChans').selectedIndex = 22 ; }
+		}
+	}
+
+	return true;
+}
+
+function updateSpanInfo(){
+	if( !verify_priChLimit() ){
+		alert("You should leave atleast one channel for signalling.");
+		return true;
+	}
+	if(!_$('editspan_fac').value){
+		alert("Please select a Framing/Coding !");
+		return true;
+	}
+	if(!_$('editspan_signalling').value){
+		alert("Please select a signalling !");
+		return true;
+	}
+	if(_$('editspan_signalling').value.beginsWith('pri') &&  !_$('editspan_switchtype').value ){
+		alert("Please select a Switch Type !");
+		return true;
+	}
+
+	var b = String(CURRENT_SPAN);
+
+	if( _$('editspan_fac').value == 'CCS/HDB3/CRC4' ){
+		SPANS[b]['framing'] = 'CCS/HDB3';
+		SPANS[b]['coding'] = 'CRC4';
+	}else{
+		SPANS[b]['framing'] = _$('editspan_fac').value.split('/')[0];
+		SPANS[b]['coding'] = _$('editspan_fac').value.split('/')[1];;
+	}
+
+	SPANS[b]['signalling'] = _$('editspan_signalling').value;
+	SPANS[b]['switchtype'] = _$('editspan_switchtype').value;
+	SPANS[b]['syncsrc'] = _$('editspan_syncsrc').value;
+	SPANS[b]['lbo'] = _$('editspan_lbo').value;
+
+	_$('row'+ b).style.background = "#C9AAAA";
+
+	canelSpanInfo();
+	_$('save_b').disabled = false;
+	_$('cancel_b').disabled = false;
+}
+
+
+
+
+var storeDetectedHardware = function(){
+	var cmd = 'rm /etc/asterisk/' + hwcfgfile + '; touch /etc/asterisk/' + hwcfgfile;
+	parent.astmanEngine.run_tool( cmd , function(t){
+
+		var storeNewinfo = function(){
+			var uri = ''; c=0;
+
+			for(var g in DETECTEDHARDWARE){ if( DETECTEDHARDWARE.hasOwnProperty(g) ) { // g is location
+				uri += build_action('newcat', c, g , "", ""); c++;
+				uri += build_action('update', c, g , "device", DETECTEDHARDWARE[g]['device'] ); c++;
+				uri += build_action('update', c, g , "basechan", DETECTEDHARDWARE[g]['basechan'] ); c++;
+				uri += build_action('update', c, g , "type", DETECTEDHARDWARE[g]['type'] ); c++;
+			}}
+
+			uri += build_action('newcat', c, 'ANALOGPORTS' , '', ''); c++;
+			uri += build_action('update', c, 'ANALOGPORTS' , 'FXS', parent.FXS_PORTS_DETECTED.join(',') ); c++;
+			uri += build_action('update', c, 'ANALOGPORTS' , 'FXO', parent.FXO_PORTS_DETECTED.join(',') ); c++;
+
+			makerequest('u', hwcfgfile, uri , function(t) {
+				// inform the user to restart
+				_$('status_message').style.display="none";
+				parent.REQUIRE_RESTART = (HAS_ANALOGHARDWARE || HAS_DIGITALHARDWARE)? true : false;
+				if(parent.REQUIRE_RESTART){ alert("You need to restart your machine for these settings to take effect"); }
+				window.location.href= "digital.html";
+			});
+		};
+
+		setTimeout( storeNewinfo , 700); // leave some time for rm, touch
+	});
+};
+
+
+
+var applySettings = {
+	generate_zaptel: function(){
+		parent.astmanEngine.run_tool(asterisk_guiEditZap + " applysettings", function(t) {
+			/* anything we need to do here? */
+			parent.REQUIRE_RESTART = (HAS_ANALOGHARDWARE || HAS_DIGITALHARDWARE)? true : false;
+			parent.astmanEngine.run_tool("ztcfg -vv", function(t) {
+				storeDetectedHardware();
+				return true; 
+			});
+		});
+		/* to run ztcfg and apply settings, you can do this call, but replace applysettings with ztcfg.
+		You can then read /usr/share/asterisk/static-http/config/ztcfg_output.html to look at ztcfg errors */
+	},
+
+	cleanUsersConf: function(){
+		var uri1 = ''; // for deleting old span info from users.conf
+		var uri2 = ''; // for deleting old span info from extensions.conf
+		var c = 0; f=0;
+
+		spans_todelete.each( function(item) {
+			uri1 += build_action('delcat', c, item['spanName'] , "", "");c++;
+			if(item['spanContext']){
+				uri2 += build_action('delete', f, 'globals', item['spanName'], "", ""); f++;
+				uri2 += build_action('delcat', f, item['spanContext'] , "", ""); f++;
+			}
+		});
+
+		makerequest('u', "users.conf", uri1, function(t){
+			makerequest('u', "extensions.conf", uri2, function(t) {
+				applySettings.updateUsersConf();
+			});
+		});
+	},
+
+	updateUsersConf: function(){
+		/* update the users.conf to make sure there are corresponding [SPAN_x] contexts are updated */
+		
+		var uri1 = [];
+		var uri2 = [];
+		var add_lines = function(){
+			// for each span update span with new values of 'switchtype', 'singalling'
+			var c = 0, d ='', e ='', f=0, uri = '', vri='';
+			for( var k in SPANS ){ if( SPANS.hasOwnProperty(k) ){ if(SPANS[k]['signalling']){
+				uri = ''; c = 0 ; vri = ''; f = 0 ;
+				NEWGROUPNUMBER = GROUPS.firstAvailable() ;
+				GROUPS.push(NEWGROUPNUMBER);
+
+				d = 'span_'+ String(k);
+				e = asterisk_guiTDPrefix + d ;
+				uri += build_action('delcat', c, d , "", ""); c++;
+				uri += build_action('newcat', c, d , "", ""); c++;
+				if ( SPANS[k]['signalling'].beginsWith('pri') ){ 
+					// we do not want a switchtype to be set for channelized T1/E1 interfaces
+					uri += build_action('update', c, d , "switchtype", SPANS[k]['switchtype']); c++;
+				}
+				uri += build_action('update', c, d , "signalling", SPANS[k]['signalling']); c++;
+				uri += build_action('update', c, d , "trunkname", 'Span '+String(k)); c++;
+				uri += build_action('update', c, d , "trunkstyle", 'digital'); c++;
+				uri += build_action('update', c, d , "hassip", 'no'); c++;
+				uri += build_action('update', c, d , "hasiax", 'no'); c++;
+				uri += build_action('update', c, d , "hasexten", 'no'); c++;
+				uri += build_action('update', c, d , "group", NEWGROUPNUMBER ); c++;
+				if ( !SPANS[k]['signalling'].beginsWith('fxo') ){ 
+					// we do not want a context to be set for user stations
+					// instead, this context would be set when the station is assigned to a user
+					uri += build_action('update', c, d , "context", e); c++;
+				}
+				uri += build_action('update', c, d , "zapchan", SPANS[k]['zapchanstring'] ); c++;
+
+				vri += build_action('delete', f, 'globals', d, "", ""); f++;
+				vri += build_action('update', f, 'globals', d,'Zap/g'+String(NEWGROUPNUMBER)); f++;
+				vri += build_action('delcat', f, e , "", ""); f++;
+				vri += build_action('newcat', f, e , "", ""); f++;
+				vri += build_action('update', f, e , 'include', 'default'); f++;
+
+				uri1.push(uri);
+				uri2.push(vri);
+			}}}
+		}();
+
+		var somethingelse = function(){
+			if(uri2.length){
+				makerequest('u', "extensions.conf", uri2.shift() , function(t){ somethingelse(); } );
+			}else{
+				applySettings.generate_zaptel();
+			}
+		};
+
+		var something = function(){
+			if(uri1.length){
+				makerequest('u', "users.conf", uri1.shift() , function(t) { something(); } );
+			}else{
+				somethingelse();
+			}
+		};
+
+		something();
+	},
+
+	updateZaptel: function(){ 
+	// navigate through the SPANS object and save it to the applyzap.conf, 
+	// then call a script which will generate zaptel.conf from it and asks the user to restart his machine
+
+		_$('message_text').innerHTML = "Saving Changes ...";
+		_$('status_message').style.display="";
+		_$('status_message').style.zIndex = _$('bg_transparent').style.zIndex + 1 ;
+
+		var uri = '';
+		var add_lines = function(){
+			var fxx={};
+			var c = 0, bchanstring = '', dchanstring = '', context = 'general';
+			var totalchans = 0, firstpart , secondpart, tmp2 , tmp3;
+
+			uri = build_action('delcat', c, context,"", ""); c++;
+			uri += build_action('newcat', c , context, "", ""); c++;
+
+			for( var k in SPANS ){ if( SPANS.hasOwnProperty(k) ){ if(SPANS[k]['signalling'] ){
+				firstpart = "span";
+				/* XXX Timing source for card is being set to zero? */
+				/* LBO is being set to 0 */
+ 
+				SPANS[k]['fac'] = SPANS[k]['framing'] + '/' + SPANS[k]['coding'];
+
+				if(SPANS[k]['lbo'] == "") { SPANS[k]['lbo'] = 0; }
+				if(SPANS[k]['syncsrc'] == "") { SPANS[k]['syncsrc'] = 1; }
+				secondpart = k + "," + SPANS[k]['syncsrc']  + "," + SPANS[k]['lbo'] + "," + SPANS[k]['fac'].toLowerCase().replace("/", ",");
+				uri += build_action('append', c, context, firstpart, secondpart ); c++;
+				tmp2 = (bchanstring)? ",":"";
+				tmp3 = (dchanstring)? ",":"";
+
+				var ppp = calc_bchan_fxx(k);
+				if ( !SPANS[k]['signalling'].beginsWith('pri') ){
+					if(SPANS[k]['signalling'].beginsWith('fx')){
+						var qqq = (SPANS[k]['signalling']).replace('_',''); // zaptel.conf uses fxoks instead of fxo_ks
+					}else{
+						var qqq = 'e&m'; // if not a pri and not a fxo/s - assume e&m
+					}
+					if(fxx[ qqq ]){
+						fxx[ qqq ] = fxx[ qqq ] + "," + ppp;
+					}else{
+						fxx[ qqq ] = ppp;
+					}
+				}else{
+					bchanstring += tmp2 + ppp;
+					dchanstring += tmp3 + SPANS[k]['reserved_ch'];
+				}
+				SPANS[k]['zapchanstring'] = ppp;
+			}}}
+
+			for( var e in fxx ){ if(fxx.hasOwnProperty(e)){
+				uri += build_action('append', c, context, e, fxx[e]); c++;
+			}}
+			if(bchanstring.strip()){
+				uri += build_action('append', c, context, 'bchan', bchanstring); c++;
+			}
+			if(dchanstring.strip()){
+				uri += build_action('append', c, context, 'dchan', dchanstring); c++;
+			}
+
+			// write back any actual analog ports
+			if( parent.FXO_PORTS_DETECTED.length){
+				uri += build_action('append', c, context, 'fxsks', parent.FXO_PORTS_DETECTED.join(',')); c++;
+				// FXO ports will be fxs signalled
+			}
+			if( parent.FXS_PORTS_DETECTED.length){
+				uri += build_action('append', c, context, 'fxoks', parent.FXS_PORTS_DETECTED.join(',')); c++;
+				// FXS ports will be fxo signalled
+			}
+			uri += build_action('append', c, context, 'loadzone', _$('loadZone').value); c++;
+			uri += build_action('append', c, context, 'defaultzone', _$('loadZone').value); c++;
+
+
+		}();
+		makerequest('u', "applyzap.conf", uri , function(t) { applySettings.cleanUsersConf(); });
+	}
+};
+
+
+function applyDigitalSettings(){
+ 	// write to applyzap.conf - generate new applyzap.conf
+ 	// write to users.conf - update [spans_x] contexts
+ 	// call the asterisk_guiEditZap - which will generate zaptel.conf from applyzap.conf
+	_$('bg_transparent').style.display = '';
+	applySettings.updateZaptel();
+}
+
+</script>
+<body onload="localajaxinit()" onunload="resetmainscreen()"  bgcolor="#EFEFEF">
+
+<div style="font-size : 12px; padding : 4px 6px 4px 6px; border-style : solid none solid none; border-top-color : #BDC7E7; border-bottom-color : #182052; border-width : 1px 0px 1px 0px; background-color : #ef8700; color : #ffffff;">
+	<span style="margin-left: 4px;font-weight:bold;">Digital Card Configuration Wizard</span>
+	<span style="cursor: pointer; cursor: hand;" onclick="window.location.href=window.location.href;" >&nbsp;<img src="images/refresh.png" title=" Refresh " border=0 >&nbsp;</span>
+</div>
+
+<div id="div_maintable" style="text-align:center">
+	<div class="pageheading">Digital Hardware</div>
+		<div style="overflow:auto;left:40; height:300; width:99%">
+			<table class="taglist" id="digitalcardstable" cellpadding=5 cellspacing=1 border=0 align=center></table>
+		</div>
+		<div style='text-align:center; margin-top:10px;'>
+			<B>Country : </B>
+			<select id="loadZone">
+				<option value="us">United States/North America</option>
+				<option value="au">Australia</option>
+				<option value="fr">France</option>
+				<option value="nl">Netherlands</option>
+				<option value="uk">United Kingdom</option>
+				<option value="fi">Finland</option>
+				<option value="es">Spain</option>
+				<option value="jp">Japan</option>
+				<option value="no">Norway</option>
+				<option value="at">Austria</option>
+				<option value="nz">New Zealand</option>
+				<option value="it">Italy</option>
+				<option value="us-old">United States Circa 1950 / North America</option>
+				<option value="gr">Greece</option>
+				<option value="tw">Taiwan</option>
+				<option value="cl">Chile</option>
+				<option value="se">Sweden</option>
+				<option value="be">Belgium</option>
+				<option value="sg">Singapore</option>
+				<option value="il">Israel</option>
+				<option value="br">Brazil</option>
+				<option value="hu">Hungary</option>
+				<option value="lt">Lithuania</option>
+				<option value="pl">Poland</option>
+				<option value="za">South Africa</option>
+				<option value="pt">Portugal</option>
+				<option value="ee">Estonia</option>
+				<option value="mx">Mexico</option>
+				<option value="in">India</option>
+				<option value="de">Germany</option>
+				<option value="ch">Switzerland</option>
+				<option value="dk">Denmark</option>
+				<option value="cz">Czech Republic</option>
+				<option value="cn">China</option>
+				<option value="ar"Argentina></option>
+				<option value="my">Malaysia</option>
+				<option value="th">Thailand</option>
+				<option value="bg">Bulgaria</option>
+				<option value="ve">Venezuela</option>
+				<option value="ph">Philippines</option>
+				<option value="ru">Russian Federation</option>
+			</select>
+		</div>
+	</div><BR>
+	<div class="pageheading">Analog Hardware</div>
+	<div style="overflow:auto;left:40">
+		<table  cellpadding=5 cellspacing=1 align=center border=0>
+			<tr>
+			<td align=left id="FXSFXO_ports_td">
+			</td>
+			</tr>
+			<tr>
+			<td>
+				<input type="button" id="save_b" value="Apply Changes" onclick="applyDigitalSettings()"> &nbsp;&nbsp;
+				<input type="button" id="cancel_b" value="Cancel Changes" onclick="reloadpage()">
+			</td>
+			</tr>
+		</table>
+	</div>
+</div>
+<div id="errmsg" style="display:none"></div>
+<div id="bg_transparent" STYLE="display:none; position: absolute; left: 0; top: 0; width:100%; height:100%;  background-color:#FFFFFF; filter:alpha(opacity=50); -moz-opacity:.50;opacity:.50; border-width: 0px; z-index:4">
+</div>
+
+<div id="edit_span" STYLE="display:none; position: absolute; left: 30; top: 40; width:500; height:340;  background-color:#F4EFE5;   border-width: 1px; border-color: #7E5538; border-style: solid; z-index:5">
+	<table width="100%" cellpadding=0 cellspacing=0  onmousedown="ASTGUI.startDrag(event , 'edit_span');">
+	<TR bgcolor="#7E5538"  style="background-image:url('images/title_gradient.gif');">
+		<TD Height="20" align="left" style="cursor: move">
+			<font style="color:#FFFFFF; font-size: 12px; font-weight:bold;">
+			&nbsp;&nbsp;SPAN : <span id="editspan_SPAN"></span>
+			</font>
+		</TD>
+		<TD Height="20" align="right" style="cursor: move" width=20>
+			<A href="#" onclick="$('cancel_a').click();"><font style="color:#FFFFFF; font-size: 12px; font-weight:bold;">X</font></A>
+		</TD>
+		<TD width=4></TD>
+	</TR>
+	</table>
+	<TABLE	align=center cellpadding=2 cellspacing=2 border=0>
+	<TR>	<TD align="right">ALARMS:</TD>
+		<TD><span id="editspan_ALARMS"></span></TD>
+	</TR>
+	<TR>	<TD align="right">Framing/Coding:</TD>
+		<TD>	<select id="editspan_fac"></select> </TD>
+	</TR>
+	<TR>	<TD align="right">Channels:</TD>
+		<TD><span id="editspan_channels"></span></TD>
+	</TR>
+	<TR>	<TD align="right">Signalling</TD>
+		<TD>	<select id="editspan_signalling" onChange="disablEnable_sc();">
+			<option value="pri_net">PRI - Net</option>
+			<option value="pri_cpe">PRI - CPE</option>
+			<option value="em">E & M</option>
+			<option value="em_w">E & M -- Wink</option>
+			<option value="featd">E & M -- featd(DTMF)</option>
+			<option value="fxo_ks">FXOKS</option>
+			<option value="fxo_ls">FXOLS</option>
+			<!--<option value="fxs_ks">FXSKS</option>
+			<option value="fxs_ls">FXSLS</option>-->
+			</select>
+		</TD>
+	</TR>
+	<TR id="signalling_container">	<TD align="right">Switch Type</TD>
+		<TD>	<select id="editspan_switchtype">
+				<option value="national">National ISDN 2 (default)</option>
+				<option value="dms100">Nortel DMS100</option>
+				<option value="4ess">AT&T 4ESS</option>
+				<option value="5ess">Lucent 5ESS</option>
+				<option value="euroisdn">EuroISDN</option>
+				<option value="ni1">Old National ISDN 1</option>
+				<option value="qsig">Q.SIG</option>
+			</select>
+		</TD>
+	</TR>
+	<TR>	<TD align="right">Sync/Clock Source</TD>
+		<TD>	<select id="editspan_syncsrc">
+			</select>
+		</TD>
+	</TR>
+	<TR>	<TD align="right">Line Build Out</TD>
+		<TD>	<select id="editspan_lbo">
+				<option value="0">0 db (CSU)/0-133 feet (DSX-1)</option>
+				<option value="1">133-266 feet (DSX-1)</option>
+				<option value="2">266-399 feet (DSX-1)</option>
+				<option value="3">399-533 feet (DSX-1)</option>
+				<option value="4">533-655 feet (DSX-1)</option>
+				<option value="5">-7.5db (CSU)</option>
+				<option value="6">-15db (CSU)</option>
+				<option value="7">-22.5db (CSU)</option>
+			</select>
+		</TD>
+	</TR>
+
+	<TR>    <TD align="right" valign=top>Channels:</TD>
+		<TD>    <table border=0 cellpadding=2 cellspacing=1>
+				<tr>	<td> Use : <select id="edit_DefinedChans"></select>	</td>	</tr>
+				<tr>	<td> From : <span id="edit_labelZapchan"></span>	</td>	</tr>
+				<tr>	<td> Reserved : <span id="edit_labelReserved"></span>	</td>	</tr>
+			</table>
+		</TD>
+	</TR>
+
+	<TR>	<TD colspan=2 align=center height=50 valign=middle>  
+			<input type="button" id="save_a" value="Update" onclick="updateSpanInfo();">&nbsp;&nbsp;
+			<input type="button" id="cancel_a" value="Cancel" onclick="canelSpanInfo();">
+		</TD>
+	</TR>
+	</TABLE>
+</div>
+
+</body>
+</html>

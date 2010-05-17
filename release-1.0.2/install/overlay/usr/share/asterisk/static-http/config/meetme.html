@@ -1,0 +1,475 @@
+<!--
+ * Asterisk-GUI	-	an Asterisk configuration interface
+ *
+ * Create/Manage Conference Bridges
+ *
+ * Copyright (C) 2006-2007, Digium, Inc.
+ *
+ * Mark Spencer <markster@digium.com>
+ * Pari Nannapaneni <pari@digium.com>
+ *
+ * See http://www.asterisk.org for more information about
+ * the Asterisk project. Please do not directly contact
+ * any of the maintainers of this project for assistance;
+ * the project provides a web site, mailing lists and IRC
+ * channels for your use.
+ *
+ * This program is free software, distributed under the terms of
+ * the GNU General Public License Version 2. See the LICENSE file
+ * at the top of the source tree.
+ *
+-->
+<script src="scripts/prototype.js"></script>
+<script src="scripts/astman.js"></script>
+<script src="scripts/tooltip.js"></script>
+<link href="stylesheets/schwing.css" media="all" rel="Stylesheet" type="text/css" />
+<script>
+var origwidth;
+var widgets = {};
+var meetmes, localextenlength, temp_selectedexten;
+var callbacks = new Object;
+var usercallbacks = new Object;
+var meetmecallbacks = { };
+var fieldnames = ['announce', 'cancel', 'delete', 'menu', 'music', 'name', 'newitem', 'quiet', 'record', 'room', 'save', 'setmarked', 'waitmarked'];
+
+
+function changed_extension() {
+	var app;
+	var _ext = _$('extensions') ;
+	tmp = _ext.value.split(']');
+	app = findapp(_ext.stored_config.catbyname[tmp[0]].subfields[tmp[1]]['app']);
+	_$('name').value = _ext.stored_config.catbyname[tmp[0]].subfields[tmp[1]]['name'];
+	_$('features').value = app.name.toLowerCase();
+};
+
+function enable_disable_fields(k){
+	_$('pin').disabled = (k)? false : true;
+	_$('pinadmin').disabled =(k)? false : true;
+}
+
+callbacks.fields2val = function(box, subfields) {
+	var flags = "";
+	var xargs="";
+	var room = '${EXTEN}';
+	if (subfields['music'] != 'no')
+		flags += "M";
+	if (subfields['menu'] != 'no')
+		flags += 's';
+	if (subfields['announce'] != 'no')
+		flags += 'I';
+	if (subfields['record'] != 'no')
+		flags += 'r';
+	if (subfields['waitmarked'] != 'no')
+		flags += 'w';
+	if (subfields['setmarked'] != 'no')
+		flags += 'A';
+	if (subfields['quiet'] != 'no')
+		flags += 'q';
+	return _$('name').value + ",1,MeetMe(" + room + "|" + flags + ")";
+}
+
+callbacks.format = function(t, x) {
+	var ret;
+	var tmp;
+	var options = new Array;
+	var tmp2, y;
+	if ((t.name != specialcontext))
+		return null;
+	ret = format_extension(_$('extensions'), t, x);
+	if (ret) {
+		tmp = t.subfields[x].args.split('|');
+		if (tmp[1]) {
+			tmp2 = tmp[1].split('');
+			for (y=0;y<tmp2.length;y++){ options[tmp2[y]] = 'yes'; }
+		}
+		t.subfields[x].room =( tmp[0] == '${EXTEN}' )? '' : tmp[0] ;
+		t.subfields[x].music = options['M'];
+		t.subfields[x].menu = options['s'];
+		t.subfields[x].announce = options['I'];
+		t.subfields[x].record = options['r'];
+		t.subfields[x].waitmarked = options['w'];
+		t.subfields[x].setmarked = options['A'];
+		t.subfields[x].quiet = options['q'];
+	}
+	return ret;
+}
+
+callbacks.loaded = function() {
+	var _ext = _$('extensions');
+	merge_extensions( _ext , _$('hiddenusers'));
+	for (x=0;x< _ext.options.length;x++) {
+		var tmp;
+		tmp = _ext.options[x].value.split(']');
+		if (tmp.length > 1) {
+			if ( _ext.stored_config.catbyname[tmp[0]].subfields[tmp[1]]['app'].toLowerCase() != "meetme") {
+				//$('extensions').options[x].disabled = true;
+				_ext.options[x].style.color = "#ABABAB";
+				_ext.options[x].value= "reserved";
+			}
+		}
+	}
+	_ext.contentEditable = 'true';
+	_ext.disabled = 0;
+	_ext.style.height = "415px";
+	parent.loadscreen(this);
+}
+
+callbacks.sortfunc = function(a,b) {
+	return (a.name < b.name) ? -1 : 1;
+}
+
+callbacks.newsubitem = function() {
+	var tmp = new Object;
+	var x;
+	var gen = _$('hiddenusers').stored_config.catbyname['general'];
+	var _ext = $('extensions') ;
+	try{
+	if (gen){
+		x = (gen.fieldbyname['userbase'])?gen.fieldbyname['userbase']:6000;
+		for( var f=0; f < _ext.options.length ; f++ ){
+			if( x < Number(_ext.options[f].innerHTML.split(' -- ')[0]) ){ break; }
+			x++;
+		}
+	}else{
+		try{ 
+			x = ( parseInt( _ext.options[ _ext.options.length - 1 ].innerHTML.split(' -- ')[0] ) ) + 1; 
+		}catch(err){
+			x = 6000; // a default value if one is not defined in users.conf's general context
+		}
+	}
+	}catch(err){x=6000;}
+	_$('pin').value = '';
+	_$('pinadmin').value = '';
+	enable_disable_fields(1);
+	tmp['name'] = x ;
+	tmp['music'] = 'yes';
+	tmp['menu'] = 'no';
+	tmp['announce'] = 'yes';
+	tmp['room'] = '${EXTEN}';
+	tmp['>'] = true;
+	return new Array(specialcontext, 'exten', tmp);
+}
+
+callbacks.postselect = function(box, val) {
+	parent._$('tooltip').innerHTML = parent.tooltip_default ; 
+	var _pv = _$('pin');
+	var _pa = _$('pinadmin');
+
+	_pv.value = "";
+	_pa.value = "" ;
+
+	if( box.selectedIndex == -1){
+		enable_disable_fields(0);
+		return true;
+	}
+	if(val == "reserved" ){
+		if( box.options[box.selectedIndex].text.toLowerCase().match("-- call queue")     ){
+			//parent.$('tooltip').innerHTML = " <font size=\"-2\" color=\"#FF0000\">Click on \'Call Queues\' panel to edit call queues </font>";
+			box.selectedIndex = -1;
+			enable_disable_fields(0);
+			gui_alert(" You can not edit the selected entry from here.\n Please click on the \'Call Queues\' panel to edit the selected entry");
+			return true;
+		}
+		if( box.options[box.selectedIndex].text.toLowerCase().match("-- check voicemail")     ){
+			//parent.$('tooltip').innerHTML = " <font size=\"-2\" color=\"#FF0000\">Click on \'Voicemail\' panel to edit Voicemail Preferences</font>";
+			box.selectedIndex = -1;
+			enable_disable_fields(0);
+			gui_alert(" You can not edit the selected entry from here.\n Please click on the \'Voicemail\' panel to edit the selected entry");
+			return true;
+		}
+		if( box.options[box.selectedIndex].text.toLowerCase().match("-- voice menu")     ){
+			box.selectedIndex = -1;
+			//parent.$('tooltip').innerHTML = " <font size=\"-2\" color=\"#FF0000\">Click on \'Voicemail\' panel to edit Voicemail Preferences</font>";
+			enable_disable_fields(0);
+			gui_alert(" You can not edit the selected entry from here.\n Please click on the \'Voice Menus\' panel to edit the selected entry");
+			return true;
+		}
+		box.selectedIndex = -1;
+		enable_disable_fields(0);
+		gui_alert(" You can not edit the selected entry from here.\n Please click on the \'Users\' panel to edit the selected entry");
+		return true;
+	}
+	temp_selectedexten = _$('name').value;
+	enable_disable_fields(1);
+	var f = $('meetme_conf') ;
+	for ( var r=0; r < f.stored_config.catbyname.rooms.fields.length; r++ ) {
+		var k = f.stored_config.catbyname.rooms.fields[r].split(",");
+		if(k[0] == temp_selectedexten ){
+			_pv.value = k[1] ;
+			_pa.value = k[2] ;
+			break;
+		}
+	}
+
+}
+
+
+callbacks.newcategory = function() {
+	var tmp = null;
+	var x;
+	var _ext = _$('extensions') ;
+
+	if ( _ext.stored_config.catbyname['general'])
+		tmp = objcopy( _ext.stored_config.catbyname['general'] );
+	if (tmp) {
+		x = tmp.fieldbyname['userbase'];
+		if (x) {
+			while( _ext.stored_config.catbyname[x]) x++;
+			tmp.name = x;
+		}
+	}
+	return tmp;
+}
+
+
+callbacks.beforeSaving = function(){
+	var _ext = _$('extensions') ;
+	var _name = _$('name');
+
+	if ( _ext.options[_ext.selectedIndex].text == "New Entry" ) {
+		temp_selectedexten = _name.value ;
+	}
+
+	// check whether the length of extension is valid
+	if(  !_name.value.length ) { gui_alert("Please enter an extension !"); _name.focus(); return false; }
+
+	if(  localextenlength !=0 && (localextenlength !=  _name.value.length) ){
+		gui_alert("Sorry, An Extension must be  "+ localextenlength  + " digits !");
+		_name.focus();
+		return false;
+	}
+	if (!check_patternonfields( ['name', 'pin' , 'pinadmin', 'room'] ) ){
+		return false;
+	}
+
+	if(temp_selectedexten != _name.value ){
+		for(var k=0; k < _ext.length; k++ ){
+			var tmp = _ext.options[k].innerHTML.split(' -- '); 
+			if( tmp[0] ==  _name.value   ){
+				gui_alert("Sorry, an entry named " + _name.value + " already exists!");
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
+callbacks.identifier = "extension";
+
+callbacks.eachline = true;
+
+callbacks.savechanges = function(){
+	var f = _$('meetme_conf') ;
+	var temp_rooms_r =  -1 ;
+	var oldvalue = "" ;
+	for ( var r=0; r < f.stored_config.catbyname.rooms.fields.length; r++ ) {
+		var k = f.stored_config.catbyname.rooms.fields[r].split(",");
+		if(k[0] == temp_selectedexten ){
+			oldvalue = f.stored_config.catbyname.rooms.fields[ r];
+			temp_rooms_r = r ;
+			break;
+		}
+	}
+	var newvalue = _$('name').value + ","+ _$('pin').value + "," + _$('pinadmin').value;
+	temp_selectedexten = _$('name').value;
+	if ( oldvalue ==  newvalue ){
+		_$('save').disabled = true;
+		_$('cancel').disabled = true;
+		return;
+	}else{
+		var uri = "";
+		var p = 0 ;
+		if( temp_rooms_r !=  -1 ){  // if is an existing conference
+			uri +=  build_action('delete', p, "rooms" ,"conf", "", oldvalue );  p++;
+		}
+		uri += build_action('append', p, "rooms","conf", newvalue );  p++;
+
+		makerequest('u','meetme.conf',uri,
+			function(t){
+				if( temp_rooms_r ==  -1 ){ // add
+					f.stored_config.catbyname.rooms.fields.push( newvalue );
+				}else{  // update
+					f.stored_config.catbyname.rooms.fields[temp_rooms_r] =  newvalue ;
+				}
+				_$('save').disabled = true; 
+				_$('cancel').disabled = true;	
+			}
+		);
+		return true;
+	}
+}
+
+
+callbacks.oncategorydelete = function(){
+	var f = _$('meetme_conf') ;
+	for ( var r=0; r < f.stored_config.catbyname.rooms.fields.length; r++ ) {
+		var k = f.stored_config.catbyname.rooms.fields[r].split(",");
+		if(k[0] == temp_selectedexten ){
+			var uri =  build_action('delete', 0, "rooms" ,"conf", "", f.stored_config.catbyname.rooms.fields[r] );
+			makerequest('u','meetme.conf', uri ,
+				function(t){ f.stored_config.catbyname.rooms.fields.splice(r ,1); }
+			);
+			break;
+		}
+	}
+}
+
+
+usercallbacks.format = function(t) {
+	if ( t.name == 'general' ){
+		localextenlength =  (t.fieldbyname['localextenlength'] && t.fieldbyname['localextenlength'].length) ? t.fieldbyname['localextenlength'] : 4 ;
+		return null;
+	}
+
+	if ( t.fieldbyname['context'] == asterisk_guiTDPrefix + t.name ) {
+		return null;
+	}
+
+	if (t.fieldbyname['fullname'] && t.fieldbyname['fullname'].length) {
+		return t.name + " -- " + t.fieldbyname['fullname'];
+	} else{
+		return t.name;
+	}
+}
+
+usercallbacks.loaded = function() {
+	parent.astmanEngine.config2list("extensions.conf", _$('extensions'), widgets, callbacks);
+}
+
+function localajaxinit() {
+	ASTGUI.events.add(document, 'mouseover', show_tooltip);
+	setWindowTitle("Conferencing");
+
+	_$('extensions').contentEditable = 'false';
+	for (var x =0; x < fieldnames.length; x++) {
+		widgets[fieldnames[x]] = _$(fieldnames[x]);
+		widgets[fieldnames[x]].disabled = true;
+	}
+
+	enable_disable_fields(0);
+
+	ASTGUI.events.add( _$('pin') , 'keyup', enable_save_cancel );
+	ASTGUI.events.add( _$('pinadmin') , 'keyup', enable_save_cancel );
+	ASTGUI.events.add( _$('pin') , 'change', enable_save_cancel );
+	ASTGUI.events.add( _$('pinadmin') , 'change', enable_save_cancel );
+
+	parent.astmanEngine.config2list("meetme.conf", $('meetme_conf'), new Array(), meetmecallbacks);
+}
+
+
+function enable_save_cancel(){
+	_$('save').disabled = false;
+	_$('cancel').disabled = false;
+}
+
+
+meetmecallbacks.format = function(t) {
+	if(t.name == 'rooms' ){return t.name;}else{return null;}
+}
+
+
+meetmecallbacks.loaded = function() {
+	parent.astmanEngine.config2list("users.conf", _$('hiddenusers'), new Array(), usercallbacks);
+}
+
+function free_mem( ){
+	if( navigator.userAgent.indexOf("MSIE") == -1 ){ return true; }
+	try{
+	widgets['save'].hostselectbox = null ;
+	widgets['cancel'].hostselectbox = null ;
+	widgets['newitem'].hostselectbox = null ;
+	widgets['delete'].hostselectbox = null ;
+	purge( document.body );
+	} catch(e) { }
+}
+
+</script>
+<body id="foo" onload="localajaxinit()"  bgcolor="EFEFEF"  onunload="free_mem()">
+<div class="mainscreenTitleBar">
+	<span style="margin-left: 4px;font-weight:bold;">Conference Bridge Extensions Configuration</span>
+	<span style="cursor: pointer; cursor: hand;" onclick="window.location.href=window.location.href;" >&nbsp;<img src="images/refresh.png" title=" Refresh " border=0 >&nbsp;</span>
+</div>
+<div class="mainscreenContentBox" id="mailboxcontent">
+<table class="mainscreenTable" align="center">
+	<tr valign="top"><td colspan='2'>Conference Bridges:</td>	</tr>
+	<tr valign="top">
+		<td>	<select disabled size="25" id="extensions" style="width:220px;" class="input10"><option>Loading...</option></select>
+			<select id='hiddenusers' style='display:none;'></select><select id='meetme_conf' style='display:none;'></select>
+		</td>
+		<td style="width:311px;height: 415px">
+			<div id='adjustments'>
+			<table cellspacing='0' cellpadding='0' width=310 border=0>
+			<tr valign="top">
+			<td align=center  cellspacing='0' cellpadding='0' width=305 border=0>
+				<table cellspacing='2' cellpadding='1' width=200 border=0>
+				<tr>	<td class="field_text" tip="en,meetme,0">Extension:</td>
+					<td>&nbsp;<input size='5' id='name' pattern='^\d*$' class="input8">
+						<input id='room' type="hidden">
+					</td>
+				</tr>
+				<tr>	<td colspan='2' height=15></td>	</tr>
+				</table>
+			</td>
+			</tr>
+			<tr>	<td align="center">	
+				<fieldset style="width: 225px;">
+					<legend>&nbsp;Password Settings:&nbsp;</legend>
+					<table align='center'>
+						<tr>	<td class="field_text" tip="en,meetme,1">PIN Code:</td>
+							<td>&nbsp;<input size='5' id='pin' pattern='^\d*$' class="input8"></td>
+						</tr>
+						<tr>	<td class="field_text" tip="en,meetme,2">Admin PIN Code:</td>
+							<td>&nbsp;<input size='5' id='pinadmin' pattern='^\d*$' class="input8"></td>
+						</tr>
+					</table>
+				</fieldset>
+				</td>
+			</tr>
+			<tr ><td height=10></td></tr>
+			<tr>	<td align="center">	
+				<BR>
+				<fieldset style="width: 225px;">
+					<legend>&nbsp;Conference Room Options:&nbsp;</legend>
+
+					<table id='advancedi' align='center'>
+					<tr>	<td align=right tip="en,meetme,3"><input type='checkbox' id='music'>&nbsp;</td>
+						<td class="field_text">Play hold music for first caller</td>
+					</tr>
+					<tr>	<td align=right tip="en,meetme,4"><input type='checkbox' id='menu'>&nbsp;</td>
+						<td class="field_text">Enable caller menu</td>
+					</tr>
+					<tr>	<td align=right tip="en,meetme,5"><input type='checkbox' id='announce'>&nbsp;</td>
+						<td class="field_text">Announce callers</td>
+					</tr>
+					<tr style="display:none">	<td align=right tip="en,meetme,11"><input type='checkbox' id='record'>&nbsp;</td>
+						<td class="field_text">Record conference</td>
+					</tr>
+					<tr>	<td align=right tip="en,meetme,8"><input type='checkbox' id='quiet'>&nbsp;</td>
+						<td class="field_text">Quiet Mode</td>
+					</tr>
+					<tr>	<td align=right tip="en,meetme,9"><input type='checkbox' id='waitmarked'>&nbsp;</td>
+						<td class="field_text">Wait for marked user</td>
+					</tr>
+					<tr>	<td align=right tip="en,meetme,10"><input type='checkbox' id='setmarked'>&nbsp;</td>
+						<td class="field_text">Set marked user</td>
+					</tr>
+					</table>
+				</fieldset>
+				</td>
+			</tr>
+			</table>
+			</div>
+		</td>
+	</tr>
+	<tr>	<td align='center'>
+			<input type='button' id='newitem' value='New' class="buttonbold">&nbsp;
+			<input  type='button' id='delete' value='Delete' class="buttonbold">
+		</td>
+		<td align='center' colspan='2'>
+			<input  class="buttonbold" type='button' id='save' value='Save'>&nbsp;
+			<input  class="buttonbold" type='button' id='cancel' value='Cancel'>
+		</td>				
+	</tr>
+</table>
+</body>

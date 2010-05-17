@@ -1,0 +1,36 @@
+#!/bin/sh -e
+# initramfs hook for inv_check_raid
+
+PREREQ="udev"
+
+# Output pre-requisites
+prereqs()
+{
+	echo "$PREREQ"
+}
+
+case "$1" in
+    prereqs)
+	prereqs
+	exit 0
+	;;
+esac
+
+. /usr/share/initramfs-tools/hook-functions
+
+# useful to hav
+copy_exec /usr/bin/vim.tiny /bin/vi
+
+# requirements for check script
+copy_exec /usr/bin/yes /bin
+copy_exec /usr/bin/awk /bin
+
+
+# requirements for fixing bad drives
+copy_exec /sbin/sfdisk /sbin
+copy_exec /sbin/partprobe /sbin
+
+# and our check script
+copy_exec /opt/inveneo/sbin/inv-check-superblocks.sh /sbin
+
+exit 0

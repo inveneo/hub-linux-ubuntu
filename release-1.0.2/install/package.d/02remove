@@ -1,0 +1,3 @@
+# conflicts with quagga's dependency on capabilities.ko
+# appears fixed in 8.04
+# apparmor deinstall

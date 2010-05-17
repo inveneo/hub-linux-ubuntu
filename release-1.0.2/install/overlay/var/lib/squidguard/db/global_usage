@@ -1,0 +1,839 @@
+#
+#       Franck Bourdonnec proposed a way to add descriptions for using
+#	blacklists in IPCop.
+#	The proposed layout  is:
+#
+#       NAME : name of tar blacklist
+#       DEFAULT_TYPE : what is the primary use of this blacklist (can be inverted, i.e. for webmail)
+#       SOURCE : Url of the main provider of information
+#       NAME xx: Short name used display in listbox, menu choice etc for xx Language
+#       DESC xx: Description of the blacklist for xx Language
+#
+#       To add support for other languages please send mail to: mikro (at) shalla.de
+#
+NAME:	adv
+DEFAULT_TYPE: black
+SOURCE:	http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: All about advertising: This includes sites offering banners and banner creation as well as sites delivering banners to be shown in webpages and advertizing companies.
+DESC DE: Werbe- und Markeingseiten: Beinhaltet Seiten, die Werbebanner einblenden sowie auch Werbefirmen.
+DESC FR: Vente et de Publicité: comprend des côtés, les bannières publicitaires insérer ainsi qu'également entreprises publicitaires.
+NAME EN: Advertisements
+NAME DE: Werbung
+NAME FR: Annonces
+NAME IT: Pubblicità
+NAME NL: Reclame
+NAME PT: Propagandas
+NAME ES: Anuncios
+
+NAME:   aggressive
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites with aggressive content such as rassism and hate speach.
+DESC DE: Agressive Inhalte wie Rassismus, Beleidungen, Hassreden.
+DESC FR: Quelques sites raçistes, antisémites, inçitant à la haine.
+NAME EN: Aggressive
+NAME DE: Aggressiv
+NAME FR: Agréssif 
+NAME IT: Aggressivo
+NAME NL: Aggressief 
+NAME PT: Aggressive
+NAME ES: Agresivo
+
+NAME:   automobile/cars
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: All around cars. Included are automobile companies and automotive suppliers.
+DESC DE: Rund um das Auto: Hersteller, Zulieferer, Reparaturen u.ä.
+DESC FR:
+NAME EN: Automobile/Cars
+NAME DE: Automobil/Autos
+NAME FR:
+NAME IT: Automobile/Automobili
+NAME NL: Automobil/Auto
+NAME PT:
+NAME ES:
+
+NAME:   automobile/bikes
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: All around motorcycles. Included are vendor sites, resellers, fan and hobby pages as well as and suppliers. Scooters included.
+DESC DE: Rund um das Motorad: Hersteller, Zulieferer, Reparaturen u.ä.
+DESC FR:
+NAME EN: Automobile/Bikes
+NAME DE: Automobil/Motorräder
+NAME FR:
+NAME IT: Automobile/Motocicli
+NAME NL: Automobil/Motorfiets 
+NAME PT:
+NAME ES:
+
+NAME:   automobile/boats
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: All around motorboats. Included are vendor sites, resellers, fan and hobby pages as well as and suppliers.
+DESC DE: Alles zur Thematik Motorboote; Bezug, Typen, Hersteller, Zulieferer, Wartung und Pflege.
+DESC FR:
+NAME EN: Automobil/Boats
+NAME DE: Automobil/Boote
+NAME FR:
+NAME IT: Automobile/Barche
+NAME NL:
+NAME PT:
+NAME ES:
+
+NAME:   automobile/planes
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: All around planes ranging from small one and two seaters up to the large traffic planes, old and new, private, commercial and military. Vendors and supplier are included (airports are not). Helicopter sites are included as well.
+DESC DE:
+DESC FR:
+NAME EN: Automobile/Planes
+NAME DE: Automobil/Flugzeuge
+NAME FR:
+NAME IT: Automobile/Aerei
+NAME NL:
+NAME PT:
+NAME ES:
+
+NAME:   chat
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Site for realtime chatting and instant messaging.
+DESC DE: Plaudern via Internet.
+DESC FR:
+NAME EN: Chat
+NAME DE: Chat
+NAME FR:
+NAME IT:
+NAME NL:
+NAME PT:
+NAME ES:
+
+NAME:   dating
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites to contact people for love and live together. He seeks her, she seeks him and so on.
+DESC DE: Kontaktbörsen für das Leben zu zweit.
+DESC FR: Sites de rencontres
+NAME EN: Dating
+NAME DE: Kontaktbörsen
+NAME FR: Rencontre
+NAME IT: Dating
+NAME NL: Dating
+NAME PT: Dating
+NAME ES: Dating
+
+NAME:   downloads
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: This covers mostly filesharing, p2p and torrent sites. Other download sites (for software, wallpapers, ..) are included as well.
+DESC DE: Herunterladen von Software, Bilder, u.ä. sei es direkt oder über P2P/Torrent Seiten.
+DESC FR:
+NAME EN: Downloads
+NAME DE: Downloads
+NAME FR:
+NAME IT:
+NAME NL:
+NAME PT:
+NAME ES:
+
+NAME:   drugs
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites offering drugs or explain how to make drugs. Covers alcohol and tabacco as well as viagra and similar substances.
+DESC DE: Seiten, die Drogen und Medikamente anbieten. Beinhaltet auch Alkohol, Zigaretten und Viagra, Cialis, etc.
+NAME EN: Drugs
+NAME DE: Drogen
+NAME FR: Drogue
+NAME IT: Droghe
+NAME NL: Verdovende middelen
+NAME PT:
+NAME ES:
+
+NAME:   dynamic
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: All domains where people log in from one obtaining a dynmic IP address.
+DESC DE:
+DESC FR:
+NAME EN: Dynamic (Dialup) Addresses
+NAME DE: Dynamische Adressen
+NAME FR:
+NAME IT:
+NAME NL:
+NAME PT:
+NAME ES:
+
+NAME:   finance/banking
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Home page of banking companies are listed here. This is not restricted to online banking.
+DESC DE:
+DESC FR:
+NAME EN: Finance/Banking
+NAME DE: Finanzen/Banken
+NAME FR:
+NAME IT: Finanza/Banca
+NAME NL:
+NAME PT:
+NAME ES:
+
+NAME:   finance/insurance
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites of insurance companies, about information about insurances and link collections concering this subject.
+DESC DE: Alles zur Thematik Versicherungen und Versicherer.
+DESC FR:
+NAME EN: Finance/Insurance
+NAME DE: Finanzen/Versicherungen
+NAME FR:
+NAME IT: Finanza/Assicurazione
+NAME NL:
+NAME PT:
+NAME ES:
+
+NAME:   finance/moneylending
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites one can apply for loans and mortgages or can obtain information about this business.
+DESC DE: Seiten, die sich speziell mit der Thematik Geldverleih und Kredite befassen, Kreditaufnahme und -abzahlung.
+DESC FR:
+NAME EN: Finance/Moneylending
+NAME DE: Finanzen/Geldverleih
+NAME FR:
+NAME IT: Finanza/Prestiti
+NAME NL:
+NAME PT:
+NAME ES:
+
+NAME:   finance/other
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Finance in general.
+DESC DE: Seiten, die ganz allgemein mit Finanzen zu tun haben (Wechselkurse, Anlegertips u.ä.).
+DESC FR:
+NAME EN: Finance/Other
+NAME DE: Finanzen/Allgemein
+NAME FR:
+NAME IT: Finanza/Altro
+NAME NL:
+NAME PT:
+NAME ES:
+
+NAME:   finance/realestate
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites about all types of realestate, bying and selling homes, finding appartments for rent and selling.
+DESC DE: Seite über alle Arten von Immobilien, Kauf und Verkauf von Wohnungen und Häusern, auch Mietmarkt.
+DESC FR:
+NAME EN: Finance/Realestate
+NAME DE: Finanzen/Immobilien
+NAME FR:
+NAME IT: 
+NAME NL:
+NAME PT:
+NAME ES:
+
+NAME:   forum
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Discussion sites. Covered explicit forum sites and some blogs. Sites where people can discuss and share information in a non interactive/realtime way.
+DESC DE: Forums- und Diskussionsseiten sowie teilweise auch Blogs. 
+DESC FR:
+NAME EN: Forum
+NAME DE: Foren
+NAME FR: Forum
+NAME IT: Forum
+NAME NL: Forum
+NAME PT: Forum
+NAME ES: Forum
+
+NAME:   gamble
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites offering the possibility to win money. Poker, Casino, Bingo and other chance games as well as betting sites.
+DESC DE: Glückspiel und Wett-Seiten.
+DESC FR: Sites de jeux en ligne, casino, etc.
+NAME EN: Gambling/Casino
+NAME DE: Wetten/Glueckspiel 
+NAME FR: Jeux casino
+NAME IT: Gioco d\azzardo/Casino
+NAME NL: Gokken/Casinospelen
+NAME PT:
+NAME ES:
+
+NAME:   hacking
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites with information and discussions about security weaknesses and how to exploit them. Sites offering exploits are listed as well as sites distributing programs that help to find security leaks.
+DESC DE: Informationen über Sicherheitsschwächen und wie man sie ausnutzt. Seiten, die Programme zum Ausnutzen von Sicherheitsschwächen bieten.
+DESC FR: 
+NAME EN: Hacking
+NAME DE: Hacking
+NAME FR: Hacking
+NAME IT: Hacking
+NAME NL: Hacking
+NAME PT: Hacking
+NAME ES: Hacking
+
+NAME:   hobby/cooking
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites concering food and food preparation.
+DESC DE: Seiten über Nahrungsmittel und ihre Zubereitung.
+DESC FR:
+NAME EN: Hobby/Cooking
+NAME DE: Hobby/Kochen
+NAME FR:
+NAME IT:
+NAME NL:
+NAME PT:
+NAME ES:
+
+NAME:   hobby/games
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites about games, online and not online. The games are for fun only (no gamble).
+DESC DE: Seiten über Spiele sowie Online-Spiele (flash u.ä.) ohne Geldeinsatz (kein wettten). Spiele zum reinen Spass.
+DESC FR: Sites de jeux, en ligne, ou de distributions de jeux.
+NAME EN: Hobby/Games
+NAME DE: Hobby/Spiele
+NAME FR:
+NAME IT:
+NAME NL:
+NAME PT:
+NAME ES:
+
+NAME:   hobby/gardening
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites about gardening, grewing plants, fighting bugs and everything related to gardening.
+DESC DE: Seiten über das Gärtnern, wie man Pflanzenn züchtet, Ungeziefer bekämft und alle mit dem Thema Gärtnern verwandten Themen.
+DESC FR: 
+NAME EN: Hobby/Gardening
+NAME DE: Hobby/Gärtnern
+NAME FR:
+NAME IT:
+NAME NL:
+NAME PT:
+NAME ES:
+
+NAME:   hobby/pets
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: All topics concerning pets: description, raise, food, looks, fairs, favorite pet stories and so on.
+DESC DE: Seiten über Haustiere, Haustierhaltung, Pflegetips, etc.
+DESC FR:
+NAME EN: Hobby/Pets
+NAME DE: Hobby/Haustiere
+NAME FR:
+NAME IT:
+NAME NL:
+NAME PT:
+NAME ES:
+
+NAME:   hospitals
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites of hospitals and medical facilities.
+DESC DE: Seiten von Krankenhäusern und medizinischen Einrichtungen.
+DESC FR:
+NAME EN: Hospitals
+NAME DE: Krankenhäuser
+NAME FR: Hôpitaux
+NAME IT: Ospedali
+NAME NL:
+NAME PT: Hospitais
+NAME ES: Hospitales
+
+NAME:   imagehosting
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites specialized on hosting images, photogalleries and so on.
+DESC DE: Seiten, die insbesondere alle Arten von Bildern und Graphiken hosten, auch Photogallerien und ähnliches.
+DESC FR:
+NAME EN: Imagehosting
+NAME DE: Bildergallerien
+NAME FR:
+NAME IT: 
+NAME NL:
+NAME PT: 
+NAME ES: 
+
+NAME:   isp
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Home pages of Internet Service Providers. Site of companies offering webspace only are now being added, too
+DESC DE: Seiten von Internet Service Providern; beinhaltet auch Seiten von reinen Webspaceanbietern.
+DESC FR:
+NAME EN: Internet Service Provider
+NAME DE: Internet Service Provider
+NAME FR:
+NAME IT:
+NAME NL:
+NAME PT:
+NAME ES:
+
+NAME:   jobsearch
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Portals for job offers and job seekers as well as the career and work-for-us pages of companies.
+DESC DE: Arbeitsportale für Arbeitssuchende und Arbeitgeber. Beinhaltet auch Karriereberatungen.
+DESC FR:
+NAME EN: Jobsearch
+NAME DE: Arbeitssuche
+NAME FR:
+NAME IT:
+NAME NL:
+NAME PT:
+NAME ES:
+
+NAME:   military
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites of military facilites or related to the armed forces.
+DESC DE: Seiten militärischer Einrichtungen bzw. jene, die mit der Armee im Zusammenhang stehen.
+DESC FR:
+NAME EN: Military
+NAME DE: Militär
+NAME FR:
+NAME IT:
+NAME NL:
+NAME PT:
+NAME ES:
+
+NAME:   models
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Model agency, model and supermodel fan pages and other model sites presenting model photos. No porn pictures.
+DESC DE: Modelagenturen, Modelle und Supermodels. Beinhaltet Fanseiten ebenso, wie Bilder mit Models. Keine Pornographie.
+DESC FR:
+NAME EN: Models
+NAME DE: Models
+NAME FR: Models
+NAME IT: Models
+NAME NL: Models
+NAME PT: Models
+NAME ES: Models
+
+NAME:   movies
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites offering cinema programs, information about movies and actors. Sites for downloading video clips/movies (as long it is legal) are included as well.
+DESC DE: Kinoprogramme und Informationen über Filme und Darsteller. Laden von Video Clips und Filmen (solange dies legal ist).
+DESC FR: Quelques sites orientés vers la vidéo.
+NAME EN: Movies and Videos
+NAME DE: Filme
+NAME FR: Vidéo
+NAME IT:
+NAME NL:
+NAME PT:
+NAME ES:
+
+NAME:   music
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites that offer the download of music, information about music groups or music in general.
+DESC DE: Musik zum Download, Informationen zu Musik und Musikgruppen, Musik im allgemeinen.
+DESC FR:
+NAME EN: Music
+NAME DE: Musik
+NAME FR: Musique
+NAME IT: Musica
+NAME NL: Muziek
+NAME PT: Música
+NAME ES: Música
+
+NAME:   news
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites presenting news. Homepages from newspapers, magazines and journals as well as some blogs.
+DESC DE: Nachrichtenmagazine, Journale und einige Blogs.
+DESC FR:
+NAME EN: News
+NAME DE: Nachrichten
+NAME FR: Nouvelles
+NAME IT: Notizie
+NAME NL: Nieuws
+NAME PT: Notícia
+NAME ES: Noticias
+
+NAME:   podcasts
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites offering podcasts or podcast services.
+DESC DE: Seiten mit podcasts oder Podcast Angeboten; beinhaltet auch Hörbücher.
+DESC FR:
+NAME EN: Podcasts
+NAME DE: Podcasts
+NAME FR: 
+NAME IT: 
+NAME NL: 
+NAME PT: 
+NAME ES: 
+
+NAME:   politics
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites of political parties, political organisations and associations; sites with political discussions.
+DESC DE: Seiten politischer Parteien und politischer Organisationen; Seiten mit politischen Diskussionen.
+DESC FR:
+NAME EN: Politics
+NAME DE: Politik
+NAME FR: La politique
+NAME IT: Politica
+NAME NL: 
+NAME PT: Política
+NAME ES: Política
+
+
+NAME:   porn
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites about all kinds of sexual content ranging from bare bosoms to hardcore porn and sm.
+DESC DE: Seiten mit erotischem und pornographischem Inhalt.
+DESC FR: Des sites adultes allant de l'érotique à la pornographie dure.
+NAME EN: Porn
+NAME DE: Pornographie
+NAME FR: Adulte
+NAME IT: Siti per adulti
+NAME NL: 18+
+NAME PT:
+NAME ES:
+
+NAME:   recreation/humor
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Humorous pages, comic strips, funny stories, everything which makes people laugh.
+DESC DE: Alles, was zum Schmunzlen und Lachen bringt.
+DESC FR:
+NAME EN: Recreation/Humor
+NAME DE: Entspannung/Humor
+NAME FR:
+NAME IT:
+NAME NL:
+NAME PT:
+NAME ES:
+
+NAME:   recreation/sports
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: All about sports: sports teams, sport discussions as well as information about sports people and the varios sports themselves.
+DESC DE:
+DESC FR:
+NAME EN: Recreation/Sports
+NAME DE: Entspannung/Sport
+NAME FR:
+NAME IT:
+NAME NL:
+NAME PT:
+NAME ES:
+
+NAME:   recreation/travel
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites with information about foreign countries, travel companies, travel fares, accomondations and everything else that has to do with travel.
+DESC DE: Reiseveranstalter, Reisebeschreibungen, Hotels, Buchungen, Fluggesellschaften, Bahn und ähnliches: alles, was man zum Reisen wissen muss oder möchte.
+DESC FR:
+NAME EN: Recreation/Travel
+NAME DE: Entspannung/Reisen
+NAME FR:
+NAME IT:
+NAME NL:
+NAME PT:
+NAME ES:
+
+NAME:   recreation/wellness
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites about treatments for feeling internally and externally healthy and beautiful again.
+DESC DE: Wellness: Alles, was Körper und Seele gut tut.
+DESC FR:
+NAME EN: Recreation/Wellness
+NAME DE: Entspannung/Wellness
+NAME FR:
+NAME IT:
+NAME NL:
+NAME PT:
+NAME ES:
+
+NAME:   redirector
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites that actively help to bypass url filters by accepting urls via webform and play a proxing and redirecting role.
+DESC DE: Seiten mit Proxydiensten, die eine aktive Umgehung des URL Filters erlauben.
+DESC FR: Quelques sites qui permettent de contourner les filtres.
+NAME EN: Proxy
+NAME DE: Proxy
+NAME FR: Proxy
+NAME IT: Proxy
+NAME NL: Proxy
+NAME PT: Proxy
+NAME ES: Proxy
+
+NAME:   religion
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites with religious content: all kind of churches, sects, religious interpretations etc.
+DESC DE: Seiten mit religiösem Inhalt: Jegliche Art von Kirchen, Sekten, religiöse Interpretationsn usw.
+DESC FR: 
+NAME EN: Religion
+NAME DE: Religion
+NAME FR: 
+NAME IT: 
+NAME NL:
+NAME PT: 
+NAME ES: 
+
+NAME:   remotecontrol
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites offering the service to remotely access computers, expecially (but not limited to going) through firewalls. This does not cover traditional VPN.
+DESC DE: Seiten mit Diensten, die es ermöglichen, an entfernten Rechnern zu arbeiten (auch aber nicht nur durch Firewall durch). Normales, traditionelle VPN Zugänge werden nicht betrachtet.
+DESC FR:
+NAME EN: Remote Control
+NAME DE: Fernkontrolle
+NAME FR:
+NAME IT:
+NAME NL:
+NAME PT:
+NAME ES:
+
+NAME:   ringtones
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites that offer the download of ringtones or present other informations about ringtones.
+DESC DE: Informationen zu und Laden von Klingeltönen.
+DESC FR:
+NAME EN: Rintones
+NAME DE: Klingeltöne
+NAME FR:
+NAME IT:
+NAME NL:
+NAME PT:
+NAME ES:
+
+NAME:   science/astronomy
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites of institutions as well as of amateurs about all topics of astronomy.
+DESC DE: Astronomie und Astrophysik sowohl aus dem Amateur- wie auch aus dem professionellen Umfeld.
+DESC FR:
+NAME EN: Science/Astronomy
+NAME DE: Wissenschaft/Astronomie
+NAME FR:
+NAME IT:
+NAME NL:
+NAME PT:
+NAME ES:
+
+NAME:   science/chemistry
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites of institutions as well as of amateurs about all topics of chemistry.
+DESC DE: Rund um die Wissenschaft Chemie: Institutionen und Lehrhaftes.
+DESC FR:
+NAME EN: Science/Chemistry
+NAME DE: Wissenschaft/Chemie
+NAME FR:
+NAME IT:
+NAME NL:
+NAME PT:
+NAME ES:
+
+NAME:   searchengines
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Collection of seach engines and directory sites.
+DESC DE: Suchmaschinen und Verzeichnisseiten.
+DESC FR:
+NAME EN: Searchengines
+NAME DE: Suchmaschinen
+NAME FR:
+NAME IT:
+NAME NL:
+NAME PT:
+NAME ES:
+
+NAME:   sex/lingerie
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites selling and presenting sexy lingerie.
+DESC DE: Seiten, auf denen Reizwäsche präsnetiert und angeboten wird.
+DESC FR: Sites de sexy dessous.
+NAME EN: Sex/Lingerie.
+NAME DE: Sex/Reizwäsche.
+NAME FR: Sex/Dessous.
+NAME IT:
+NAME NL:
+NAME PT:
+NAME ES: Sex/Lenceria.
+
+NAME:   shopping
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites offering online shopping and price comparisons.
+DESC DE: Seiten für Käufe via Internet und Preisvergleiche.
+DESC FR: Sites de vente et achat en ligne.
+NAME EN: Shopping
+NAME DE: Einkaufen
+NAME FR: Shopping
+NAME IT: Shopping
+NAME NL: Shopping
+NAME PT: Shopping
+NAME ES: Shopping
+
+NAME:   socialnet
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites bringing people together (social networking) be it for friendship or for business.
+DESC DE:
+DESC FR:
+NAME EN: Social Networking
+NAME DE: Social Networking
+NAME FR:
+NAME IT:
+NAME NL:
+NAME PT:
+NAME ES:
+
+NAME:   spyware
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites that tries to actively try to install software or lure the user in doing so in order to spy the surfig behaviour (or worse). The homecalling site where the collecting information is sent are listed, too.
+DESC DE:
+DESC FR:
+NAME EN: Spyware
+NAME DE: Spyware
+NAME FR:
+NAME IT:
+NAME NL: Spyware
+NAME PT: Spyware
+NAME ES: Spyware
+
+NAME:   tracker
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Site keeping an eye on where you surf and what you do in a passive. Covers web bugs, counters and other tracking mechanism in web pages that do not interfere with the local computer yet collecting information about the surfing person for later analyis.
+DESC DE: Passives Ausspähen des Benutzerverhaltens. Beinhaltet tracking cookies, web bugs, Zähler u.ä., die in Webseiten zur Analyse der Benutzerverhaltens untergebracht sind.
+DESC FR:
+NAME EN: Tracker
+NAME DE: Tracker
+NAME FR:
+NAME IT:
+NAME NL:
+NAME PT:
+NAME ES:
+
+NAME:   updatesites
+DEFAULT_TYPE: white
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: List to allow necessary downloads from vendors.
+DESC DE: Herstellerseiten für Software Aktualisierungen.
+DESC FR:
+NAME EN: Update Sites
+NAME DE: Software Aktualisierungen
+NAME FR:
+NAME IT:
+NAME NL:
+NAME PT:
+NAME ES:
+
+NAME:   violence
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites about killing and harming people. Covers anything about brutality and beastiality.
+DESC DE: Gewalt und Gewaltverherrlichung. Beinhaltet Darstellungen des gewaltsamen Todes von Menschen, wie man anderen Schaden zufügt, Brutalität und Bestialität.
+DESC FR:
+NAME EN: Violence
+NAME DE: Gewalt
+NAME FR:
+NAME IT:
+NAME NL:
+NAME PT:
+NAME ES:
+
+NAME:   warez
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Collection of sites offering programs to break licence keys, licence keys themselves, cracked software and other copyrighted material.
+DESC DE: Seiten, die geknackte Passworte und Lizenzen kopiergeschützter Programme anbieten sowie das Laden kopiergeschützten Daten und Programme.
+DESC FR: Sites de logiciels pirates.
+NAME EN: Warez
+NAME DE: Warez
+NAME FR: Warez
+NAME IT: Warez
+NAME NL: Warez
+NAME PT: Warez
+NAME ES: Warez
+
+NAME:   weapons
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites offering all kinds of weapons or accessories for weapons: Firearms, knifes, swords, bows,... . Armory shops are included as well as sites holding general information about arms (manufacturing, usage).
+DESC DE: Waffen und Zubehör. Seiten, die Funktionsweise und den Umgang mit Waffen erklären sowie Hersteller.
+DESC FR:
+NAME EN: Weapons
+NAME DE: Waffen
+NAME FR:
+NAME IT:
+NAME NL:
+NAME PT:
+NAME ES:
+
+NAME:   webmail
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites that offer web-based email services.
+DESC DE: Seiten die web-basierte E-Mail Dienste anbieten.
+DESC FR: Webmail que l'on trouve sur internet (hotmail, webmail.univ-tlse1.fr, etc.)
+NAME EN: Webmail
+NAME DE: Webmail
+NAME FR: Messagerie Web
+NAME IT: Webmail
+NAME NL: Webmail
+NAME PT: Webmail
+NAME ES: Webmail
+
+NAME:   webphone
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites that enable user to phone via Internet/WWW. Any site where users can voice-chat with each other.
+DESC DE: Seiten, die Internet Telephonie, speziell, aber nicht nur http basiert, anbiten.
+DESC FR:
+NAME EN: Internet Phone
+NAME DE: Internet Telephonie
+NAME FR:
+NAME IT:
+NAME NL:
+NAME PT:
+NAME ES:
+
+NAME:   webradio
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Sites that offer listening to music and radiostreams.
+DESC DE: Seiten mit Internet Radio und Audio Streams.
+DESC FR: Sites de radio sur Internet
+NAME EN: Internet radio\s
+NAME DE: Internet Radio
+NAME FR: Radio internet
+NAME IT: Internet radio
+NAME NL: Internet radio\s
+NAME PT:
+NAME ES:
+
+NAME:   webtv
+DEFAULT_TYPE: black
+SOURCE: http://www.shallalist.de/Downloads/shallalist.tar.gz
+DESC EN: Site offering TV streams via world wide web.
+DESC DE: Seiten, die Fernsehen per WWW anbieten.
+DESC FR:
+NAME EN: Web TV, Internet TV
+NAME DE: Internet Fernsehen
+NAME FR:
+NAME IT:
+NAME NL:
+NAME PT:
+NAME ES:
+
