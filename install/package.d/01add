@@ -77,8 +77,11 @@ asterisk	install
 # asterisk-web-vmail	install
 perl-suid	install
 python-asterisk	install
-zaptel		                        install
-zaptel-modules-2.6.24-22-generic        install
+
+# Replaced by dahdi
+# zaptel		                        install
+# zaptel-modules-2.6.24-22-generic        install
+dahdi-linux	install
 smartmontools	install
 beep	        install
 
