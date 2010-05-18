@@ -44,8 +44,8 @@ usermod -aG games inveneo
 usermod -aG lpadmin inveneo
 usermod -aG scanner inveneo
 usermod -aG fuse inveneo
-usermod -aG netdev inveneo
-usermod -aG powerdev inveneo
+#usermod -aG netdev inveneo
+#usermod -aG powerdev inveneo
 usermod -aG admin inveneo
 
 # download and install Inveneo GPG key
