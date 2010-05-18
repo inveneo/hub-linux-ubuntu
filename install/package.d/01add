@@ -14,7 +14,8 @@ ca-certificates install
 
 # Mail delivery (lots of services like Drupal require it)
 ssmtp  		install
-mailx		install
+#commenting out for now, no candidate available
+# mailx		install
 
 # useful utilities
 screen  install
