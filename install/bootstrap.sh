@@ -81,8 +81,8 @@ cp -a /opt/install/overlay/etc/apt /etc
 echo "updating packages"
 apt-get update
 apt-get -y --force-yes dist-upgrade
-apt-get autoremove
-apt-get clean
+apt-get autoremove -y --force-yes
+apt-get clean -y --force-yes
 
 echo "installing /etc/network/interfaces"
 cp -a /opt/install/overlay/etc/network/interfaces /etc/network/interfaces
