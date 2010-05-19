@@ -81,6 +81,7 @@ def fix_owners(opt_root):
          folder_visitor, \
          lambda f: os.chown(f, uinfo[2],uinfo[3]))
 
+    # REMOVED We're dropping configuration server
     # fix pylons ownership XXX this belongs in a .deb
     # uinfo=pwd.getpwnam('inveneo')
     # path.walk(path.join(opt_root,'inveneo','configuration-server-pylons'), \
@@ -149,8 +150,9 @@ def post_overlay_transfer(overlay_root, dest):
     fileutils.replace_in_file(token, dt, os.path.join(dest,'etc','mdadm','mdadm.conf'))
     stdout.write("Writing disk type to 'fstab'\n")
     fileutils.replace_in_file(token, dt, os.path.join(dest,'etc','fstab'))
-    stdout.write("Writing disk type to 'menu.lst'\n")
-    fileutils.replace_in_file(token, dt, os.path.join(dest,'boot','grub','menu.lst'))
+    # REMOVED, we use Grub2 now.  Must add logic to boot sdb if sda fails
+    # stdout.write("Writing disk type to 'menu.lst'\n")
+    # fileutils.replace_in_file(token, dt, os.path.join(dest,'boot','grub','menu.lst'))
     stdout.write("Writing disk type to 'initramfs hook: inv-check-raid'\n")
     fileutils.replace_in_file(token, dt, os.path.join(dest,'usr','share','initramfs-tools','scripts','local-top','inv_check_raid'))
 
