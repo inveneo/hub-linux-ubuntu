@@ -82,13 +82,13 @@ def fix_owners(opt_root):
          lambda f: os.chown(f, uinfo[2],uinfo[3]))
 
     # fix pylons ownership XXX this belongs in a .deb
-    uinfo=pwd.getpwnam('inveneo')
-    path.walk(path.join(opt_root,'inveneo','configuration-server-pylons'), \
-         folder_visitor, \
-         lambda f: os.chown(f, uinfo[2],uinfo[3]))
+    # uinfo=pwd.getpwnam('inveneo')
+    # path.walk(path.join(opt_root,'inveneo','configuration-server-pylons'), \
+    #      folder_visitor, \
+    #      lambda f: os.chown(f, uinfo[2],uinfo[3]))
 
-    os.chown(path.join(overlay,'etc','zaptel.conf'), \
-             uinfo[2],uinfo[3])
+    # os.chown(path.join(overlay,'etc','zaptel.conf'), \
+    #          uinfo[2],uinfo[3])
 
     # fix quagga conf permissions
     uinfo=pwd.getpwnam('quagga')
@@ -117,10 +117,11 @@ def pre_overlay_transfer(overlay_root, dest):
             stderr.write("Failed to stop: "+service+"\n")
 
     # remove /etc/rc2.d/S12hal which needs to be moved to S13hal
-    try:
-        os.remove(path.join(dest,"etc","rc2.d","S12hal"))
-    except OSError, ex:
-        pass # silent, must not have been there
+    # REMOVED:  Lucid has dropped HAL
+    # try:
+    #     os.remove(path.join(dest,"etc","rc2.d","S12hal"))
+    # except OSError, ex:
+    #     pass # silent, must not have been there
     
     # blow away webmin modules info cache so that new modules are found
     try:
