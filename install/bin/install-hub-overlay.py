@@ -223,10 +223,11 @@ def make_links(dest):
     """docstring for make_links"""
     
     fstab='fstab.no-raid'
-    grub='menu.lst.no-raid'
+    # REMOVED, this is Grub1 style, we need GRUB2
+    # grub='menu.lst.no-raid'
     if is_raid():
         fstab='fstab.raid'
-        grub='menu.lst.raid'
+    #    grub='menu.lst.raid'
 
     target=path.join(dest,'etc','fstab')
     stdout.write("using: "+fstab+" for "+target+"\n") 
@@ -236,14 +237,15 @@ def make_links(dest):
         pass
     os.symlink(path.join(dest,'etc',fstab), target)
 
-    target=path.join(dest,'boot','grub','menu.lst')
-    stdout.write("using: "+grub+" for "+target+"\n")
-    try:
-        os.remove(target)
-    except:
-        pass
+    # REMOVED GRUB 1 style stuff
+    # target=path.join(dest,'boot','grub','menu.lst')
+    # stdout.write("using: "+grub+" for "+target+"\n")
+    # try:
+    #     os.remove(target)
+    # except:
+    #     pass
 
-    os.symlink(path.join(dest,'boot','grub',grub), target)
+    # os.symlink(path.join(dest,'boot','grub',grub), target)
 
     # make link for ast-gui
     target=path.join(dest,'var','lib','asterisk')
