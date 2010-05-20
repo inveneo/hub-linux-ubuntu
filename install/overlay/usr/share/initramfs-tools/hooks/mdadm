@@ -32,7 +32,10 @@ copy_exec /sbin/mdadm /sbin
 # copy the udev rules
 mkdir -p ${DESTDIR}/etc/udev/rules.d
 
-cp -p /etc/udev/rules.d/65-mdadm.vol_id.rules ${DESTDIR}/etc/udev/rules.d
+# Updated for compatibility with new naming and location in Lucid 10.04
+cp -p /lib/udev/rules.d/65-mdadm-blkid.rules ${DESTDIR}/lib/udev/rules.d
+
+#cp -p /etc/udev/rules.d/65-mdadm.vol_id.rules ${DESTDIR}/etc/udev/rules.d
 #cp -p /opt/inveneo/lib/udev/85-mdadm-initramfs.rules ${DESTDIR}/etc/udev/rules.d
 
 
