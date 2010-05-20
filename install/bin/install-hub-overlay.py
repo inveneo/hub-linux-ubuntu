@@ -113,7 +113,9 @@ def pre_overlay_transfer(overlay_root, dest):
     # stop services
     for service in SERVICES:
         try:
-            sp.call(['/etc/init.d/'+service,'stop'])
+	    # Run init scripts with service
+            # sp.call(['/etc/init.d/'+service,'stop'])
+            sp.call(['service',service,'stop'])
         except Exception, ex:
             stderr.write("Failed to stop: "+service+"\n")
 
@@ -171,7 +173,9 @@ def post_overlay_transfer(overlay_root, dest):
     for service in SERVICES[::-1]:
         try:
             stdout.write("Attempting to start: "+service+"\n")
-            sp.call(['/etc/init.d/'+service,'start'])
+	    # Start init scripts using service
+            sp.call(['service',service,'start'])
+            # sp.call(['/etc/init.d/'+service,'start'])
         except Exception, ex:
             stderr.write("Failed to start: "+service+"\n")
     
