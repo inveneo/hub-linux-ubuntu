@@ -62,7 +62,7 @@ start () {
 	if [ $STATUS -eq 0 ]
 	    then
 	    log_daemon_msg "Adding iptable rule for transparent proxy"
-	    iptables -t nat -A PREROUTING -d ! lan-ip-do-not-edit -i eth1 -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 3128 
+	    iptables -t nat -A PREROUTING ! -d lan-ip-do-not-edit -i eth1 -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 3128 
 	fi
 
 	return $STATUS
@@ -70,7 +70,7 @@ start () {
 
 stop () {
         log_daemon_msg "Removing iptable rule for transparent proxy"
-        iptables -t nat -D PREROUTING -d ! lan-ip-do-not-edit -i eth1 -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 3128 
+        iptables -t nat -D PREROUTING ! -d lan-ip-do-not-edit -i eth1 -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 3128 
 
 	PID=`cat $PIDFILE 2>/dev/null`
 	start-stop-daemon --stop --quiet --pidfile $PIDFILE --exec $DAEMON
