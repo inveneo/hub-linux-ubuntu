@@ -13,11 +13,10 @@ PATH=/bin:/sbin:/usr/bin:/usr/sbin
 # 8088 (asterisk configuration)
 # 631 (cups and cups admin)
 # 3128 (squid web proxy)
-# 389 (ldap)
 # 53 (dns)
 # 5353 (mDns)
 
-BLOCK_PORTS="80 443 10000 8008 8088 631 3128 389 53 5353"
+BLOCK_PORTS="80 443 10000 8008 8088 631 3128 53 5353"
 
 do_wall_up() {
     IFACE=$1
