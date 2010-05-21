@@ -2,7 +2,6 @@
 openssh-server	install
 openssh-client	install
 php5	        install
-php5-ldap	install
 php5-mysql	install
 phpmyadmin	install
 sysv-rc-conf    install
@@ -92,22 +91,12 @@ wvdial		install
 #freeradius	install
 #freeradius-mysql	install
 
-# ldap
-libpam-ldap	install
-ldap-utils	install
-smbldap-tools	install
-slapd           install
-libnss-ldap	install
-phpldapadmin    install
-libnet-ldap-perl install
-
 # sqlite3
 sqlite3         install 
 libsqlite3-0    install
 
 # python
 python-pexpect          install
-python-ldap             install
 python-pylons           install
 python-pysqlite2        install
 python-sqlalchemy       install

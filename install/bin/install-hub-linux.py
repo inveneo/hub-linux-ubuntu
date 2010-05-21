@@ -23,10 +23,6 @@ def main():
     stdout.write("\nInstalling Hub Overlay...\n")
     sp.check_call([path.join(install_bin,'install-hub-overlay.py')])
     
-    stdout.write("\nPopulating LDAP server...\n")
-    sp.check_call([path.join(install_bin,'populate-hub-ldap.py')])
-    
-    
     stdout.write("\nHit any key to reboot--you really need to...\n")
     stdin.readline()
     os.system("reboot")

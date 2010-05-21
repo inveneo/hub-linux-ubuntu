@@ -25,7 +25,7 @@ sys.path.append('/opt/inveneo/lib/python')
 from inveneo import fileutils
 
 # services to stop, in order. Will be started after in reverse order
-SERVICES=('asterisk','smbd','samba-shares.sh','slapd','squid3','dhcp3-server', \
+SERVICES=('asterisk','smbd','samba-shares.sh','squid3','dhcp3-server', \
           'apache2','avahi-daemon','cups','mysql','webmin')
 
 # Folder walking 'cause os.path functions aren't recursive 
@@ -46,9 +46,6 @@ def fix_perms(opt_root):
     """docstring for fix_perms"""
     # fix samba shared docs
     os.chmod(path.join(opt_root,"install","overlay","srv","samba","public_shares","shared_docs"),0777)
-
-    # fix /etc/ldap.secret
-    os.chmod(path.join(opt_root,"install","overlay","etc","ldap.secret"),0600)
 
     # fix quagga conf permissions
     quagga_conf_dir=path.join(opt_root,'install','overlay','etc','quagga')
