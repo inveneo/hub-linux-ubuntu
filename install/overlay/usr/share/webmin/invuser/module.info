@@ -1,8 +1,0 @@
-desc=Inveneo User Management
-longdesc=Create users in LDAP for Samba shares 
-risk=low medium high
-category=system
-depends=1.360
-version=1.360
-name=Inveneo User Mananger
-os_support=debian-linux generic-linux
