@@ -25,13 +25,19 @@ def main():
         
     user_name=sys.argv[1]
         
-    # remove user
+    # remove SMB user
     try:
-        sp.check_call(['smbldap-userdel',user_name])
+        sp.check_call(['smbpasswd','-x',user_name])
     except Exception, ex:
-        stderr.write('Could not remove user: '+user_name+"\n")
+        stderr.write('Could not remove SMB user: '+user_name+"\n")
+
+    # remove UNIX user
+    try:
+        sp.check_call(['userdel',user_name])
+    except Exception, ex:
+        stderr.write('Could not remove UNIX user: '+user_name+"\n")
         return 2
-    
+
     # remove conf
     conf=path.join(USER_SHARE_DIR,user_name+'_docs.conf')
     try:
@@ -43,7 +49,7 @@ def main():
     
     # regenerate shares.conf and reload samba
     sp.check_call([SHARES_SCRIPT,'start'])
-    sp.check_call(['/etc/init.d/samba','reload'])
+    sp.check_call(['service','smbd','reload'])
   
     return 0
     

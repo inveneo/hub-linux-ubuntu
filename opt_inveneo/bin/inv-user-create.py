@@ -14,7 +14,7 @@ OTHER_GROUPS='adm,dialout,fax,voice,cdrom,floppy,audio,dip,video,plugdev,games,l
 DEFAULT_GROUP='inveneo_users'
 SKELETON_DIR='/opt/inveneo/skeleton/samba/user-share-dir'
 HOME_DIR_BASE='/srv/samba/user_shares'
-ADD_CMD_BASE="smbldap-useradd -a -n -g "+DEFAULT_GROUP+" -G "+OTHER_GROUPS+" -d "+HOME_DIR_BASE+"/%(user_name)s"
+ADD_CMD_BASE="useradd -g "+DEFAULT_GROUP+" -G "+OTHER_GROUPS+" -d "+HOME_DIR_BASE+"/%(user_name)s"
 ADD_HOME_DIR=" -m -k "+SKELETON_DIR
 
 SMB_SHARE_TEMPLATE="/opt/inveneo/skeleton/samba/user.conf"
@@ -67,8 +67,17 @@ def main():
     syslog.syslog("issuing cmd: "+cmd)
     ret=os.system(cmd)
     if ret != 0:
-        stderr('failed to add user: '+user_name)
+        stderr.write('failed to add UNIX user: '+user_name)
         return 4
+    
+    #create samba user since ldap does not do that for us any more
+    if not no_share:
+    	cmd = "smbpasswd -a -n " +user_name
+    	syslog.syslog("issuing cmd: "+cmd)
+    	ret=os.system(cmd)
+	if ret != 0:
+		stderr.write('failed to add samba user: '+user_name)
+		return 4
         
     # set password, if provided
     if password:
@@ -79,7 +88,7 @@ def main():
         os.system('sed "s/%%USERNAME%%/%(user)s/g" %(tmpl)s > %(share_dir)s/%(user)s_docs.conf' % \
             {'user':user_name, 'tmpl':SMB_SHARE_TEMPLATE,'share_dir':USER_SHARE_DIR})
         sp.check_call([SHARES_SCRIPT,'start'])
-        sp.check_call(['/etc/init.d/samba','reload'])
+        sp.check_call(['service','smbd','reload'])
   
     return 0
     

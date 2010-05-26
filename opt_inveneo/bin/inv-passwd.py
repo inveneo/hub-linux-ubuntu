@@ -39,8 +39,9 @@ def main():
         usage()
         return 3
         
-    output, exit = pexpect.run('env LANG=en_US.utf-8 smbldap-passwd '+user_name, withexitstatus=True, events={'New password':password+'\n', 'type new password':password+'\n'})
-    return exit
+    unix_output, unix_exit = pexpect.run('env LANG=en_US.utf-8 passwd '+user_name, withexitstatus=True, events={'new UNIX password':password+'\n', 'type new UNIX password':password+'\n'})
+    smb_output, smb_exit = pexpect.run('env LANG=en_US.utf-8 smbpasswd '+user_name, withexitstatus=True, events={'ew SMB password':password+'\n', 'type new SMB password':password+'\n'})
+    return unix_exit + smb_exit
     
         
                 
