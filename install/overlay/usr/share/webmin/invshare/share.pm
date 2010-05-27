@@ -82,29 +82,25 @@ sub share_exists {
 }
 
 sub get_users_list { 
-    
-    $cmd = "ldapsearch -x  -LLL \"(objectClass=sambaSamAccount)\" uidNumber uid | grep \"^uid\" |  tr -d \":\""; 
+    $cmd = "pdbedit -w -L | awk -F: '{print \$1\":\"\$2}'";    
     open(IN, "$cmd |") or die "Error executing $cmd";
 
-    my $uidCnt = 0; 
-    my $uidNumCnt = 0;
+    my $uidCount = 0; 
     my @uid = ();
     my @uidNum = ();
 
     while ($line = <IN>) {
        chomp $line;
-       ($attr,$val) = split(/ /,$line);
-       if ( $attr eq 'uid' ) {
-           $uid[$uidCnt++] = $val;
-       } elsif ( $attr eq 'uidNumber' ) {
-           $uidNum[$uidNumCnt++] = $val;
-       }
+       ($lineUid,$lineUidNumber) = split(/:/,$line);
+       $uidCount++;
+       $uid[$uidCount]=$lineUid;
+       $uidNum[$uidCount]=$lineUidNumber;
     }
         
     my @retList = (); 
     my $cnt = 0; 
-    while ( $cnt < $uidCnt ) {
-        if ( $uidNum[$cnt] >= 10000 ) {
+    while ( $cnt < $uidCount ) {
+        if ( ($uidNum[$cnt] > 1400) && ($uidNum[$cnt] < 65000) ) {
            my @userInfo = ( $uidNum[$cnt], $uid[$cnt] );
            push @retList, \@userInfo;
         }
