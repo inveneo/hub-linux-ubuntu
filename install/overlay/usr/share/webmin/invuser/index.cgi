@@ -18,30 +18,26 @@ else {
 	}
 
 	# List existing users
-	$cmd = "ldapsearch -x  -LLL \"(objectClass=sambaSamAccount)\" uidNumber uid | grep \"^uid\" |  tr -d \":\"";
+	# $cmd = "ldapsearch -x  -LLL \"(objectClass=sambaSamAccount)\" uidNumber uid | grep \"^uid\" |  tr -d \":\"";
+
+	$cmd = "pdbedit -w -L | awk -F: '{print \$1\":\"\$2}'";
 
 	open(IN, "$cmd |") or die "Error executing $cmd";
 
 	$uidCount=0;
-	$uidNumberCount=0;
 	while ($line = <IN>) {
 		chomp $line;
-		($attrib,$value) = split(/ /,$line);
-		if ($attrib eq "uid") {
-			$uidCount++;
-			$uid[$uidCount]=$value;
-		}
-		if ($attrib eq "uidNumber") {
-			$uidNumberCount++;
-			$uidNumber[$uidNumberCount]=$value;
-		}
+		($lineUid,$lineUidNumber) = split(/:/,$line);
+		$uidCount++;
+		$uid[$uidCount]=$lineUid;
+		$uidNumber[$uidCount]=$lineUidNumber;
 	}
 
 	@userlisttable = ("Username", "Edit", "Delete");
 	print "<h2>User list</h2>\n";
 	print &ui_columns_start(\@userlisttable);
 	for ($i=1; $i<= $uidCount; $i++) {
-		if ($uidNumber[$i] > 9999) {
+		if (($uidNumber[$i] > 1400) && ($uidNumber[$i] < 65000)) {
 			$column1 = $uid[$i] . "(" . $uidNumber[$i] . ")";
 			$column2 = "<a href='changepwuser.cgi?user=" . $uid[$i] . "'>Reset Password</a>";
 			$column3 = "<a href='deluser.cgi?user=" . $uid[$i] . "'>Delete</a>";
