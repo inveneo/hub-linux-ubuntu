@@ -20,6 +20,7 @@ echo "Creating extra 'permissions' groups"
 groupadd -g  200 lpadmin 2>/dev/null || groupmod -g 200 lpadmin
 groupadd -g  201 scanner 2>/dev/null || groupmod -g 201 scanner
 groupadd -g  202 fuse 2>/dev/null || groupmod -g 202 fuse
+groupadd -g  203 inveneo_users 2>/dev/null || groupmod -g 203 inveneo_users
 
 # make inveeno user/group
 echo "removing 'inveneo' user and group if they exist"
