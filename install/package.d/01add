@@ -110,3 +110,6 @@ build-essential install
 libncurses5-dev	install
 patch           install
 
+# Inveneo maintained packages
+mastershaper	install
+
