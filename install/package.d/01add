@@ -1,6 +1,7 @@
 # core system
 openssh-server	install
 openssh-client	install
+mysql-server    install
 php5	        install
 php5-mysql	install
 phpmyadmin	install
@@ -69,7 +70,6 @@ smbfs		install
 smbclient       install
 quagga		install
 avahi-utils	install
-mysql-server    install
 webmin	        install
 asterisk	install
 # XXX does not exist anymore
