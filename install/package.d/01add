@@ -110,6 +110,9 @@ build-essential install
 libncurses5-dev	install
 patch           install
 
+# remote access and monitoring
+openvpn		install
+
 # Inveneo maintained packages
 mastershaper	install
 
