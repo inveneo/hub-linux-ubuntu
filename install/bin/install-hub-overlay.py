@@ -26,7 +26,7 @@ from inveneo import fileutils
 
 # services to stop, in order. Will be started after in reverse order
 SERVICES=('asterisk','smbd','samba-shares.sh','squid3','dhcp3-server', \
-          'apache2','avahi-daemon','cups','mysql','webmin')
+          'apache2','avahi-daemon','cups','mysql','webmin','openvpn')
 
 # Folder walking 'cause os.path functions aren't recursive 
 def folder_visitor(func, dirname, fnames):
@@ -132,6 +132,21 @@ def pre_overlay_transfer(overlay_root, dest):
     # remove useless openprinting HP ppds (everyone should use the hpijs drivers)
     shutil.rmtree(path.join(dest,'usr','share','ppd','openprinting','HP'),True)
 
+    # get ready to copy easy-rsa scripts from example dir
+    target=path.join(dest,'etc','openvpn','easy-rsa')
+    source=path.join(dest,'usr','share','doc','openvpn','examples','easy-rsa','2.0')
+
+    # remove anything existing in /etc/openvpn/easy-rsa
+    try:
+        os.remove(target)
+    except OSError, ex:
+        pass # must not have been there, which is what we expect
+
+    # copy easy-rsa scripts from example dir
+    if os.path.lexists(source):
+        shutil.copytree(source,target)
+
+
 def post_overlay_transfer(overlay_root, dest):
     # HACK: Fix Squid perms 
     uinfo=pwd.getpwnam('proxy')
@@ -159,6 +174,19 @@ def post_overlay_transfer(overlay_root, dest):
     # update certs
     stdout.write("Updating Root Certificate Authorities...\n")
     sp.check_call(['update-ca-certificates'])
+
+    # openvpn processing
+    sp.check_call(['source /etc/openvpn/easy-rsa/vars'])
+    sp.check_call(['/etc/openvpn/easy-rsa/clean-all'])
+    sp.check_call(['/etc/openvpn/easy-rsa/build-dh'])
+    sp.check_call(['/etc/openvpn/easy-rsa/pkitool','--initca'])
+    sp.check_call(['/etc/openvpn/easy-rsa/pkitool','--server','server'])
+
+    # Copy public crypto for global inveneo key.
+    # This is safe because we're not copying in the private key.
+    easyrsaPath=path.join(dest,'etc','openvpn','easy-rsa')
+    shutil.copy(path.join(easyrsaPath,'inveneo-keys','inveneo-global.csr'),path.join(easyrsaPath,'keys'))
+    shutil.copy(path.join(easyrsaPath,'inveneo-keys','inveneo-global.crt'),path.join(easyrsaPath,'keys'))
 
     # Initialize squidGuard blacklist
     sp.call(['squidGuard','-C','all'])

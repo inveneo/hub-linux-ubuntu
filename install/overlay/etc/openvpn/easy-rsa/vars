@@ -12,7 +12,7 @@
 # This variable should point to
 # the top level of the easy-rsa
 # tree.
-export EASY_RSA="`pwd`"
+export EASY_RSA="/etc/openvpn/easy-rsa"
 
 #
 # This variable should point to
