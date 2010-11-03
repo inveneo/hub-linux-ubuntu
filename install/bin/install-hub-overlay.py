@@ -133,8 +133,8 @@ def pre_overlay_transfer(overlay_root, dest):
     shutil.rmtree(path.join(dest,'usr','share','ppd','openprinting','HP'),True)
 
     # get ready to copy easy-rsa scripts from example dir
-    target=path.join(dest,'etc','openvpn','easy-rsa')
-    source=path.join(dest,'usr','share','doc','openvpn','examples','easy-rsa','2.0')
+    target=path.join('etc','openvpn','easy-rsa')
+    source=path.join('usr','share','doc','openvpn','examples','easy-rsa','2.0')
 
     # remove anything existing in /etc/openvpn/easy-rsa
     try:
@@ -176,7 +176,7 @@ def post_overlay_transfer(overlay_root, dest):
     sp.check_call(['update-ca-certificates'])
 
     # openvpn processing
-    sp.check_call(['source /opt/install/bin/configure_openvpn.sh'])
+    sp.check_call(['/opt/install/bin/configure_openvpn.sh'])
 
     # Copy public crypto for global inveneo key.
     # This is safe because we're not copying in the private key.
