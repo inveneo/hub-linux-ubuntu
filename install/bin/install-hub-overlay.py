@@ -133,8 +133,8 @@ def pre_overlay_transfer(overlay_root, dest):
     shutil.rmtree(path.join(dest,'usr','share','ppd','openprinting','HP'),True)
 
     # get ready to copy easy-rsa scripts from example dir
-    target=path.join('etc','openvpn','easy-rsa')
-    source=path.join('usr','share','doc','openvpn','examples','easy-rsa','2.0')
+    target=path.join(dest,'etc','openvpn','easy-rsa')
+    source=path.join(dest,'usr','share','doc','openvpn','examples','easy-rsa','2.0')
 
     # remove anything existing in /etc/openvpn/easy-rsa
     try:
