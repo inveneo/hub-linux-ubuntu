@@ -176,11 +176,7 @@ def post_overlay_transfer(overlay_root, dest):
     sp.check_call(['update-ca-certificates'])
 
     # openvpn processing
-    sp.check_call(['source /etc/openvpn/easy-rsa/vars'])
-    sp.check_call(['/etc/openvpn/easy-rsa/clean-all'])
-    sp.check_call(['/etc/openvpn/easy-rsa/build-dh'])
-    sp.check_call(['/etc/openvpn/easy-rsa/pkitool','--initca'])
-    sp.check_call(['/etc/openvpn/easy-rsa/pkitool','--server','server'])
+    sp.check_call(['source /opt/install/bin/configure_openvpn.sh'])
 
     # Copy public crypto for global inveneo key.
     # This is safe because we're not copying in the private key.
