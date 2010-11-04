@@ -138,7 +138,7 @@ def pre_overlay_transfer(overlay_root, dest):
 
     # remove anything existing in /etc/openvpn/easy-rsa
     try:
-        os.remove(target)
+        shutil.rmtree(target,True)
     except OSError, ex:
         pass # must not have been there, which is what we expect
 
