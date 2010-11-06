@@ -178,11 +178,9 @@ def post_overlay_transfer(overlay_root, dest):
     # openvpn processing
     sp.check_call(['/opt/install/bin/configure_openvpn.sh'])
 
-    # Copy public crypto for global inveneo key.
-    # This is safe because we're not copying in the private key.
+    # Copy in inveneo ca certificate for openvpn.
     easyrsaPath=path.join(dest,'etc','openvpn','easy-rsa')
-    shutil.copy(path.join(easyrsaPath,'inveneo-keys','inveneo-global.csr'),path.join(easyrsaPath,'keys'))
-    shutil.copy(path.join(easyrsaPath,'inveneo-keys','inveneo-global.crt'),path.join(easyrsaPath,'keys'))
+    shutil.copy(path.join(easyrsaPath,'inveneo-keys','ca.crt'),path.join(easyrsaPath,'keys'))
 
     # Initialize squidGuard blacklist
     sp.call(['squidGuard','-C','all'])
